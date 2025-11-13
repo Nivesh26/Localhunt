@@ -103,8 +103,7 @@ const contact = () => {
                     </div>
                     <div>
                       <h3 className="text-lg font-semibold text-gray-900 mb-1">Phone</h3>
-                      <p className="text-gray-700">+1 (555) 123-4567</p>
-                      <p className="text-gray-700">+1 (555) 987-6543</p>
+                      <p className="text-gray-700">+977 9876543212</p>
                     </div>
                   </div>
 
@@ -116,8 +115,7 @@ const contact = () => {
                     </div>
                     <div>
                       <h3 className="text-lg font-semibold text-gray-900 mb-1">Email</h3>
-                      <p className="text-gray-700">info@localhunt.com</p>
-                      <p className="text-gray-700">support@localhunt.com</p>
+                      <p className="text-gray-700">localhunt@gmail.com</p>
                     </div>
                   </div>
 
@@ -130,15 +128,13 @@ const contact = () => {
                     </div>
                     <div>
                       <h3 className="text-lg font-semibold text-gray-900 mb-1">Address</h3>
-                      <p className="text-gray-700">123 Local Street</p>
-                      <p className="text-gray-700">Your City, State 12345</p>
-                      <p className="text-gray-700">United States</p>
+                      <p className="text-gray-700">Nepal</p>
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Business Hours */}
+              {/* Business Hours
               <div className="bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl shadow-lg p-8 text-white">
                 <h2 className="text-2xl font-bold mb-6">Business Hours</h2>
                 <div className="space-y-3">
@@ -155,7 +151,7 @@ const contact = () => {
                     <span>Closed</span>
                   </div>
                 </div>
-              </div>
+              </div> */}
             </div>
           </div>
         </div>

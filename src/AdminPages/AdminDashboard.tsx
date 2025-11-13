@@ -147,7 +147,7 @@ const AdminDashboard = () => {
             </article>
           </section>
 
-          <section className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+          {/* <section className="grid grid-cols-1 gap-6 xl:grid-cols-2">
             <article className="rounded-2xl bg-white p-6 shadow-sm">
               <div className="flex items-center justify-between">
                 <div>
@@ -176,7 +176,7 @@ const AdminDashboard = () => {
             </article>
 
             
-          </section>
+          </section> */}
         </main>
       </div>
     </div>

@@ -143,7 +143,7 @@ const Sellerlogin = () => {
                 <div className="mt-6 text-center text-sm text-gray-600">
                   Already registered?{' '}
 
-                   <Link to="/sellerlogin" className="font-semibold text-red-600 hover:underline" > Signin</Link>
+                   <Link to="/sellerlogin" className="font-semibold text-red-600 hover:underline" > Login</Link>
                 </div>
 
                 <div className="mt-6 flex items-center justify-center gap-4 text-xs text-gray-500">

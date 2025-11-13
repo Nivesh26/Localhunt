@@ -9,7 +9,7 @@ import {
 
 const vendorRequests = [
   {
-    id: '#A2045',
+    id: '#A1',
     store: 'Nepal Handicrafts',
     owner: 'Nivesh Shrestha',
     submitted: '2 hours ago',
@@ -17,7 +17,7 @@ const vendorRequests = [
     documents: ['Business Registration', 'PAN Certificate'],
   },
   {
-    id: '#A2044',
+    id: '#A2',
     store: 'Kathmandu Organics',
     owner: 'Aaloka Poudel',
     submitted: 'Yesterday',
@@ -25,7 +25,7 @@ const vendorRequests = [
     documents: [ 'Business Registration','VAT Certificate'],
   },
   {
-    id: '#A2043',
+    id: '#A3  ',
     store: 'Sherpa Leather Co.',
     owner: 'Nima Sherpa',
     submitted: '3 days ago',
@@ -94,7 +94,7 @@ const VendorApprove = () => {
                       Approve Vendor
                     </button>
                     <button className="rounded-xl border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50">
-                      Request Additional Documents
+                      Hold Request
                     </button>
                     <button className="flex items-center justify-center gap-2 rounded-xl border border-red-200 px-4 py-2 text-sm font-semibold text-red-600 hover:bg-red-50">
                       <XMarkIcon className="h-5 w-5" />

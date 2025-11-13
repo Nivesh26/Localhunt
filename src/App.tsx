@@ -17,6 +17,7 @@ import AdminVender from './AdminPages/AdminVendor'
 import VendorApprove from './AdminPages/VendorApprove'
 import SellerLogin from './Logins/SellerLogin'
 import AdminProduct from './AdminPages/AdminProduct'
+import AdminSetting from './AdminPages/AdminSetting'
 
 const App = () => {
   return (
@@ -42,10 +43,11 @@ const App = () => {
 
       {/* Admin Pages */}
         <Route path="/admindashboard" element={<AdminDashboard/>}/>
-        <Route path="/adminvendorpipeline" element={<Vendorpipeline/>}/>
         <Route path="/adminvendors" element={<AdminVender/>}/>
         <Route path="/adminvendorsapprove" element={<VendorApprove/>}/>
         <Route path="/adminproducts" element={<AdminProduct/>}/>
+        <Route path="/adminsettings" element={<AdminSetting/>}/>  
+        
    </Routes> 
    </BrowserRouter>
 

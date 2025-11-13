@@ -2,9 +2,6 @@ import {
   HomeIcon,
   BuildingStorefrontIcon,
   CubeIcon,
-  ShoppingBagIcon,
-  CurrencyDollarIcon,
-  LifebuoyIcon,
   ShieldCheckIcon,
   UserPlusIcon,
 } from '@heroicons/react/24/solid'
@@ -16,13 +13,10 @@ import { Link } from 'react-router-dom'
 const navLinks = [
   { label: 'Overview', icon: HomeIcon, to: '/admindashboard' },
   { label: 'Vendors', icon: BuildingStorefrontIcon, to: '/adminvendors' },
-  { label: 'Vendor Pipeline', icon: UserPlusIcon, to: '/adminvendorpipeline' },
+
   { label: 'Approve Vendors', icon: ShieldCheckIcon, to: '/adminvendorsapprove  ' },
   { label: 'Products', icon: CubeIcon, to: '/adminproducts' },
-  { label: 'Orders', icon: ShoppingBagIcon },
-  { label: 'Payouts', icon: CurrencyDollarIcon },
-  { label: 'Support', icon: LifebuoyIcon },
-  { label: 'Settings', icon: ShieldCheckIcon },
+  { label: 'Settings', icon: ShieldCheckIcon, to: '/adminsettings' },
 ]
 
 

@@ -43,14 +43,14 @@ const Login_form = () => {
           Login
         </button>
 
-        {/* Divider */}
+        {/* Divider
         <div className="flex items-center my-6">
           <hr className="flex-grow border-gray-300" />
           <span className="mx-2 text-gray-500 text-sm">OR</span>
           <hr className="flex-grow border-gray-300" />
-        </div>
+        </div> */}
 
-        {/* Google Login */}
+        {/* Google Login
         <button className="w-full flex items-center justify-center border border-gray-300 py-2 rounded-full hover:bg-gray-50 transition">
           <img
             src={google}
@@ -58,7 +58,7 @@ const Login_form = () => {
             className="w-5 h-5 mr-2"
           />
           Continue with Google
-        </button>
+        </button> */}
 
         {/* Terms */}
         <p className="text-xs text-center text-gray-500 mt-6">
