@@ -44,66 +44,125 @@ const Sellerlogin = () => {
                   Join a curated community of Nepali artisans, producers, and retailers. We help you showcase products worldwide while managing logistics and secure payouts for you.
                 </p>
 
-                <div className="mt-8 space-y-5">
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <label className="text-sm font-medium text-gray-700">
-                      Business Name
-                      <input
-                        type="text"
-                        placeholder="Your Business Name"
-                        className="mt-1 w-full border-b border-gray-300 py-2 text-sm focus:border-red-500 focus:outline-none"
-                      />
-                    </label>
-                    <label className="text-sm font-medium text-gray-700">
-                      Business Category
-                      <select className="mt-1 w-full border-b border-gray-300 py-2 text-sm text-gray-700 focus:border-red-500 focus:outline-none">
-                        <option value="">Select category</option>
-                        <option value="handmade">Handmade & Crafts</option>
-                        <option value="fashion">Fashion & Apparel</option>
-                        <option value="gourmet">Gourmet & Organic</option>
-                        <option value="home">Home & Living</option>
-                        <option value="home">Masks</option>
-                        <option value="other">Other</option>
-                      </select>
-                    </label>
+                <div className="mt-8 space-y-6">
+                  {/* Personal information */}
+                  <div className="space-y-3 rounded-2xl border border-gray-200 bg-white/60 p-4">
+                    <div>
+                      <h3 className="text-sm font-semibold text-gray-900">Personal information</h3>
+                      <p className="text-xs text-gray-500">
+                        Details we&apos;ll use to contact you about your seller account.
+                      </p>
+                    </div>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <label className="text-sm font-medium text-gray-700">
+                        User Name
+                        <input
+                          type="text"
+                          placeholder="Your User Name"
+                          className="mt-1 w-full border-b border-gray-300 py-2 text-sm focus:border-red-500 focus:outline-none"
+                        />
+                      </label>
+                      <label className="text-sm font-medium text-gray-700">
+                        Phone Number
+                        <input
+                          type="text"
+                          placeholder="Phone Number"
+                          className="mt-1 w-full border-b border-gray-300 py-2 text-sm focus:border-red-500 focus:outline-none"
+                        />
+                      </label>
+                      <label className="text-sm font-medium text-gray-700">
+                        Contact Email
+                        <input
+                          type="text"
+                          placeholder="Contact Email"
+                          className="mt-1 w-full border-b border-gray-300 py-2 text-sm focus:border-red-500 focus:outline-none"
+                        />
+                      </label>
+                      <label className="text-sm font-medium text-gray-700">
+                        Location
+                        <input
+                          type="text"
+                          placeholder="Location"
+                          className="mt-1 w-full border-b border-gray-300 py-2 text-sm focus:border-red-500 focus:outline-none"
+                        />
+                      </label>
+                    </div>
                   </div>
 
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <label className="text-sm font-medium text-gray-700">
-                      Business PAN / VAT ID
-                      <input
-                        type="text"
-                        placeholder="PAN / VAT ID"
-                        className="mt-1 w-full border-b border-gray-300 py-2 text-sm focus:border-red-500 focus:outline-none"
-                      />
-                    </label>
-                    <label className="text-sm font-medium text-gray-700">
-                      Contact Email
-                      <input
-                        type="email"
-                        placeholder="Email"
-                        className="mt-1 w-full border-b border-gray-300 py-2 text-sm focus:border-red-500 focus:outline-none"
-                      />
-                    </label>
+                  {/* Business details */}
+                  <div className="space-y-3 rounded-2xl border border-gray-200 bg-white/60 p-4">
+                    <div>
+                      <h3 className="text-sm font-semibold text-gray-900">Business details</h3>
+                      <p className="text-xs text-gray-500">
+                        Information that appears on invoices and is used for compliance checks.
+                      </p>
+                    </div>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <label className="text-sm font-medium text-gray-700">
+                        Business Name
+                        <input
+                          type="text"
+                          placeholder="Your Business Name"
+                          className="mt-1 w-full border-b border-gray-300 py-2 text-sm focus:border-red-500 focus:outline-none"
+                        />
+                      </label>
+                      <label className="text-sm font-medium text-gray-700">
+                        Business Category
+                        <select className="mt-1 w-full border-b border-gray-300 py-2 text-sm text-gray-700 focus:border-red-500 focus:outline-none">
+                          <option value="">Select category</option>
+                          <option value="handmade">Handmade & Crafts</option>
+                          <option value="fashion">Fashion & Apparel</option>
+                          <option value="gourmet">Gourmet & Organic</option>
+                          <option value="home">Home & Living</option>
+                          <option value="masks">Masks</option>
+                          <option value="other">Other</option>
+                        </select>
+                      </label>
+                      <label className="text-sm font-medium text-gray-700">
+                        Business PAN / VAT ID
+                        <input
+                          type="text"
+                          placeholder="PAN / VAT ID"
+                          className="mt-1 w-full border-b border-gray-300 py-2 text-sm focus:border-red-500 focus:outline-none"
+                        />
+                      </label>
+                      <label className="text-sm font-medium text-gray-700">
+                        Business Location
+                        <input
+                          type="text"
+                          placeholder="City, Region"
+                          className="mt-1 w-full border-b border-gray-300 py-2 text-sm focus:border-red-500 focus:outline-none"
+                        />
+                      </label>
+                    </div>
                   </div>
 
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <label className="text-sm font-medium text-gray-700">
-                      Password
-                      <input
-                        type="password"
-                        placeholder="Create a password"
-                        className="mt-1 w-full border-b border-gray-300 py-2 text-sm focus:border-red-500 focus:outline-none"
-                      />
-                    </label>
-                    <label className="text-sm font-medium text-gray-700">
-                      Confirm Password
-                      <input
-                        type="password"
-                        placeholder="Repeat password"
-                        className="mt-1 w-full border-b border-gray-300 py-2 text-sm focus:border-red-500 focus:outline-none"
-                      />
-                    </label>
+                  {/* Account security */}
+                  <div className="space-y-3 rounded-2xl border border-gray-200 bg-white/60 p-4">
+                    <div>
+                      <h3 className="text-sm font-semibold text-gray-900">Account security</h3>
+                      <p className="text-xs text-gray-500">
+                        Create a secure password to protect access to your seller dashboard.
+                      </p>
+                    </div>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <label className="text-sm font-medium text-gray-700">
+                        Password
+                        <input
+                          type="password"
+                          placeholder="Create a password"
+                          className="mt-1 w-full border-b border-gray-300 py-2 text-sm focus:border-red-500 focus:outline-none"
+                        />
+                      </label>
+                      <label className="text-sm font-medium text-gray-700">
+                        Confirm Password
+                        <input
+                          type="password"
+                          placeholder="Repeat password"
+                          className="mt-1 w-full border-b border-gray-300 py-2 text-sm focus:border-red-500 focus:outline-none"
+                        />
+                      </label>
+                    </div>
                   </div>
 
                 

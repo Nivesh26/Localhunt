@@ -18,6 +18,8 @@ import VendorApprove from './AdminPages/VendorApprove'
 import SellerLogin from './Logins/SellerLogin'
 import AdminProduct from './AdminPages/AdminProduct'
 import AdminSetting from './AdminPages/AdminSetting'
+import SellerDashboard from './SellerPages/SellerDashboard'
+import SellerProduct from './SellerPages/SellerProduct'
 
 const App = () => {
   return (
@@ -40,6 +42,10 @@ const App = () => {
       {/* Seller Login and Signup */}
       <Route path="/sellersignup" element={<Sellersignup/>}/>
       <Route path="/sellerlogin" element={<SellerLogin/>}/>
+
+      {/* Seller Pages */}
+      <Route path="/sellerdashboard" element={<SellerDashboard/>}/>
+      <Route path="/sellerproduct" element={<SellerProduct/>}/>
 
       {/* Admin Pages */}
         <Route path="/admindashboard" element={<AdminDashboard/>}/>
