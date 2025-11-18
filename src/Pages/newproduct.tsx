@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import Header from "../Components/Header";
 import Topbar from "../Components/Topbar";
 import Footer from "../Components/Footer";
@@ -138,20 +139,24 @@ const newproduct = () => {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredProducts.map((product) => (
-                <div
+                <Link
                   key={product.id}
-                  className="bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden"
+                  to="/productdetail"
+                  className="bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden cursor-pointer"
                 >
                   <img src={product.image} alt={product.name} className="w-full h-48 object-cover" />
                   <div className="p-4">
                     <h3 className="text-lg font-medium">{product.name}</h3>
                     <p className="text-gray-500 text-sm">{product.category}</p>
                     <p className="text-blue-600 font-semibold mt-2">NRP {product.price}</p>
-                    <button className="mt-3 w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition">
+                    <button 
+                      onClick={(e) => e.preventDefault()}
+                      className="mt-3 w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"
+                    >
                       Add to Cart
                     </button>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           )}
