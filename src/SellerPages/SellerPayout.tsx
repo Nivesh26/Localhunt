@@ -160,7 +160,7 @@ const SellerPayout = () => {
               </div>
             </article>
 
-            <article className="rounded-2xl bg-white p-6 shadow-sm">
+            {/* <article className="rounded-2xl bg-white p-6 shadow-sm">
               <h2 className="text-lg font-semibold text-gray-900">Withdrawal preferences</h2>
               <p className="text-sm text-gray-500">Customize how you receive funds from marketplace sales.</p>
 
@@ -193,22 +193,22 @@ const SellerPayout = () => {
                   </li>
                 </ul>
               </div>
-            </article>
+            </article> */}
           </section>
-
-          <section className="rounded-2xl bg-white p-6 shadow-sm">
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-              <div>
-                <h2 className="text-lg font-semibold text-gray-900">Helpful links</h2>
-                <p className="text-sm text-gray-500">Resolve payout delays or update compliance documents.</p>
+  {/* 
+            <section className="rounded-2xl bg-white p-6 shadow-sm">
+              <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                <div>
+                  <h2 className="text-lg font-semibold text-gray-900">Helpful links</h2>
+                  <p className="text-sm text-gray-500">Resolve payout delays or update compliance documents.</p>
+                </div>
+                <div className="flex flex-wrap gap-3 text-sm">
+                  <button className="rounded-xl border border-gray-200 px-4 py-2 font-semibold text-gray-700 hover:bg-gray-50">Contact finance support</button>
+                  <button className="rounded-xl border border-gray-200 px-4 py-2 font-semibold text-gray-700 hover:bg-gray-50">View payout policy</button>
+                  <button className="rounded-xl border border-gray-200 px-4 py-2 font-semibold text-gray-700 hover:bg-gray-50">Download statements</button>
+                </div>
               </div>
-              <div className="flex flex-wrap gap-3 text-sm">
-                <button className="rounded-xl border border-gray-200 px-4 py-2 font-semibold text-gray-700 hover:bg-gray-50">Contact finance support</button>
-                <button className="rounded-xl border border-gray-200 px-4 py-2 font-semibold text-gray-700 hover:bg-gray-50">View payout policy</button>
-                <button className="rounded-xl border border-gray-200 px-4 py-2 font-semibold text-gray-700 hover:bg-gray-50">Download statements</button>
-              </div>
-            </div>
-          </section>
+            </section> */}
         </main>
       </div>
     </div>

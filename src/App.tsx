@@ -22,6 +22,8 @@ import SellerDashboard from './SellerPages/SellerDashboard'
 import SellerProduct from './SellerPages/SellerProduct'
 import SellerOrder from './SellerPages/SellerOrder'
 import SellerPayout from './SellerPages/SellerPayout'
+import SellerMessage from './SellerPages/SellerMessage'
+import SellerSetting from './SellerPages/SellerSetting'
 
 const App = () => {
   return (
@@ -51,6 +53,8 @@ const App = () => {
       <Route path="/sellerproduct" element={<SellerProduct/>}/>
       <Route path="/sellerorder" element={<SellerOrder/>}/>
       <Route path="/sellerpayout" element={<SellerPayout/>}/>
+      <Route path="/sellermessage" element={<SellerMessage/>}/>
+      <Route path="/sellersetting" element={<SellerSetting/>}/>
 
       {/* Admin Pages */}
         <Route path="/admindashboard" element={<AdminDashboard/>}/>

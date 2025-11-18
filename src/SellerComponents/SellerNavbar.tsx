@@ -15,9 +15,9 @@ const navLinks = [
   { label: 'Overview', icon: HomeIcon, to: '/sellerdashboard' },
   { label: 'Products', icon: CubeIcon, to: '/sellerproduct' },
   { label: 'Orders', icon: ShoppingBagIcon, to: '/sellerorder' },
-  { label: 'Payouts', icon: BanknotesIcon, to: '/seller/payouts' },
-  { label: 'Messages', icon: ChatBubbleLeftRightIcon, to: '/seller/messages' },
-  { label: 'Settings', icon: Cog6ToothIcon, to: '/seller/settings' },
+  { label: 'Payouts', icon: BanknotesIcon, to: '/sellerpayout' },
+  { label: 'Messages', icon: ChatBubbleLeftRightIcon, to: '/sellermessage' },
+  { label: 'Settings', icon: Cog6ToothIcon, to: '/sellersetting' },
 ]
 
 const SellerNavbar = () => {

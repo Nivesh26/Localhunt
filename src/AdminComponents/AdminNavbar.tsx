@@ -13,7 +13,6 @@ import { Link } from 'react-router-dom'
 const navLinks = [
   { label: 'Overview', icon: HomeIcon, to: '/admindashboard' },
   { label: 'Vendors', icon: BuildingStorefrontIcon, to: '/adminvendors' },
-
   { label: 'Approve Vendors', icon: ShieldCheckIcon, to: '/adminvendorsapprove  ' },
   { label: 'Products', icon: CubeIcon, to: '/adminproducts' },
   { label: 'Settings', icon: ShieldCheckIcon, to: '/adminsettings' },
@@ -24,6 +23,7 @@ const navLinks = [
 const AdminNavbar = () => {
   return (
     <aside className="hidden w-64 lg:block">
+      
       <div className="sticky top-8 space-y-6">
         <div className="flex items-center gap-3 rounded-2xl bg-white p-5 shadow-sm">
           <img src={logo} alt="Local Hunt" className="h-12 w-12 rounded-xl object-contain" />
@@ -71,10 +71,6 @@ const AdminNavbar = () => {
             ))}
           </ul>
         </nav>
-
-  
-
-       
       </div>
     </aside>
   )
