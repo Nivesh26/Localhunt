@@ -32,8 +32,89 @@ const SellerSetting = () => {
     system: true,
   })
 
+  const [formData, setFormData] = useState({
+    storeName: 'Nepal Handicrafts Store',
+    businessCategory: 'Handmade & Crafts',
+    storeDescription: 'Authentic Nepali handicrafts and handmade products, sourced directly from local artisans.',
+    storeLocation: 'Kathmandu, Nepal',
+    businessPanVat: '123456789',
+    fullName: 'Mr. Nivesh Shrestha',
+    phoneNumber: '+977 9841234567',
+    emailAddress: 'nivesh@nepalhandicrafts.com',
+    processingTime: '1-2 business days',
+    returnPolicy: 'We accept returns within 7 days of delivery. Items must be unused and in original packaging.'
+  })
+
+  const [errors, setErrors] = useState<{ [key: string]: string }>({})
+
+  const validateEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    return emailRegex.test(email)
+  }
+
   const toggleNotification = (id: string) => {
     setNotifications(prev => ({ ...prev, [id]: !prev[id] }))
+  }
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target
+    setFormData(prev => ({ ...prev, [name]: value }))
+    if (errors[name]) {
+      setErrors(prev => {
+        const newErrors = { ...prev }
+        delete newErrors[name]
+        return newErrors
+      })
+    }
+  }
+
+  const handleSave = () => {
+    const newErrors: { [key: string]: string } = {}
+
+    if (!formData.storeName.trim()) {
+      newErrors.storeName = 'Store name is required'
+    }
+
+    if (!formData.businessCategory) {
+      newErrors.businessCategory = 'Business category is required'
+    }
+
+    if (!formData.storeDescription.trim()) {
+      newErrors.storeDescription = 'Store description is required'
+    }
+
+    if (!formData.storeLocation.trim()) {
+      newErrors.storeLocation = 'Store location is required'
+    }
+
+    if (!formData.businessPanVat.trim()) {
+      newErrors.businessPanVat = 'PAN / VAT ID is required'
+    }
+
+    if (!formData.fullName.trim()) {
+      newErrors.fullName = 'Full name is required'
+    }
+
+    if (!formData.phoneNumber.trim()) {
+      newErrors.phoneNumber = 'Phone number is required'
+    }
+
+    if (!formData.emailAddress.trim()) {
+      newErrors.emailAddress = 'Email address is required'
+    } else if (!validateEmail(formData.emailAddress)) {
+      newErrors.emailAddress = 'Please enter a valid email address'
+    }
+
+    if (!formData.returnPolicy.trim()) {
+      newErrors.returnPolicy = 'Return policy is required'
+    }
+
+    setErrors(newErrors)
+
+    if (Object.keys(newErrors).length === 0) {
+      // Form is valid, proceed with save
+      console.log('Settings saved:', formData)
+    }
   }
 
   return (
@@ -52,10 +133,10 @@ const SellerSetting = () => {
                 </p>
               </div>
               <div className="flex gap-3">
-                <button className="rounded-xl border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-100">
+                <button type="button" className="rounded-xl border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-100">
                   Cancel
                 </button>
-                <button className="rounded-xl bg-red-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-600">
+                <button type="button" onClick={handleSave} className="rounded-xl bg-red-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-600">
                   Save changes
                 </button>
               </div>
@@ -77,48 +158,76 @@ const SellerSetting = () => {
                     </p>
 
                     <div className="mt-6 grid gap-5 sm:grid-cols-2">
-                      <label className="flex flex-col gap-2">
-                        <span className="text-sm font-medium text-gray-700">Store name</span>
+                      <div className="flex flex-col gap-2">
+                        <label className="text-sm font-medium text-gray-700">Store name</label>
                         <input
                           type="text"
-                          defaultValue="Nepal Handicrafts Store"
-                          className="rounded-xl border border-gray-200 px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-red-400 focus:outline-none focus:ring-2 focus:ring-red-200"
+                          name="storeName"
+                          value={formData.storeName}
+                          onChange={handleChange}
+                          className={`rounded-xl border px-3 py-2 text-sm text-gray-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-red-200 ${
+                            errors.storeName ? 'border-red-500' : 'border-gray-200 focus:border-red-400'
+                          }`}
                         />
-                      </label>
-                      <label className="flex flex-col gap-2">
-                        <span className="text-sm font-medium text-gray-700">Business category</span>
-                        <select className="rounded-xl border border-gray-200 px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-red-400 focus:outline-none focus:ring-2 focus:ring-red-200">
+                        {errors.storeName && <p className="text-red-500 text-xs mt-1">{errors.storeName}</p>}
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        <label className="text-sm font-medium text-gray-700">Business category</label>
+                        <select
+                          name="businessCategory"
+                          value={formData.businessCategory}
+                          onChange={handleChange}
+                          className={`rounded-xl border px-3 py-2 text-sm text-gray-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-red-200 ${
+                            errors.businessCategory ? 'border-red-500' : 'border-gray-200 focus:border-red-400'
+                          }`}
+                        >
                           <option>Handmade & Crafts</option>
                           <option>Fashion & Apparel</option>
                           <option>Gourmet & Organic</option>
                           <option>Home & Living</option>
                           <option>Other</option>
                         </select>
-                      </label>
-                      <label className="flex flex-col gap-2 sm:col-span-2">
-                        <span className="text-sm font-medium text-gray-700">Store description</span>
+                        {errors.businessCategory && <p className="text-red-500 text-xs mt-1">{errors.businessCategory}</p>}
+                      </div>
+                      <div className="flex flex-col gap-2 sm:col-span-2">
+                        <label className="text-sm font-medium text-gray-700">Store description</label>
                         <textarea
+                          name="storeDescription"
+                          value={formData.storeDescription}
+                          onChange={handleChange}
                           rows={3}
-                          defaultValue="Authentic Nepali handicrafts and handmade products, sourced directly from local artisans."
-                          className="rounded-xl border border-gray-200 px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-red-400 focus:outline-none focus:ring-2 focus:ring-red-200"
+                          className={`rounded-xl border px-3 py-2 text-sm text-gray-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-red-200 ${
+                            errors.storeDescription ? 'border-red-500' : 'border-gray-200 focus:border-red-400'
+                          }`}
                         />
-                      </label>
-                      <label className="flex flex-col gap-2">
-                        <span className="text-sm font-medium text-gray-700">Store location</span>
+                        {errors.storeDescription && <p className="text-red-500 text-xs mt-1">{errors.storeDescription}</p>}
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        <label className="text-sm font-medium text-gray-700">Store location</label>
                         <input
                           type="text"
-                          defaultValue="Kathmandu, Nepal"
-                          className="rounded-xl border border-gray-200 px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-red-400 focus:outline-none focus:ring-2 focus:ring-red-200"
+                          name="storeLocation"
+                          value={formData.storeLocation}
+                          onChange={handleChange}
+                          className={`rounded-xl border px-3 py-2 text-sm text-gray-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-red-200 ${
+                            errors.storeLocation ? 'border-red-500' : 'border-gray-200 focus:border-red-400'
+                          }`}
                         />
-                      </label>
-                      <label className="flex flex-col gap-2">
-                        <span className="text-sm font-medium text-gray-700">Business PAN / VAT ID</span>
+                        {errors.storeLocation && <p className="text-red-500 text-xs mt-1">{errors.storeLocation}</p>}
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        <label className="text-sm font-medium text-gray-700">Business PAN / VAT ID</label>
                         <input
                           type="text"
-                          defaultValue="123456789"
-                          className="rounded-xl border border-gray-200 px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-red-400 focus:outline-none focus:ring-2 focus:ring-red-200"
+                          name="businessPanVat"
+                          value={formData.businessPanVat}
+                          onChange={handleChange}
+                          className={`rounded-xl border px-3 py-2 text-sm text-gray-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-red-200 ${
+                            errors.businessPanVat ? 'border-red-500' : 'border-gray-200 focus:border-red-400'
+                          }`}
                         />
-                      </label>
+                        {errors.businessPanVat && <p className="text-red-500 text-xs mt-1">{errors.businessPanVat}</p>}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -137,30 +246,45 @@ const SellerSetting = () => {
                     </p>
 
                     <div className="mt-6 grid gap-5 sm:grid-cols-2">
-                      <label className="flex flex-col gap-2">
-                        <span className="text-sm font-medium text-gray-700">Full name</span>
+                      <div className="flex flex-col gap-2">
+                        <label className="text-sm font-medium text-gray-700">Full name</label>
                         <input
                           type="text"
-                          defaultValue="Mr. Nivesh Shrestha"
-                          className="rounded-xl border border-gray-200 px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-red-400 focus:outline-none focus:ring-2 focus:ring-red-200"
+                          name="fullName"
+                          value={formData.fullName}
+                          onChange={handleChange}
+                          className={`rounded-xl border px-3 py-2 text-sm text-gray-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-red-200 ${
+                            errors.fullName ? 'border-red-500' : 'border-gray-200 focus:border-red-400'
+                          }`}
                         />
-                      </label>
-                      <label className="flex flex-col gap-2">
-                        <span className="text-sm font-medium text-gray-700">Phone number</span>
+                        {errors.fullName && <p className="text-red-500 text-xs mt-1">{errors.fullName}</p>}
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        <label className="text-sm font-medium text-gray-700">Phone number</label>
                         <input
                           type="tel"
-                          defaultValue="+977 9841234567"
-                          className="rounded-xl border border-gray-200 px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-red-400 focus:outline-none focus:ring-2 focus:ring-red-200"
+                          name="phoneNumber"
+                          value={formData.phoneNumber}
+                          onChange={handleChange}
+                          className={`rounded-xl border px-3 py-2 text-sm text-gray-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-red-200 ${
+                            errors.phoneNumber ? 'border-red-500' : 'border-gray-200 focus:border-red-400'
+                          }`}
                         />
-                      </label>
-                      <label className="flex flex-col gap-2 sm:col-span-2">
-                        <span className="text-sm font-medium text-gray-700">Email address</span>
+                        {errors.phoneNumber && <p className="text-red-500 text-xs mt-1">{errors.phoneNumber}</p>}
+                      </div>
+                      <div className="flex flex-col gap-2 sm:col-span-2">
+                        <label className="text-sm font-medium text-gray-700">Email address</label>
                         <input
                           type="email"
-                          defaultValue="nivesh@nepalhandicrafts.com"
-                          className="rounded-xl border border-gray-200 px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-red-400 focus:outline-none focus:ring-2 focus:ring-red-200"
+                          name="emailAddress"
+                          value={formData.emailAddress}
+                          onChange={handleChange}
+                          className={`rounded-xl border px-3 py-2 text-sm text-gray-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-red-200 ${
+                            errors.emailAddress ? 'border-red-500' : 'border-gray-200 focus:border-red-400'
+                          }`}
                         />
-                      </label>
+                        {errors.emailAddress && <p className="text-red-500 text-xs mt-1">{errors.emailAddress}</p>}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -179,23 +303,33 @@ const SellerSetting = () => {
                     </p>
 
                     <div className="mt-6 space-y-5">
-                      <label className="flex flex-col gap-2">
-                        <span className="text-sm font-medium text-gray-700">Processing time</span>
-                        <select className="rounded-xl border border-gray-200 px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-red-400 focus:outline-none focus:ring-2 focus:ring-red-200">
+                      <div className="flex flex-col gap-2">
+                        <label className="text-sm font-medium text-gray-700">Processing time</label>
+                        <select
+                          name="processingTime"
+                          value={formData.processingTime}
+                          onChange={handleChange}
+                          className="rounded-xl border border-gray-200 px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-red-400 focus:outline-none focus:ring-2 focus:ring-red-200"
+                        >
                           <option>1-2 business days</option>
                           <option>2-3 business days</option>
                           <option>3-5 business days</option>
                           <option>5-7 business days</option>
                         </select>
-                      </label>
-                      <label className="flex flex-col gap-2">
-                        <span className="text-sm font-medium text-gray-700">Return policy</span>
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        <label className="text-sm font-medium text-gray-700">Return policy</label>
                         <textarea
+                          name="returnPolicy"
+                          value={formData.returnPolicy}
+                          onChange={handleChange}
                           rows={3}
-                          defaultValue="We accept returns within 7 days of delivery. Items must be unused and in original packaging."
-                          className="rounded-xl border border-gray-200 px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-red-400 focus:outline-none focus:ring-2 focus:ring-red-200"
+                          className={`rounded-xl border px-3 py-2 text-sm text-gray-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-red-200 ${
+                            errors.returnPolicy ? 'border-red-500' : 'border-gray-200 focus:border-red-400'
+                          }`}
                         />
-                      </label>
+                        {errors.returnPolicy && <p className="text-red-500 text-xs mt-1">{errors.returnPolicy}</p>}
+                      </div>
                     </div>
                   </div>
                 </div>

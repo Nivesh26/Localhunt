@@ -24,9 +24,54 @@ const Profie = () => {
     setIsEditing(true)
   }
 
+  const [errors, setErrors] = useState<{
+    name?: string
+    email?: string
+    phone?: string
+    address?: string
+  }>({})
+
+  const validateEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    return emailRegex.test(email)
+  }
+
+  const validatePhone = (phone: string) => {
+    const phoneRegex = /^[0-9]{10}$/
+    return phoneRegex.test(phone.replace(/\D/g, ''))
+  }
+
   const handleSave = () => {
-    setUserData(editForm)
-    setIsEditing(false)
+    const newErrors: typeof errors = {}
+
+    if (!editForm.name.trim()) {
+      newErrors.name = 'Name is required'
+    } else if (editForm.name.trim().length < 2) {
+      newErrors.name = 'Name must be at least 2 characters'
+    }
+
+    if (!editForm.email.trim()) {
+      newErrors.email = 'Email is required'
+    } else if (!validateEmail(editForm.email)) {
+      newErrors.email = 'Please enter a valid email address'
+    }
+
+    if (!editForm.phone.trim()) {
+      newErrors.phone = 'Phone number is required'
+    } else if (!validatePhone(editForm.phone)) {
+      newErrors.phone = 'Please enter a valid 10-digit phone number'
+    }
+
+    if (!editForm.address.trim()) {
+      newErrors.address = 'Address is required'
+    }
+
+    setErrors(newErrors)
+
+    if (Object.keys(newErrors).length === 0) {
+      setUserData(editForm)
+      setIsEditing(false)
+    }
   }
 
   const handleCancel = () => {
@@ -39,6 +84,10 @@ const Profie = () => {
       ...editForm,
       [e.target.name]: e.target.value
     })
+    // Clear error when user starts typing
+    if (errors[e.target.name as keyof typeof errors]) {
+      setErrors(prev => ({ ...prev, [e.target.name]: undefined }))
+    }
   }
 
   return (
@@ -93,7 +142,7 @@ const Profie = () => {
                     onClick={handleEdit}
                     className="flex items-center gap-2 text-red-600 hover:text-red-700 font-medium transition"
                   >
-                    <PencilIcon className="w-5 h-5" />
+                    <FaEdit className="w-5 h-5" />
                     Edit
                   </button>
                 ) : (
@@ -124,13 +173,18 @@ const Profie = () => {
                     Full Name
                   </label>
                   {isEditing ? (
-                    <input
-                      type="text"
-                      name="name"
-                      value={editForm.name}
-                      onChange={handleChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                    />
+                    <>
+                      <input
+                        type="text"
+                        name="name"
+                        value={editForm.name}
+                        onChange={handleChange}
+                        className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${
+                          errors.name ? 'border-red-500' : 'border-gray-300'
+                        }`}
+                      />
+                      {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
+                    </>
                   ) : (
                     <p className="text-gray-900 text-lg">{userData.name}</p>
                   )}
@@ -143,13 +197,18 @@ const Profie = () => {
                     Email Address
                   </label>
                   {isEditing ? (
-                    <input
-                      type="email"
-                      name="email"
-                      value={editForm.email}
-                      onChange={handleChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                    />
+                    <>
+                      <input
+                        type="email"
+                        name="email"
+                        value={editForm.email}
+                        onChange={handleChange}
+                        className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${
+                          errors.email ? 'border-red-500' : 'border-gray-300'
+                        }`}
+                      />
+                      {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
+                    </>
                   ) : (
                     <p className="text-gray-900 text-lg">{userData.email}</p>
                   )}
@@ -162,13 +221,18 @@ const Profie = () => {
                     Phone Number
                   </label>
                   {isEditing ? (
-                    <input
-                      type="tel"
-                      name="phone"
-                      value={editForm.phone}
-                      onChange={handleChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                    />
+                    <>
+                      <input
+                        type="tel"
+                        name="phone"
+                        value={editForm.phone}
+                        onChange={handleChange}
+                        className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${
+                          errors.phone ? 'border-red-500' : 'border-gray-300'
+                        }`}
+                      />
+                      {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
+                    </>
                   ) : (
                     <p className="text-gray-900 text-lg">{userData.phone}</p>
                   )}
@@ -181,13 +245,18 @@ const Profie = () => {
                     Address
                   </label>
                   {isEditing ? (
-                    <input
-                      type="text"
-                      name="address"
-                      value={editForm.address}
-                      onChange={handleChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                    />
+                    <>
+                      <input
+                        type="text"
+                        name="address"
+                        value={editForm.address}
+                        onChange={handleChange}
+                        className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${
+                          errors.address ? 'border-red-500' : 'border-gray-300'
+                        }`}
+                      />
+                      {errors.address && <p className="text-red-500 text-xs mt-1">{errors.address}</p>}
+                    </>
                   ) : (
                     <p className="text-gray-900 text-lg">{userData.address}</p>
                   )}

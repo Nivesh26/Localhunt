@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import Topbar from '../Components/Topbar'
 import Header from '../Components/Header'
 import Footer from '../Components/Footer'
@@ -5,6 +6,39 @@ import hero from '../assets/Hero.png'
 import { Link } from 'react-router-dom'
 
 const SellerLogin = () => {
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [errors, setErrors] = useState<{ email?: string; password?: string }>({})
+
+  const validateEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    return emailRegex.test(email)
+  }
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    const newErrors: { email?: string; password?: string } = {}
+
+    if (!email.trim()) {
+      newErrors.email = 'Email is required'
+    } else if (!validateEmail(email)) {
+      newErrors.email = 'Please enter a valid email address'
+    }
+
+    if (!password) {
+      newErrors.password = 'Password is required'
+    } else if (password.length < 6) {
+      newErrors.password = 'Password must be at least 6 characters'
+    }
+
+    setErrors(newErrors)
+
+    if (Object.keys(newErrors).length === 0) {
+      // Form is valid, proceed with login
+      console.log('Seller login submitted:', { email, password })
+    }
+  }
+
   return (
     <div>
       <Topbar />
@@ -30,24 +64,44 @@ const SellerLogin = () => {
                   </p>
                 </div>
 
-                <div className="space-y-5">
-                  <label className="text-sm font-medium text-gray-700">
-                    Email
-                    <input
-                      type="email"
-                      placeholder="Email"
-                      className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-200"
-                    />
-                  </label>
+                <form onSubmit={handleSubmit} className="space-y-5">
+                  <div>
+                    <label className="text-sm font-medium text-gray-700">
+                      Email
+                      <input
+                        type="email"
+                        value={email}
+                        onChange={(e) => {
+                          setEmail(e.target.value)
+                          if (errors.email) setErrors({ ...errors, email: undefined })
+                        }}
+                        placeholder="Email"
+                        className={`mt-1 w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-200 ${
+                          errors.email ? 'border-red-500' : 'border-gray-200 focus:border-red-500'
+                        }`}
+                      />
+                    </label>
+                    {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
+                  </div>
 
-                  <label className="text-sm font-medium text-gray-700 mt-1">
-                    Password
-                    <input
-                      type="password"
-                      placeholder="Enter your password"
-                      className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-200"
-                    />
-                  </label>
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 mt-1">
+                      Password
+                      <input
+                        type="password"
+                        value={password}
+                        onChange={(e) => {
+                          setPassword(e.target.value)
+                          if (errors.password) setErrors({ ...errors, password: undefined })
+                        }}
+                        placeholder="Enter your password"
+                        className={`mt-1 w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-200 ${
+                          errors.password ? 'border-red-500' : 'border-gray-200 focus:border-red-500'
+                        }`}
+                      />
+                    </label>
+                    {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
+                  </div>
                   
                   <div className="flex items-center justify-between text-xs text-gray-600 mt-1">
                     <label className="inline-flex items-center gap-2">
@@ -59,10 +113,10 @@ const SellerLogin = () => {
                     </a>
                   </div>
 
-                  <button className="w-full rounded-xl bg-red-600 py-3 text-sm font-semibold text-white transition hover:bg-red-700">
+                  <button type="submit" className="w-full rounded-xl bg-red-600 py-3 text-sm font-semibold text-white transition hover:bg-red-700">
                     Log In
                   </button>
-                </div>
+                </form>
 
                 <div className="text-center text-sm text-gray-600">
                   New to Local Hunt?{' '}

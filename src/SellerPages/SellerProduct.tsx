@@ -92,8 +92,47 @@ const SellerProduct = () => {
   const [sizeEu, setSizeEu] = useState('')
   const [sizeClothing, setSizeClothing] = useState('')
 
+  const [errors, setErrors] = useState<{
+    name?: string
+    sku?: string
+    price?: string
+    stock?: string
+    description?: string
+    image?: string
+  }>({})
+
   const handleAddProduct = () => {
-    if (!name.trim() || !sku.trim() || !price || !stock || !description.trim()) return
+    const newErrors: typeof errors = {}
+
+    if (!name.trim()) {
+      newErrors.name = 'Product name is required'
+    }
+
+    if (!sku.trim()) {
+      newErrors.sku = 'SKU is required'
+    }
+
+    if (!price || Number(price) <= 0) {
+      newErrors.price = 'Price must be greater than 0'
+    }
+
+    if (!stock || Number(stock) < 0) {
+      newErrors.stock = 'Stock must be 0 or greater'
+    }
+
+    if (!description.trim()) {
+      newErrors.description = 'Description is required'
+    } else if (description.trim().length < 10) {
+      newErrors.description = 'Description must be at least 10 characters'
+    }
+
+    if (!imageFilePreview && !imageUrl.trim()) {
+      newErrors.image = 'Product image is required'
+    }
+
+    setErrors(newErrors)
+
+    if (Object.keys(newErrors).length > 0) return
 
     const finalImage = imageFilePreview || (imageUrl.trim() || undefined)
     const specs = specsText
@@ -128,6 +167,7 @@ const SellerProduct = () => {
     setSpecsText('')
     setSizeEu('')
     setSizeClothing('')
+    setErrors({})
   }
 
   const handleDelete = (id: number) => {
@@ -204,32 +244,44 @@ const SellerProduct = () => {
 
               <div className="mt-4 space-y-3 text-sm">
                 <div className="grid gap-3 sm:grid-cols-2">
-                  <label className="flex flex-col gap-1">
-                    <span className="text-xs font-medium text-gray-700">Product name</span>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs font-medium text-gray-700">Product name</label>
                     <input
                       value={name}
-                      onChange={e => setName(e.target.value)}
+                      onChange={e => {
+                        setName(e.target.value)
+                        if (errors.name) setErrors({ ...errors, name: undefined })
+                      }}
                       type="text"
                       placeholder="Product name"
-                      className="rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-200"
+                      className={`rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-red-200 ${
+                        errors.name ? 'border-red-500' : 'border-gray-200 focus:border-red-500'
+                      }`}
                     />
-                  </label>
-                  <label className="flex flex-col gap-1">
-                    <span className="text-xs font-medium text-gray-700">SKU (Stock Keeping Unit)</span>
+                    {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs font-medium text-gray-700">SKU (Stock Keeping Unit)</label>
                     <input
                       value={sku}
-                      onChange={e => setSku(e.target.value)}
+                      onChange={e => {
+                        setSku(e.target.value)
+                        if (errors.sku) setErrors({ ...errors, sku: undefined })
+                      }}
                       type="text"
                       placeholder="DHK-241"
-                      className="rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-200"
+                      className={`rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-red-200 ${
+                        errors.sku ? 'border-red-500' : 'border-gray-200 focus:border-red-500'
+                      }`}
                     />
-                  </label>
+                    {errors.sku && <p className="text-red-500 text-xs mt-1">{errors.sku}</p>}
+                  </div>
                 </div>
                 <div className="space-y-2">
                   <span className="text-xs font-medium text-gray-700">Product image</span>
                   <div className="grid gap-3 sm:grid-cols-2">
-                    <label className="flex flex-col gap-1 text-xs">
-                      <span className="text-gray-600">Upload from computer</span>
+                    <div className="flex flex-col gap-1 text-xs">
+                      <label className="text-gray-600">Upload from computer</label>
                       <input
                         type="file"
                         accept="image/*"
@@ -239,26 +291,36 @@ const SellerProduct = () => {
                           const url = URL.createObjectURL(file)
                           setImageFilePreview(url)
                           setImageUrl('')
+                          if (errors.image) setErrors({ ...errors, image: undefined })
                         }}
-                        className="rounded-lg border border-gray-200 bg-white px-2 py-1 text-xs file:mr-2 file:rounded-md file:border-0 file:bg-red-600 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-white hover:file:bg-red-700"
+                        className={`rounded-lg border bg-white px-2 py-1 text-xs file:mr-2 file:rounded-md file:border-0 file:bg-red-600 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-white hover:file:bg-red-700 ${
+                          errors.image ? 'border-red-500' : 'border-gray-200'
+                        }`}
                       />
-                    </label>
+                      {errors.image && <p className="text-red-500 text-xs mt-1">{errors.image}</p>}
+                    </div>
                   </div>
                 </div>
 
-                <label className="flex flex-col gap-1">
-                  <span className="text-xs font-medium text-gray-700">Short description</span>
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs font-medium text-gray-700">Short description</label>
                   <textarea
                     value={description}
-                    onChange={e => setDescription(e.target.value)}
+                    onChange={e => {
+                      setDescription(e.target.value)
+                      if (errors.description) setErrors({ ...errors, description: undefined })
+                    }}
                     rows={3}
                     placeholder="Describe the product, materials, and what makes it special for customers."
-                    className="rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-200"
+                    className={`rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-red-200 ${
+                      errors.description ? 'border-red-500' : 'border-gray-200 focus:border-red-500'
+                    }`}
                   />
+                  {errors.description && <p className="text-red-500 text-xs mt-1">{errors.description}</p>}
                   <span className="text-[11px] text-gray-400">
                     This appears on the product page, similar to the description buyers see on the storefront.
                   </span>
-                </label>
+                </div>
 
                 <div className="grid gap-3 sm:grid-cols-2">
                   <label className="flex flex-col gap-1">
@@ -298,28 +360,40 @@ const SellerProduct = () => {
                 </label>
 
                 <div className="grid gap-3 sm:grid-cols-2">
-                  <label className="flex flex-col gap-1">
-                    <span className="text-xs font-medium text-gray-700">Price (NRP)</span>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs font-medium text-gray-700">Price (NRP)</label>
                     <input
                       value={price}
-                      onChange={e => setPrice(e.target.value)}
+                      onChange={e => {
+                        setPrice(e.target.value)
+                        if (errors.price) setErrors({ ...errors, price: undefined })
+                      }}
                       type="number"
                       min="0"
                       placeholder="Price in NRP"
-                      className="rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-200"
+                      className={`rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-red-200 ${
+                        errors.price ? 'border-red-500' : 'border-gray-200 focus:border-red-500'
+                      }`}
                     />
-                  </label>
-                  <label className="flex flex-col gap-1">
-                    <span className="text-xs font-medium text-gray-700">Stock</span>
+                    {errors.price && <p className="text-red-500 text-xs mt-1">{errors.price}</p>}
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs font-medium text-gray-700">Stock</label>
                     <input
                       value={stock}
-                      onChange={e => setStock(e.target.value)}
+                      onChange={e => {
+                        setStock(e.target.value)
+                        if (errors.stock) setErrors({ ...errors, stock: undefined })
+                      }}
                       type="number"
                       min="0"
                       placeholder="Stock quantity"
-                      className="rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-200"
+                      className={`rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-red-200 ${
+                        errors.stock ? 'border-red-500' : 'border-gray-200 focus:border-red-500'
+                      }`}
                     />
-                  </label>
+                    {errors.stock && <p className="text-red-500 text-xs mt-1">{errors.stock}</p>}
+                  </div>
                 </div>
 
                 <button

@@ -1,8 +1,83 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import google from "../assets/google.svg";
 
 const Signup_form = () => {
+  const [formData, setFormData] = useState({
+    fullName: '',
+    email: '',
+    phone: '',
+    password: '',
+    confirmPassword: ''
+  });
+  const [errors, setErrors] = useState<{
+    fullName?: string;
+    email?: string;
+    phone?: string;
+    password?: string;
+    confirmPassword?: string;
+  }>({});
+
+  const validateEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const validatePhone = (phone: string) => {
+    const phoneRegex = /^[0-9]{10}$/;
+    return phoneRegex.test(phone);
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+    // Clear error when user starts typing
+    if (errors[name as keyof typeof errors]) {
+      setErrors(prev => ({ ...prev, [name]: undefined }));
+    }
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const newErrors: typeof errors = {};
+
+    if (!formData.fullName.trim()) {
+      newErrors.fullName = 'Full name is required';
+    } else if (formData.fullName.trim().length < 2) {
+      newErrors.fullName = 'Full name must be at least 2 characters';
+    }
+
+    if (!formData.email.trim()) {
+      newErrors.email = 'Email is required';
+    } else if (!validateEmail(formData.email)) {
+      newErrors.email = 'Please enter a valid email address';
+    }
+
+    if (!formData.phone.trim()) {
+      newErrors.phone = 'Phone number is required';
+    } else if (!validatePhone(formData.phone)) {
+      newErrors.phone = 'Please enter a valid 10-digit phone number';
+    }
+
+    if (!formData.password) {
+      newErrors.password = 'Password is required';
+    } else if (formData.password.length < 6) {
+      newErrors.password = 'Password must be at least 6 characters';
+    }
+
+    if (!formData.confirmPassword) {
+      newErrors.confirmPassword = 'Please confirm your password';
+    } else if (formData.password !== formData.confirmPassword) {
+      newErrors.confirmPassword = 'Passwords do not match';
+    }
+
+    setErrors(newErrors);
+
+    if (Object.keys(newErrors).length === 0) {
+      // Form is valid, proceed with registration
+      console.log('Registration submitted:', formData);
+    }
+  };
+
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100">
       <div className="bg-white shadow-lg rounded-xl px-8 py-10 w-full max-w-sm">
@@ -17,49 +92,89 @@ const Signup_form = () => {
           </Link>
         </p>
 
-        {/* Full Name */}
-        <input
-          type="text"
-          placeholder="Full Name"
-          className="w-full border-b border-gray-300 py-2 mb-6 focus:outline-none focus:border-gray-500"
-        />
+        <form onSubmit={handleSubmit}>
+          {/* Full Name */}
+          <div className="mb-6">
+            <input
+              type="text"
+              name="fullName"
+              value={formData.fullName}
+              onChange={handleChange}
+              placeholder="Full Name"
+              className={`w-full border-b py-2 focus:outline-none ${
+                errors.fullName ? 'border-red-500' : 'border-gray-300 focus:border-gray-500'
+              }`}
+            />
+            {errors.fullName && <p className="text-red-500 text-xs mt-1">{errors.fullName}</p>}
+          </div>
 
-        {/* Email */}
-        <input
-          type="email"
-          placeholder="Email"
-          className="w-full border-b border-gray-300 py-2 mb-6 focus:outline-none focus:border-gray-500"
-        />
+          {/* Email */}
+          <div className="mb-6">
+            <input
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              placeholder="Email"
+              className={`w-full border-b py-2 focus:outline-none ${
+                errors.email ? 'border-red-500' : 'border-gray-300 focus:border-gray-500'
+              }`}
+            />
+            {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
+          </div>
 
-        {/* Phone Number */}
-        <input
-          type="tel"
-          name="phone"
-          placeholder="Phone Number"
-          required
-          maxLength={10}
-          inputMode="numeric"
-          className="w-full border-b border-gray-300 py-2 mb-6 focus:outline-none focus:border-gray-500"
-        />
+          {/* Phone Number */}
+          <div className="mb-6">
+            <input
+              type="tel"
+              name="phone"
+              value={formData.phone}
+              onChange={handleChange}
+              placeholder="Phone Number"
+              maxLength={10}
+              inputMode="numeric"
+              className={`w-full border-b py-2 focus:outline-none ${
+                errors.phone ? 'border-red-500' : 'border-gray-300 focus:border-gray-500'
+              }`}
+            />
+            {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
+          </div>
 
-        {/* Password */}
-        <input
-          type="password"
-          placeholder="Password"
-          className="w-full border-b border-gray-300 py-2 mb-6 focus:outline-none focus:border-gray-500"
-        />
+          {/* Password */}
+          <div className="mb-6">
+            <input
+              type="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              placeholder="Password"
+              className={`w-full border-b py-2 focus:outline-none ${
+                errors.password ? 'border-red-500' : 'border-gray-300 focus:border-gray-500'
+              }`}
+            />
+            {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
+          </div>
 
-        {/* Confirm Password */}
-        <input
-          type="password"
-          placeholder="Confirm Password"
-          className="w-full border-b border-gray-300 py-2 mb-6 focus:outline-none focus:border-gray-500"
-        />
+          {/* Confirm Password */}
+          <div className="mb-6">
+            <input
+              type="password"
+              name="confirmPassword"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              placeholder="Confirm Password"
+              className={`w-full border-b py-2 focus:outline-none ${
+                errors.confirmPassword ? 'border-red-500' : 'border-gray-300 focus:border-gray-500'
+              }`}
+            />
+            {errors.confirmPassword && <p className="text-red-500 text-xs mt-1">{errors.confirmPassword}</p>}
+          </div>
 
-        {/* Register Button */}
-        <button className="w-full bg-red-500 text-white py-2 rounded-full font-semibold hover:bg-red-600 transition">
-          Register
-        </button>
+          {/* Register Button */}
+          <button type="submit" className="w-full bg-red-500 text-white py-2 rounded-full font-semibold hover:bg-red-600 transition">
+            Register
+          </button>
+        </form>
 
         {/* Divider
         <div className="flex items-center my-6">
