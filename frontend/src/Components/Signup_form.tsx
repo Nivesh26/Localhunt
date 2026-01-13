@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 
 const Signup_form = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -16,6 +18,7 @@ const Signup_form = () => {
     password?: string;
     confirmPassword?: string;
   }>({});
+  const [loading, setLoading] = useState(false);
 
   const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -74,7 +77,51 @@ const Signup_form = () => {
 
     if (Object.keys(newErrors).length === 0) {
       // Form is valid, proceed with registration
-      console.log('Registration submitted:', formData);
+      handleSignup();
+    }
+  };
+
+  const handleSignup = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch('http://localhost:8080/api/auth/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          fullName: formData.fullName,
+          email: formData.email,
+          phone: formData.phone,
+          password: formData.password,
+          confirmPassword: formData.confirmPassword
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        toast.success(data.message || 'Registration successful!');
+        // Clear form
+        setFormData({
+          fullName: '',
+          email: '',
+          phone: '',
+          password: '',
+          confirmPassword: ''
+        });
+        // Redirect to login after a short delay
+        setTimeout(() => {
+          navigate('/login');
+        }, 1500);
+      } else {
+        toast.error(data.message || 'Registration failed');
+      }
+    } catch (error) {
+      console.error('Signup error:', error);
+      toast.error('An error occurred. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -171,8 +218,12 @@ const Signup_form = () => {
           </div>
 
           {/* Register Button */}
-          <button type="submit" className="w-full bg-red-500 text-white py-2 rounded-full font-semibold hover:bg-red-600 transition">
-            Register
+          <button 
+            type="submit" 
+            disabled={loading}
+            className="w-full bg-red-500 text-white py-2 rounded-full font-semibold hover:bg-red-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {loading ? 'Registering...' : 'Register'}
           </button>
         </form>
 

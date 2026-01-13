@@ -1,0 +1,11 @@
+/Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/LocalhuntBackendApplication.java
+/Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/config/SecurityConfig.java
+/Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/controller/AuthController.java
+/Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/dto/AuthResponse.java
+/Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/dto/LoginRequest.java
+/Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/dto/SignupRequest.java
+/Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/dto/UserProfileResponse.java
+/Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/model/Role.java
+/Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/model/User.java
+/Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/repository/UserRepository.java
+/Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/service/UserService.java

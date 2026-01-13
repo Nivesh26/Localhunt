@@ -1,9 +1,32 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import profile from "../assets/Local Hunt Logo NoBG.png";
-import { FaSearch, FaShoppingCart } from "react-icons/fa";
+import { FaSearch, FaShoppingCart, FaUserCircle } from "react-icons/fa";
 import { Link } from "react-router-dom";
 
 const Header = () => {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    // Check if user is logged in
+    const checkLoginStatus = () => {
+      const user = localStorage.getItem('user');
+      setIsLoggedIn(!!user);
+    };
+
+    checkLoginStatus();
+
+    // Listen for storage changes (when user logs in/out in another tab)
+    window.addEventListener('storage', checkLoginStatus);
+
+    // Listen for custom login event (when user logs in/out in same tab)
+    window.addEventListener('userLoginStatusChange', checkLoginStatus);
+
+    return () => {
+      window.removeEventListener('storage', checkLoginStatus);
+      window.removeEventListener('userLoginStatusChange', checkLoginStatus);
+    };
+  }, []);
+
   return (
     <div className="flex items-center justify-between px-[80px] py-4 shadow-sm bg-white">
       {/* Logo */}
@@ -46,10 +69,17 @@ const Header = () => {
         <Link to="/cart">
         <FaShoppingCart className="w-6 h-6 text-gray-700 hover:text-red-600 cursor-pointer" />
         </Link>
-        {/* Login Link */}
-        <Link to="/login" className="text-gray-700 hover:text-red-600 font-medium">
-          Login
-        </Link>
+        
+        {/* Profile Icon or Login Link */}
+        {isLoggedIn ? (
+          <Link to="/profile">
+            <FaUserCircle className="w-6 h-6 text-gray-700 hover:text-red-600 cursor-pointer" />
+          </Link>
+        ) : (
+          <Link to="/login" className="text-gray-700 hover:text-red-600 font-medium">
+            Login
+          </Link>
+        )}
       </div>
     </div>
   );

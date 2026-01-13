@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 
 const Login_form = () => {
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
+  const [loading, setLoading] = useState(false);
 
   const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -31,7 +34,49 @@ const Login_form = () => {
 
     if (Object.keys(newErrors).length === 0) {
       // Form is valid, proceed with login
-      console.log('Login submitted:', { email, password });
+      handleLogin();
+    }
+  };
+
+  const handleLogin = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch('http://localhost:8080/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          password
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        toast.success(data.message || 'Login successful!');
+        // Store user data in localStorage
+        localStorage.setItem('user', JSON.stringify({
+          userId: data.userId,
+          email: data.email,
+          fullName: data.fullName,
+          role: data.role
+        }));
+        // Dispatch event to update header
+        window.dispatchEvent(new Event('userLoginStatusChange'));
+        // Redirect based on role or to home page
+        setTimeout(() => {
+          navigate('/');
+        }, 1000);
+      } else {
+        toast.error(data.message || 'Login failed');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      toast.error('An error occurred. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -92,8 +137,12 @@ const Login_form = () => {
           </div>
 
           {/* Login Button */}
-          <button type="submit" className="w-full bg-red-500 text-white py-2 rounded-full font-semibold hover:bg-red-600 transition">
-            Login
+          <button 
+            type="submit" 
+            disabled={loading}
+            className="w-full bg-red-500 text-white py-2 rounded-full font-semibold hover:bg-red-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {loading ? 'Logging in...' : 'Login'}
           </button>
         </form>
 

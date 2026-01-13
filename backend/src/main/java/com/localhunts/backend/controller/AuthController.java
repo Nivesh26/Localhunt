@@ -1,0 +1,53 @@
+package com.localhunts.backend.controller;
+
+import com.localhunts.backend.dto.AuthResponse;
+import com.localhunts.backend.dto.LoginRequest;
+import com.localhunts.backend.dto.SignupRequest;
+import com.localhunts.backend.dto.UserProfileResponse;
+import com.localhunts.backend.service.UserService;
+import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/api/auth")
+public class AuthController {
+
+    @Autowired
+    private UserService userService;
+
+    @PostMapping("/signup")
+    public ResponseEntity<AuthResponse> signup(@Valid @RequestBody SignupRequest signupRequest) {
+        AuthResponse response = userService.signup(signupRequest);
+        
+        if (response.isSuccess()) {
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        } else {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest loginRequest) {
+        AuthResponse response = userService.login(loginRequest);
+        
+        if (response.isSuccess()) {
+            return ResponseEntity.ok(response);
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+        }
+    }
+
+    @GetMapping("/profile/{userId}")
+    public ResponseEntity<UserProfileResponse> getUserProfile(@PathVariable Long userId) {
+        UserProfileResponse profile = userService.getUserProfile(userId);
+        
+        if (profile == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+        
+        return ResponseEntity.ok(profile);
+    }
+}

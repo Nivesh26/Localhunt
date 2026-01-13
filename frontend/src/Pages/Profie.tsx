@@ -1,23 +1,77 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { toast } from 'react-toastify'
 import Topbar from '../Components/Topbar'
 import Header from '../Components/Header'
 import Footer from '../Components/Footer'
-import { FaEdit, FaCheck, FaTimes, FaUser, FaEnvelope, FaPhone, FaMapMarkerAlt, FaCreditCard, FaLock } from 'react-icons/fa'
+import { FaEdit, FaCheck, FaTimes, FaUser, FaEnvelope, FaPhone, FaLock } from 'react-icons/fa'
 import profileImage from '../assets/Nivesh.png'
 
-// Sample user data - in a real app, this would come from context or API
-const initialUserData = {
-  name: 'Nivesh Shrestha',
-  email: 'niveshshrestha@gmail.com',
-  phone: '9876543210',
-  address: 'Pulchowk, Lalitpur',
-  avatar: profileImage
+interface UserData {
+  name: string
+  email: string
+  phone: string
+  avatar?: string
 }
 
 const Profie = () => {
-  const [userData, setUserData] = useState(initialUserData)
+  const navigate = useNavigate()
+  const [userData, setUserData] = useState<UserData>({
+    name: '',
+    email: '',
+    phone: '',
+    avatar: profileImage
+  })
   const [isEditing, setIsEditing] = useState(false)
-  const [editForm, setEditForm] = useState(initialUserData)
+  const [editForm, setEditForm] = useState<UserData>({
+    name: '',
+    email: '',
+    phone: '',
+    avatar: profileImage
+  })
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetchUserProfile()
+  }, [])
+
+  const fetchUserProfile = async () => {
+    try {
+      const userStr = localStorage.getItem('user')
+      if (!userStr) {
+        toast.error('Please login to view your profile')
+        navigate('/login')
+        return
+      }
+
+      const user = JSON.parse(userStr)
+      const userId = user.userId
+
+      const response = await fetch(`http://localhost:8080/api/auth/profile/${userId}`)
+      if (response.ok) {
+        const data = await response.json()
+        setUserData({
+          name: data.fullName || '',
+          email: data.email || '',
+          phone: data.phone || '',
+          avatar: profileImage
+        })
+        setEditForm({
+          name: data.fullName || '',
+          email: data.email || '',
+          phone: data.phone || '',
+          avatar: profileImage
+        })
+      } else {
+        toast.error('Failed to fetch profile data')
+      }
+    } catch (error) {
+      console.error('Error fetching profile:', error)
+      toast.error('An error occurred while fetching your profile')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const handleEdit = () => {
     setEditForm(userData)
@@ -28,7 +82,6 @@ const Profie = () => {
     name?: string
     email?: string
     phone?: string
-    address?: string
   }>({})
 
   const validateEmail = (email: string) => {
@@ -62,10 +115,6 @@ const Profie = () => {
       newErrors.phone = 'Please enter a valid 10-digit phone number'
     }
 
-    if (!editForm.address.trim()) {
-      newErrors.address = 'Address is required'
-    }
-
     setErrors(newErrors)
 
     if (Object.keys(newErrors).length === 0) {
@@ -88,6 +137,26 @@ const Profie = () => {
     if (errors[e.target.name as keyof typeof errors]) {
       setErrors(prev => ({ ...prev, [e.target.name]: undefined }))
     }
+  }
+
+  const handleLogout = () => {
+    localStorage.removeItem('user')
+    window.dispatchEvent(new Event('userLoginStatusChange'))
+    toast.success('Logged out successfully')
+    navigate('/')
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Topbar/>
+        <Header/>
+        <div className="flex justify-center items-center min-h-[60vh]">
+          <p className="text-gray-600">Loading profile...</p>
+        </div>
+        <Footer/>
+      </div>
+    )
   }
 
   return (
@@ -238,29 +307,6 @@ const Profie = () => {
                   )}
                 </div>
 
-                {/* Address */}
-                <div>
-                  <label className="flex items-center gap-2 text-gray-700 font-medium mb-2">
-                    <FaMapMarkerAlt className="w-5 h-5 text-red-600" />
-                    Address
-                  </label>
-                  {isEditing ? (
-                    <>
-                      <input
-                        type="text"
-                        name="address"
-                        value={editForm.address}
-                        onChange={handleChange}
-                        className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${
-                          errors.address ? 'border-red-500' : 'border-gray-300'
-                        }`}
-                      />
-                      {errors.address && <p className="text-red-500 text-xs mt-1">{errors.address}</p>}
-                    </>
-                  ) : (
-                    <p className="text-gray-900 text-lg">{userData.address}</p>
-                  )}
-                </div>
               </div>
             </div>
 
@@ -277,16 +323,18 @@ const Profie = () => {
                   <span className="text-gray-400">→</span>
                 </button>
 
-                <button className="w-full flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition">
-                  <div className="flex items-center gap-3">
-                    <FaCreditCard className="w-5 h-5 text-red-600" />
-                    <span className="font-medium text-gray-900">Purchase History</span>
-                  </div>
-                  <span className="text-gray-400">→</span>
-                </button>
+      
 
                 <button className="w-full flex items-center justify-between p-4 border border-red-200 rounded-lg hover:bg-red-50 transition text-red-600">
                   <span className="font-medium">Delete Account</span>
+                  <span>→</span>
+                </button>
+
+                <button 
+                  onClick={handleLogout}
+                  className="w-full flex items-center justify-between p-4 border border-red-200 rounded-lg hover:bg-red-50 transition text-red-600"
+                >
+                  <span className="font-medium">Logout</span>
                   <span>→</span>
                 </button>
               </div>

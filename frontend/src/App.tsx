@@ -1,5 +1,6 @@
-
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import { ToastContainer } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
 import Home from './Pages/home'
 import New from './Pages/newproduct'
 import Login from './Logins/login'
@@ -64,6 +65,7 @@ const App = () => {
         <Route path="/adminsettings" element={<AdminSetting/>}/>  
         
    </Routes> 
+   <ToastContainer position="top-right" autoClose={3000} />
    </BrowserRouter>
 
   )
