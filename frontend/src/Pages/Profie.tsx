@@ -334,7 +334,7 @@ const Profie = () => {
                   onClick={handleLogout}
                   className="w-full flex items-center justify-between p-4 border border-red-200 rounded-lg hover:bg-red-50 transition text-red-600"
                 >
-                  <span className="font-medium">Logout</span> //logoutsession
+                  <span className="font-medium">Logout</span> 
                   <span>→</span>
                 </button>
               </div>
