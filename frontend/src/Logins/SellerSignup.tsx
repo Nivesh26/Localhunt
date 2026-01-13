@@ -3,7 +3,7 @@ import Topbar from '../Components/Topbar'
 import Header from '../Components/Header'
 import Footer from '../Components/Footer'
 import hero from '../assets/Hero.png'
-import { FaShieldAlt } from 'react-icons/fa'
+import { FaShieldAlt, FaEye, FaEyeSlash } from 'react-icons/fa'
 import { Link } from 'react-router-dom'
 
 const documentFields = [
@@ -27,6 +27,8 @@ const Sellerlogin = () => {
   })
   const [documents, setDocuments] = useState<{ [key: string]: File | null }>({})
   const [errors, setErrors] = useState<{ [key: string]: string | undefined }>({})
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
   const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -349,32 +351,50 @@ const Sellerlogin = () => {
                       <div>
                         <label className="text-sm font-medium text-gray-700">
                           Password
-                          <input
-                            type="password"
-                            name="password"
-                            value={formData.password}
-                            onChange={handleChange}
-                            placeholder="Create a password"
-                            className={`mt-1 w-full border-b py-2 text-sm focus:outline-none ${
-                              errors.password ? 'border-red-500' : 'border-gray-300 focus:border-red-500'
-                            }`}
-                          />
+                          <div className="relative">
+                            <input
+                              type={showPassword ? "text" : "password"}
+                              name="password"
+                              value={formData.password}
+                              onChange={handleChange}
+                              placeholder="Create a password"
+                              className={`mt-1 w-full border-b py-2 pr-10 text-sm focus:outline-none ${
+                                errors.password ? 'border-red-500' : 'border-gray-300 focus:border-red-500'
+                              }`}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setShowPassword(!showPassword)}
+                              className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
+                            >
+                              {showPassword ? <FaEyeSlash className="w-5 h-5" /> : <FaEye className="w-5 h-5" />}
+                            </button>
+                          </div>
                         </label>
                         {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
                       </div>
                       <div>
                         <label className="text-sm font-medium text-gray-700">
                           Confirm Password
-                          <input
-                            type="password"
-                            name="confirmPassword"
-                            value={formData.confirmPassword}
-                            onChange={handleChange}
-                            placeholder="Repeat password"
-                            className={`mt-1 w-full border-b py-2 text-sm focus:outline-none ${
-                              errors.confirmPassword ? 'border-red-500' : 'border-gray-300 focus:border-red-500'
-                            }`}
-                          />
+                          <div className="relative">
+                            <input
+                              type={showConfirmPassword ? "text" : "password"}
+                              name="confirmPassword"
+                              value={formData.confirmPassword}
+                              onChange={handleChange}
+                              placeholder="Repeat password"
+                              className={`mt-1 w-full border-b py-2 pr-10 text-sm focus:outline-none ${
+                                errors.confirmPassword ? 'border-red-500' : 'border-gray-300 focus:border-red-500'
+                              }`}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                              className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
+                            >
+                              {showConfirmPassword ? <FaEyeSlash className="w-5 h-5" /> : <FaEye className="w-5 h-5" />}
+                            </button>
+                          </div>
                         </label>
                         {errors.confirmPassword && <p className="text-red-500 text-xs mt-1">{errors.confirmPassword}</p>}
                       </div>

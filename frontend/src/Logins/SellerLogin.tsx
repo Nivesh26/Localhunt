@@ -4,10 +4,12 @@ import Header from '../Components/Header'
 import Footer from '../Components/Footer'
 import hero from '../assets/Hero.png'
 import { Link } from 'react-router-dom'
+import { FaEye, FaEyeSlash } from 'react-icons/fa'
 
 const SellerLogin = () => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({})
 
   const validateEmail = (email: string) => {
@@ -87,18 +89,27 @@ const SellerLogin = () => {
                   <div>
                     <label className="text-sm font-medium text-gray-700 mt-1">
                       Password
-                      <input
-                        type="password"
-                        value={password}
-                        onChange={(e) => {
-                          setPassword(e.target.value)
-                          if (errors.password) setErrors({ ...errors, password: undefined })
-                        }}
-                        placeholder="Enter your password"
-                        className={`mt-1 w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-200 ${
-                          errors.password ? 'border-red-500' : 'border-gray-200 focus:border-red-500'
-                        }`}
-                      />
+                      <div className="relative">
+                        <input
+                          type={showPassword ? "text" : "password"}
+                          value={password}
+                          onChange={(e) => {
+                            setPassword(e.target.value)
+                            if (errors.password) setErrors({ ...errors, password: undefined })
+                          }}
+                          placeholder="Enter your password"
+                          className={`mt-1 w-full rounded-lg border px-3 py-2 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-red-200 ${
+                            errors.password ? 'border-red-500' : 'border-gray-200 focus:border-red-500'
+                          }`}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
+                        >
+                          {showPassword ? <FaEyeSlash className="w-5 h-5" /> : <FaEye className="w-5 h-5" />}
+                        </button>
+                      </div>
                     </label>
                     {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
                   </div>
