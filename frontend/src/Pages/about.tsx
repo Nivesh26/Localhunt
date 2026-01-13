@@ -49,7 +49,7 @@ const about = () => {
         <div className="max-w-6xl mx-auto">
           <h2 className="text-3xl font-bold text-gray-900 mb-12 text-center">Our Core Values</h2>
           <div className="grid md:grid-cols-3 gap-8">
-            <div className="bg-blue-50 rounded-xl p-8 text-center hover:shadow-lg transition-shadow">
+            <div className="bg-red-50 rounded-xl p-8 text-center hover:shadow-lg transition-shadow">
               <div className="text-4xl mb-4">🌱</div>
               <h3 className="text-xl font-semibold text-gray-900 mb-3">Sustainability</h3>
               <p className="text-gray-700">
@@ -141,7 +141,7 @@ const about = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 px-4 md:px-10 bg-gradient-to-r from-blue-600 to-indigo-600">
+      <section className="py-16 px-4 md:px-10 bg-gradient-to-r from-red-600 to-red-700">
         <div className="max-w-4xl mx-auto text-center text-white">
           <h2 className="text-3xl font-bold mb-4">Join the Local Movement</h2>
           <p className="text-xl mb-8 opacity-90">
@@ -150,13 +150,13 @@ const about = () => {
           <div className="flex flex-wrap justify-center gap-4">
             <a 
               href="/shop" 
-              className="bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors"
+              className="bg-white text-red-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors"
             >
               Shop Now
             </a>
             <a 
               href="/contact" 
-              className="bg-transparent border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-blue-600 transition-colors"
+              className="bg-transparent border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-red-600 transition-colors"
             >
               Contact Us
             </a>

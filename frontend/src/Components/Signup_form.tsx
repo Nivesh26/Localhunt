@@ -137,7 +137,7 @@ const Signup_form = () => {
         {/* Signup Link */}
         <p className="text-center text-sm mb-6">
           Already have an account?{" "}
-          <Link to="/login" className="text-blue-600 hover:underline">
+          <Link to="/login" className="text-red-600 hover:underline">
             Login
           </Link>
         </p>
@@ -242,7 +242,7 @@ const Signup_form = () => {
           <button 
             type="submit" 
             disabled={loading}
-            className="w-full bg-red-500 text-white py-2 rounded-full font-semibold hover:bg-red-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-red-400 text-white py-2 rounded-full font-semibold hover:bg-red-500 transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? 'Registering...' : 'Register'}
           </button>
@@ -268,11 +268,11 @@ const Signup_form = () => {
         {/* Terms */}
         <p className="text-xs text-center text-gray-500 mt-6">
           By joining, you agree to the{" "}
-          <a href="#" className="text-blue-600 hover:underline">
+          <a href="#" className="text-red-600 hover:underline">
             Terms
           </a>{" "}
           and{" "}
-          <a href="#" className="text-blue-600 hover:underline">
+          <a href="#" className="text-red-600 hover:underline">
             Privacy Policy
           </a>.
         </p>

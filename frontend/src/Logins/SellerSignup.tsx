@@ -437,7 +437,7 @@ const Sellerlogin = () => {
 
           
 
-                  <button type="submit" className="w-full rounded-xl bg-red-600 py-3 text-sm font-semibold text-white transition hover:bg-red-700">
+                  <button type="submit" className="w-full rounded-xl bg-red-400 py-3 text-sm font-semibold text-white transition hover:bg-red-500">
                     Submit Application
                   </button>
                 </form>

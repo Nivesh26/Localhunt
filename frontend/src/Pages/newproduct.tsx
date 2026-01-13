@@ -78,7 +78,7 @@ const newproduct = () => {
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value)}
-              className="w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-red-500"
             >
               <option value="All">All</option>
               <option value="Food">Food</option>
@@ -111,7 +111,7 @@ const newproduct = () => {
             <select
               value={sortOption}
               onChange={(e) => setSortOption(e.target.value)}
-              className="w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-red-500"
             >
               <option value="featured">Featured</option>
               <option value="priceLowHigh">Price: Low to High</option>
@@ -124,7 +124,7 @@ const newproduct = () => {
           {/* Reset */}
           <button
             onClick={resetFilters}
-            className="w-full rounded-lg border border-blue-100 bg-blue-50 py-2 text-sm font-medium text-blue-700 transition hover:bg-blue-100"
+            className="w-full rounded-lg border border-red-100 bg-red-50 py-2 text-sm font-medium text-red-700 transition hover:bg-red-100"
           >
             Reset Filters
           </button>
@@ -148,10 +148,10 @@ const newproduct = () => {
                   <div className="p-4">
                     <h3 className="text-lg font-medium">{product.name}</h3>
                     <p className="text-gray-500 text-sm">{product.category}</p>
-                    <p className="text-blue-600 font-semibold mt-2">NRP {product.price}</p>
+                    <p className="text-red-600 font-semibold mt-2">NRP {product.price}</p>
                     <button 
                       onClick={(e) => e.preventDefault()}
-                      className="mt-3 w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"
+                      className="mt-3 w-full bg-red-400 text-white py-2 rounded-lg hover:bg-red-500 transition"
                     >
                       Add to Cart
                     </button>

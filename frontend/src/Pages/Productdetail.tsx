@@ -34,9 +34,9 @@ const Productdetail = () => {
       <div className="max-w-7xl mx-auto px-4 md:px-10 py-8">
         {/* Breadcrumbs */}
         <div className="flex items-center space-x-2 text-sm text-gray-600 mb-8">
-          <span className="hover:text-blue-600 cursor-pointer">Home</span>
+          <span className="hover:text-red-600 cursor-pointer">Home</span>
           <span>/</span>
-          <span className="hover:text-blue-600 cursor-pointer">Shop</span>
+          <span className="hover:text-red-600 cursor-pointer">Shop</span>
           <span>/</span>
           <span className="text-gray-900">Handmade Pottery</span>
         </div>
@@ -56,7 +56,7 @@ const Productdetail = () => {
                   alt={`Thumbnail ${index + 1}`}
                   onClick={() => handleImageClick(thumb)}
                   className={`w-20 h-20 object-cover rounded-lg cursor-pointer border-2 transition-all ${
-                    mainImage === thumb ? 'border-blue-600' : 'border-transparent hover:border-gray-300'
+                    mainImage === thumb ? 'border-red-600' : 'border-transparent hover:border-gray-300'
                   }`}
                 />
               ))}
@@ -75,7 +75,7 @@ const Productdetail = () => {
             </div>
 
             <div className="flex items-center gap-4 mb-6">
-              <span className="text-3xl font-bold text-blue-600">NRP 40.00</span>
+              <span className="text-3xl font-bold text-red-600">NRP 40.00</span>
               <span className="text-xl text-gray-400 line-through">NRP 60.00</span>
             </div>
 
@@ -95,8 +95,8 @@ const Productdetail = () => {
                     key={size}
                     className={`w-16 h-12 border-2 rounded-lg font-semibold transition-all ${
                       selectedSize === size
-                        ? 'border-blue-600 bg-blue-600 text-white'
-                        : 'border-gray-300 text-gray-700 hover:border-blue-300'
+                        ? 'border-red-400 bg-red-400 text-white'
+                        : 'border-gray-300 text-gray-700 hover:border-red-300'
                     }`}
                     onClick={() => setSelectedSize(size)}
                   >
@@ -134,7 +134,7 @@ const Productdetail = () => {
             </div>
 
             <div className="flex gap-4">
-              <button className="flex-1 bg-blue-600 text-white py-4 rounded-lg font-semibold hover:bg-blue-700 transition-colors">
+              <button className="flex-1 bg-red-400 text-white py-4 rounded-lg font-semibold hover:bg-red-500 transition-colors">
                 ADD TO CART
               </button>
               <button className="flex-1 bg-green-600 text-white py-4 rounded-lg font-semibold hover:bg-green-700 transition-colors">
@@ -149,23 +149,23 @@ const Productdetail = () => {
           <h3 className="text-2xl font-bold text-gray-900 mb-6">Specifications</h3>
           <ul className="space-y-3 text-gray-700">
             <li className="flex items-start">
-              <span className="text-blue-600 mr-2">•</span>
+              <span className="text-red-600 mr-2">•</span>
               Premium material that gains vintage character with use.
             </li>
             <li className="flex items-start">
-              <span className="text-blue-600 mr-2">•</span>
+              <span className="text-red-600 mr-2">•</span>
               Originally designed for traditional craftsmanship.
             </li>
             <li className="flex items-start">
-              <span className="text-blue-600 mr-2">•</span>
+              <span className="text-red-600 mr-2">•</span>
               Perfect for Home Decoration.
             </li>
             <li className="flex items-start">
-              <span className="text-blue-600 mr-2">•</span>
+              <span className="text-red-600 mr-2">•</span>
               Made in Nepal.
             </li>
             <li className="flex items-start">
-              <span className="text-blue-600 mr-2">•</span>
+              <span className="text-red-600 mr-2">•</span>
               100% Handcrafted.
             </li>
           </ul>
@@ -225,7 +225,7 @@ const Productdetail = () => {
                 />
                 <div className="p-4">
                   <h4 className="font-semibold text-gray-900 mb-2">{product.name}</h4>
-                  <p className="text-blue-600 font-bold">NRP {product.price}</p>
+                  <p className="text-red-600 font-bold">NRP {product.price}</p>
                 </div>
               </div>
             ))}

@@ -67,7 +67,7 @@ const cart = () => {
               <p className="text-gray-600 mb-8">Looks like you haven&apos;t added anything to your cart yet.</p>
               <a
                 href="/shop"
-                className="inline-block bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+                className="inline-block bg-red-400 text-white px-8 py-3 rounded-lg font-semibold hover:bg-red-500 transition-colors"
               >
                 Start Shopping
               </a>
@@ -101,7 +101,7 @@ const cart = () => {
                       <div className="flex-1">
                         <h3 className="text-xl font-semibold text-gray-900 mb-1">{item.name}</h3>
                         <p className="text-gray-600 text-sm mb-2">{item.category}</p>
-                        <p className="text-blue-600 font-bold text-lg">NRP {item.price.toFixed(2)}</p>
+                        <p className="text-red-600 font-bold text-lg">NRP {item.price.toFixed(2)}</p>
 
                         {/* Quantity Controls */}
                         <div className="flex items-center gap-4 mt-4">
@@ -141,7 +141,7 @@ const cart = () => {
                     {/* Item Total */}
                     <div className="mt-4 pt-4 border-t flex justify-between items-center">
                       <span className="text-gray-700 font-medium">Item Total:</span>
-                      <span className="text-xl font-bold text-blue-600">
+                      <span className="text-xl font-bold text-red-600">
                         NRP {(item.price * item.quantity).toFixed(2)}
                       </span>
                     </div>
@@ -169,13 +169,13 @@ const cart = () => {
                     </div>
                     <div className="border-t pt-4 flex justify-between text-xl font-bold text-gray-900">
                       <span>Total</span>
-                      <span className="text-blue-600">
+                      <span className="text-red-600">
                         NRP {(getTotalPrice() * 1.08).toFixed(2)}
                       </span>
                     </div>
                   </div>
 
-                  <button className="w-full bg-blue-600 text-white py-4 rounded-lg font-semibold text-lg hover:bg-blue-700 transition-colors mb-4">
+                  <button className="w-full bg-red-400 text-white py-4 rounded-lg font-semibold text-lg hover:bg-red-500 transition-colors mb-4"
                     Proceed to Checkout
                   </button>
                   

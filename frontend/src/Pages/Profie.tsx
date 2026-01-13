@@ -189,7 +189,7 @@ const Profie = () => {
                       {userData.name.charAt(0).toUpperCase()}
                     </div>
                   )}
-                  <button className="absolute bottom-0 right-0 bg-red-600 text-white p-2 rounded-full hover:bg-red-700 transition">
+                  <button className="absolute bottom-0 right-0 bg-red-400 text-white p-2 rounded-full hover:bg-red-500 transition">
                     <FaEdit className="w-4 h-4" />
                   </button>
                 </div>

@@ -125,7 +125,7 @@ const Vendorpipeline = () => {
                   </li>
                 ))}
               </ul>
-              <button className="mt-6 w-full rounded-xl bg-red-600 py-2 text-sm font-semibold text-white hover:bg-red-700">
+              <button className="mt-6 w-full rounded-xl bg-red-400 py-2 text-sm font-semibold text-white hover:bg-red-500">
                 View SOP Checklist
               </button>
             </article>
