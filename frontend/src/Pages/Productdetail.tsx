@@ -51,17 +51,27 @@ const Productdetail = () => {
       const response = await fetch(`http://localhost:8080/api/products/${id}`)
       if (response.ok) {
         const data = await response.json()
-        // Convert imageUrl path to full URL
+        // Convert comma-separated imageUrl paths to full URLs
         let imageUrl = data.imageUrl || ''
-        if (imageUrl && !imageUrl.startsWith('http://') && !imageUrl.startsWith('https://')) {
-          imageUrl = `http://localhost:8080${imageUrl.startsWith('/') ? imageUrl : '/' + imageUrl}`
+        if (imageUrl) {
+          // Parse comma-separated URLs and convert each to full URL
+          const urls = imageUrl.split(',').map((url: string) => {
+            const trimmed = url.trim()
+            if (trimmed && !trimmed.startsWith('http://') && !trimmed.startsWith('https://')) {
+              return `http://localhost:8080${trimmed.startsWith('/') ? trimmed : '/' + trimmed}`
+            }
+            return trimmed
+          }).filter(Boolean)
+          imageUrl = urls.join(',')
         }
         
         setProduct({
           ...data,
           imageUrl: imageUrl,
         })
-        setMainImage(imageUrl)
+        // Set first image as main image
+        const firstImage = imageUrl ? imageUrl.split(',')[0].trim() : ''
+        setMainImage(firstImage)
         // Set default size if available
         if (data.sizeEu) {
           const sizes = data.sizeEu.split(',').map((s: string) => s.trim())
@@ -95,10 +105,16 @@ const Productdetail = () => {
         const filtered = data.filter((p: any) => p.id !== Number(id))
         const shuffled = filtered.sort(() => 0.5 - Math.random())
         const selected = shuffled.slice(0, 4).map((p: any) => {
-          // Convert imageUrl path to full URL
+          // Parse comma-separated image URLs and convert first one to full URL
           let imageUrl = p.imageUrl || ''
-          if (imageUrl && !imageUrl.startsWith('http://') && !imageUrl.startsWith('https://')) {
-            imageUrl = `http://localhost:8080${imageUrl.startsWith('/') ? imageUrl : '/' + imageUrl}`
+          if (imageUrl) {
+            // Get first image from comma-separated string
+            const firstImage = imageUrl.split(',')[0].trim()
+            if (firstImage && !firstImage.startsWith('http://') && !firstImage.startsWith('https://')) {
+              imageUrl = `http://localhost:8080${firstImage.startsWith('/') ? firstImage : '/' + firstImage}`
+            } else {
+              imageUrl = firstImage
+            }
           }
           
           return {
@@ -174,7 +190,8 @@ const Productdetail = () => {
 
   const sizes = getSizes()
   const specs = getSpecs()
-  const thumbnails = product.imageUrl ? [product.imageUrl] : []
+  // Parse comma-separated image URLs to array
+  const thumbnails = product.imageUrl ? product.imageUrl.split(',').map(url => url.trim()).filter(Boolean) : []
 
   return (
     <div className="min-h-screen bg-gray-50">

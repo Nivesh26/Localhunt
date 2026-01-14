@@ -30,10 +30,16 @@ const Shop = () => {
       if (response.ok) {
         const data = await response.json();
         const formattedProducts: Product[] = data.map((p: any) => {
-          // Convert imageUrl path to full URL
+          // Parse comma-separated image URLs and convert first one to full URL
           let imageUrl = p.imageUrl || '';
-          if (imageUrl && !imageUrl.startsWith('http://') && !imageUrl.startsWith('https://')) {
-            imageUrl = `http://localhost:8080${imageUrl.startsWith('/') ? imageUrl : '/' + imageUrl}`;
+          if (imageUrl) {
+            // Get first image from comma-separated string
+            const firstImage = imageUrl.split(',')[0].trim();
+            if (firstImage && !firstImage.startsWith('http://') && !firstImage.startsWith('https://')) {
+              imageUrl = `http://localhost:8080${firstImage.startsWith('/') ? firstImage : '/' + firstImage}`;
+            } else {
+              imageUrl = firstImage;
+            }
           }
           
           return {

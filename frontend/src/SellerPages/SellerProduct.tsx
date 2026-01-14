@@ -5,6 +5,7 @@ import {
   FaTrash,
   FaCube,
   FaDollarSign,
+  FaTimes,
 } from 'react-icons/fa'
 import SellerNavbar from '../SellerComponents/SellerNavbar'
 import { toast } from 'react-toastify'
@@ -51,8 +52,7 @@ const SellerProduct = () => {
   const [price, setPrice] = useState('')
   const [stock, setStock] = useState('')
   const [category, setCategory] = useState('')
-  const [imageUrl, setImageUrl] = useState('')
-  const [imageFilePreview, setImageFilePreview] = useState<string | null>(null)
+  const [imageUrls, setImageUrls] = useState<string[]>([])
   const [description, setDescription] = useState('')
   const [handcrafted, setHandcrafted] = useState(true)
   const [specsText, setSpecsText] = useState('')
@@ -92,10 +92,18 @@ const SellerProduct = () => {
         const data = await response.json()
         // Convert backend response to frontend format
         const formattedProducts: Product[] = data.map((p: any) => {
-          // Convert imageUrl path to full URL
+          // Convert comma-separated imageUrl paths to full URLs
           let imageUrl = p.imageUrl || ''
-          if (imageUrl && !imageUrl.startsWith('http://') && !imageUrl.startsWith('https://')) {
-            imageUrl = `http://localhost:8080${imageUrl.startsWith('/') ? imageUrl : '/' + imageUrl}`
+          if (imageUrl) {
+            // Parse comma-separated URLs and convert each to full URL
+            const urls = imageUrl.split(',').map((url: string) => {
+              const trimmed = url.trim()
+              if (trimmed && !trimmed.startsWith('http://') && !trimmed.startsWith('https://')) {
+                return `http://localhost:8080${trimmed.startsWith('/') ? trimmed : '/' + trimmed}`
+              }
+              return trimmed
+            }).filter(Boolean)
+            imageUrl = urls.join(',')
           }
           
           return {
@@ -133,8 +141,7 @@ const SellerProduct = () => {
     setPrice('')
     setStock('')
     setCategory('')
-    setImageUrl('')
-    setImageFilePreview(null)
+    setImageUrls([])
     setDescription('')
     setHandcrafted(true)
     setSpecsText('')
@@ -150,7 +157,9 @@ const SellerProduct = () => {
     setPrice(product.price.toString())
     setStock(product.stock.toString())
     setCategory(product.category)
-    setImageUrl(product.imageUrl || '')
+    // Parse comma-separated image URLs to array
+    const imageUrlsArray = product.imageUrl ? product.imageUrl.split(',').map(url => url.trim()).filter(Boolean) : []
+    setImageUrls(imageUrlsArray)
     setDescription(product.description || '')
     setSpecsText(product.specs.join('\n'))
     setSizeEu(product.sizeEu ? product.sizeEu.split(',').map(s => s.trim()).filter(Boolean) : [])
@@ -190,6 +199,12 @@ const SellerProduct = () => {
       newErrors.description = 'Description must be at least 10 characters'
     }
 
+    if (imageUrls.length === 0) {
+      newErrors.image = 'At least 1 product image is required'
+    } else if (imageUrls.length > 4) {
+      newErrors.image = 'Maximum 4 images allowed'
+    }
+
     setErrors(newErrors)
 
     if (Object.keys(newErrors).length > 0) return
@@ -211,11 +226,14 @@ const SellerProduct = () => {
         .filter(Boolean)
         .join('\n')
 
-      // Extract path from imageUrl (remove http://localhost:8080 if present)
-      let imageUrlPath = imageUrl.trim()
-      if (imageUrlPath.startsWith('http://localhost:8080')) {
-        imageUrlPath = imageUrlPath.replace('http://localhost:8080', '')
-      }
+      // Convert imageUrls array to comma-separated paths (remove http://localhost:8080 if present)
+      const imageUrlPaths = imageUrls.map(url => {
+        let path = url.trim()
+        if (path.startsWith('http://localhost:8080')) {
+          path = path.replace('http://localhost:8080', '')
+        }
+        return path
+      }).filter(Boolean).join(',')
 
       const productData = {
         name: name.trim(),
@@ -224,7 +242,7 @@ const SellerProduct = () => {
         stock: Number(stock),
         category: category,
         description: description.trim(),
-        imageUrl: imageUrlPath || '',
+        imageUrl: imageUrlPaths,
         specs: specs,
         sizeEu: sizeEu.length > 0 ? sizeEu.join(', ') : null,
         sizeClothing: sizeClothing.length > 0 ? sizeClothing.join(', ') : null,
@@ -421,49 +439,82 @@ const SellerProduct = () => {
                   {errors.category && <p className="text-red-500 text-xs mt-1">{errors.category}</p>}
                 </div>
                 <div className="space-y-2">
-                  <span className="text-xs font-medium text-gray-700">Product image</span>
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    <div className="flex flex-col gap-1 text-xs">
-                      <label className="text-gray-600">Upload from computer</label>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={async e => {
-                          const file = e.target.files?.[0]
-                          if (!file) return
-                          
-                          const url = URL.createObjectURL(file)
-                          setImageFilePreview(url)
-                          setImageUrl('')
-                          if (errors.image) setErrors({ ...errors, image: undefined })
-
-                          // Upload file immediately
-                          try {
-                            const formData = new FormData()
-                            formData.append('file', file)
-
-                            const uploadResponse = await fetch('http://localhost:8080/api/products/upload', {
-                              method: 'POST',
-                              body: formData,
-                            })
-
-                            const uploadData = await uploadResponse.json()
-                            if (uploadData.success && uploadData.fileUrl) {
-                              setImageUrl(`http://localhost:8080${uploadData.fileUrl}`)
-                            } else {
-                              toast.error('Failed to upload image')
+                  <span className="text-xs font-medium text-gray-700">Product images (1-4 images required)</span>
+                  <div className="flex flex-col gap-3">
+                    {/* Image Preview Grid */}
+                    {imageUrls.length > 0 && (
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                        {imageUrls.map((url, index) => (
+                          <div key={index} className="relative group">
+                            <img
+                              src={url}
+                              alt={`Product image ${index + 1}`}
+                              className="w-full h-24 object-cover rounded-lg border border-gray-200"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const newUrls = imageUrls.filter((_, i) => i !== index)
+                                setImageUrls(newUrls)
+                                if (errors.image) setErrors({ ...errors, image: undefined })
+                              }}
+                              className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              <FaTimes className="w-3 h-3" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    {/* Upload Button */}
+                    {imageUrls.length < 4 && (
+                      <div className="flex flex-col gap-1 text-xs">
+                        <label className="text-gray-600">Upload from computer ({imageUrls.length}/4)</label>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={async e => {
+                            const file = e.target.files?.[0]
+                            if (!file) return
+                            
+                            if (imageUrls.length >= 4) {
+                              toast.error('Maximum 4 images allowed')
+                              return
                             }
-                          } catch (error) {
-                            console.error('Error uploading file:', error)
-                            toast.error('Error uploading image')
-                          }
-                        }}
-                        className={`rounded-lg border bg-white px-2 py-1 text-xs file:mr-2 file:rounded-md file:border-0 file:bg-red-600 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-white hover:file:bg-red-700 ${
-                          errors.image ? 'border-red-500' : 'border-gray-200'
-                        }`}
-                      />
-                      {errors.image && <p className="text-red-500 text-xs mt-1">{errors.image}</p>}
-                    </div>
+
+                            if (errors.image) setErrors({ ...errors, image: undefined })
+
+                            // Upload file immediately
+                            try {
+                              const formData = new FormData()
+                              formData.append('file', file)
+
+                              const uploadResponse = await fetch('http://localhost:8080/api/products/upload', {
+                                method: 'POST',
+                                body: formData,
+                              })
+
+                              const uploadData = await uploadResponse.json()
+                              if (uploadData.success && uploadData.fileUrl) {
+                                const newUrl = `http://localhost:8080${uploadData.fileUrl}`
+                                setImageUrls([...imageUrls, newUrl])
+                              } else {
+                                toast.error('Failed to upload image')
+                              }
+                            } catch (error) {
+                              console.error('Error uploading file:', error)
+                              toast.error('Error uploading image')
+                            }
+                            // Reset file input
+                            e.target.value = ''
+                          }}
+                          className={`rounded-lg border bg-white px-2 py-1 text-xs file:mr-2 file:rounded-md file:border-0 file:bg-red-600 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-white hover:file:bg-red-700 ${
+                            errors.image ? 'border-red-500' : 'border-gray-200'
+                          }`}
+                        />
+                      </div>
+                    )}
+                    {errors.image && <p className="text-red-500 text-xs mt-1">{errors.image}</p>}
                   </div>
                 </div>
 
@@ -770,7 +821,7 @@ const SellerProduct = () => {
                       <td className="px-4 py-3">
                         {product.imageUrl ? (
                           <img
-                            src={product.imageUrl}
+                            src={product.imageUrl.split(',')[0].trim()}
                             alt={product.name}
                             className="h-12 w-12 rounded-lg object-cover"
                           />

@@ -88,15 +88,19 @@ const AdminProduct = () => {
         const data: BackendProduct[] = await response.json();
         
         const formattedProducts: Product[] = data.map((p) => {
-          // Handle image URL - backend returns path like /uploads/products/filename.png
+          // Parse comma-separated image URLs and convert first one to full URL
           let imageUrl = '';
           if (p.imageUrl) {
-            // If it already starts with http, use it as is
-            if (p.imageUrl.startsWith('http://') || p.imageUrl.startsWith('https://')) {
-              imageUrl = p.imageUrl;
-            } else {
-              // Otherwise, prepend the backend URL
-              imageUrl = `http://localhost:8080${p.imageUrl.startsWith('/') ? p.imageUrl : '/' + p.imageUrl}`;
+            // Get first image from comma-separated string
+            const firstImage = p.imageUrl.split(',')[0].trim();
+            if (firstImage) {
+              // If it already starts with http, use it as is
+              if (firstImage.startsWith('http://') || firstImage.startsWith('https://')) {
+                imageUrl = firstImage;
+              } else {
+                // Otherwise, prepend the backend URL
+                imageUrl = `http://localhost:8080${firstImage.startsWith('/') ? firstImage : '/' + firstImage}`;
+              }
             }
           }
           
