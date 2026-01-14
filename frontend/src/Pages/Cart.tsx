@@ -1,42 +1,164 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { toast } from 'react-toastify'
 import Topbar from '../Components/Topbar'
 import Footer from '../Components/Footer'
 import Header from '../Components/Header'
-import bowl from '../assets/Bowl.png'
-import cranes from '../assets/Swan.png'
-import incense from '../assets/p3.png'
 import { FaTrash, FaPlus, FaMinus } from 'react-icons/fa'
 
-// Sample cart data - in a real app, this would come from context or localStorage
-const sampleCartItems = [
-  { id: 1, name: 'Handmade Pottery', category: 'Crafts', price: 40, image: cranes, quantity: 2 },
-  { id: 2, name: 'Organic Honey', category: 'Food', price: 15, image: bowl, quantity: 1 },
-  { id: 3, name: 'Wooden Sculpture', category: 'Crafts', price: 120, image: incense, quantity: 1 },
-]
+interface CartItem {
+  id: number
+  productId: number
+  productName: string
+  productPrice: number
+  productImageUrl: string
+  quantity: number
+  subtotal: number
+}
 
 const cart = () => {
-  const [cartItems, setCartItems] = useState(sampleCartItems)
+  const navigate = useNavigate()
+  const [cartItems, setCartItems] = useState<CartItem[]>([])
+  const [loading, setLoading] = useState(true)
 
-  const updateQuantity = (id: number, change: number) => {
-    setCartItems(cartItems.map(item => {
-      if (item.id === id) {
-        const newQuantity = item.quantity + change
-        return { ...item, quantity: newQuantity > 0 ? newQuantity : 1 }
+  useEffect(() => {
+    fetchCartItems()
+  }, [])
+
+  const fetchCartItems = async () => {
+    try {
+      const userStr = localStorage.getItem('user')
+      if (!userStr) {
+        setLoading(false)
+        return
       }
-      return item
-    }))
+
+      const user = JSON.parse(userStr)
+      const userId = user.userId
+
+      const response = await fetch(`http://localhost:8080/api/cart/${userId}`)
+      if (response.ok) {
+        const data = await response.json()
+        const formattedItems: CartItem[] = data.map((item: any) => {
+          // Convert imageUrl path to full URL
+          let imageUrl = item.productImageUrl || ''
+          if (imageUrl && !imageUrl.startsWith('http://') && !imageUrl.startsWith('https://')) {
+            imageUrl = `http://localhost:8080${imageUrl.startsWith('/') ? imageUrl : '/' + imageUrl}`
+          }
+          
+          return {
+            id: item.id,
+            productId: item.productId,
+            productName: item.productName,
+            productPrice: item.productPrice,
+            productImageUrl: imageUrl,
+            quantity: item.quantity,
+            subtotal: item.subtotal,
+          }
+        })
+        setCartItems(formattedItems)
+      } else {
+        console.error('Failed to fetch cart items')
+      }
+    } catch (error) {
+      console.error('Error fetching cart items:', error)
+    } finally {
+      setLoading(false)
+    }
   }
 
-  const removeFromCart = (id: number) => {
-    setCartItems(cartItems.filter(item => item.id !== id))
+  const updateQuantity = async (cartId: number, change: number) => {
+    try {
+      const userStr = localStorage.getItem('user')
+      if (!userStr) {
+        toast.error('Please login to update cart')
+        navigate('/login')
+        return
+      }
+
+      const user = JSON.parse(userStr)
+      const userId = user.userId
+
+      const item = cartItems.find(item => item.id === cartId)
+      if (!item) return
+
+      const newQuantity = item.quantity + change
+      if (newQuantity < 1) return
+
+      const response = await fetch(`http://localhost:8080/api/cart/${userId}/${cartId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ quantity: newQuantity }),
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        const updatedItem = data.cartItem
+        let imageUrl = updatedItem.productImageUrl || ''
+        if (imageUrl && !imageUrl.startsWith('http://') && !imageUrl.startsWith('https://')) {
+          imageUrl = `http://localhost:8080${imageUrl.startsWith('/') ? imageUrl : '/' + imageUrl}`
+        }
+        
+        setCartItems(cartItems.map(item => 
+          item.id === cartId 
+            ? { ...item, quantity: updatedItem.quantity, subtotal: updatedItem.subtotal, productImageUrl: imageUrl }
+            : item
+        ))
+      } else {
+        const errorData = await response.json()
+        toast.error(errorData.message || 'Failed to update quantity')
+      }
+    } catch (error) {
+      console.error('Error updating quantity:', error)
+      toast.error('An error occurred while updating quantity')
+    }
+  }
+
+  const removeFromCart = async (cartId: number) => {
+    try {
+      const userStr = localStorage.getItem('user')
+      if (!userStr) {
+        toast.error('Please login to remove items from cart')
+        navigate('/login')
+        return
+      }
+
+      const user = JSON.parse(userStr)
+      const userId = user.userId
+
+      const response = await fetch(`http://localhost:8080/api/cart/${userId}/${cartId}`, {
+        method: 'DELETE',
+      })
+
+      if (response.ok) {
+        setCartItems(cartItems.filter(item => item.id !== cartId))
+        toast.success('Item removed from cart')
+      } else {
+        const errorData = await response.json()
+        toast.error(errorData.message || 'Failed to remove item')
+      }
+    } catch (error) {
+      console.error('Error removing item:', error)
+      toast.error('An error occurred while removing item')
+    }
   }
 
   const getTotalPrice = () => {
-    return cartItems.reduce((total, item) => total + item.price * item.quantity, 0)
+    return cartItems.reduce((total, item) => total + item.productPrice * item.quantity, 0)
   }
 
   const getTotalItems = () => {
     return cartItems.reduce((total, item) => total + item.quantity, 0)
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-xl">Loading cart...</div>
+      </div>
+    )
   }
 
   return (
@@ -44,18 +166,6 @@ const cart = () => {
       <Topbar/>
       <Header/>
       
-      {/* Cart Header */}
-      {/* <section className="bg-gradient-to-br from-blue-50 to-indigo-100 py-16 px-4 md:px-10">
-        <div className="max-w-6xl mx-auto text-center">
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-            Shopping Cart
-          </h1>
-          <p className="text-xl text-gray-700">
-            Review your items and proceed to checkout
-          </p>
-        </div>
-      </section> */}
-
       {/* Cart Content */}
       <section className="py-12 px-4 md:px-10">
         <div className="max-w-6xl mx-auto">
@@ -92,16 +202,18 @@ const cart = () => {
                     <div className="flex gap-4">
                       {/* Product Image */}
                       <img
-                        src={item.image}
-                        alt={item.name}
+                        src={item.productImageUrl || '/placeholder.png'}
+                        alt={item.productName}
                         className="w-32 h-32 object-cover rounded-lg"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = '/placeholder.png'
+                        }}
                       />
 
                       {/* Product Details */}
                       <div className="flex-1">
-                        <h3 className="text-xl font-semibold text-gray-900 mb-1">{item.name}</h3>
-                        <p className="text-gray-600 text-sm mb-2">{item.category}</p>
-                        <p className="text-red-600 font-bold text-lg">NRP {item.price.toFixed(2)}</p>
+                        <h3 className="text-xl font-semibold text-gray-900 mb-1">{item.productName}</h3>
+                        <p className="text-red-600 font-bold text-lg">NRP {item.productPrice.toFixed(2)}</p>
 
                         {/* Quantity Controls */}
                         <div className="flex items-center gap-4 mt-4">
@@ -142,7 +254,7 @@ const cart = () => {
                     <div className="mt-4 pt-4 border-t flex justify-between items-center">
                       <span className="text-gray-700 font-medium">Item Total:</span>
                       <span className="text-xl font-bold text-red-600">
-                        NRP {(item.price * item.quantity).toFixed(2)}
+                        NRP {(item.productPrice * item.quantity).toFixed(2)}
                       </span>
                     </div>
                   </div>
@@ -218,4 +330,4 @@ const cart = () => {
   )
 }
 
-export default cart 
+export default cart

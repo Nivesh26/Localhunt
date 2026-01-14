@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
+import { toast } from 'react-toastify'
 import Topbar from '../Components/Topbar'
 import Header from '../Components/Header'
 import Footer from '../Components/Footer'
@@ -140,6 +141,44 @@ const Productdetail = () => {
 
   const handleImageClick = (image: string) => {
     setMainImage(image)
+  }
+
+  const handleAddToCart = async () => {
+    if (!product) return
+
+    try {
+      const userStr = localStorage.getItem('user')
+      if (!userStr) {
+        toast.error('Please login to add items to cart')
+        navigate('/login?returnUrl=/product/' + id)
+        return
+      }
+
+      const user = JSON.parse(userStr)
+      const userId = user.userId
+
+      const response = await fetch(`http://localhost:8080/api/cart/${userId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          productId: product.id,
+          quantity: quantity,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (response.ok && data.success) {
+        toast.success('Product added to cart successfully!')
+      } else {
+        toast.error(data.message || 'Failed to add product to cart')
+      }
+    } catch (error) {
+      console.error('Error adding to cart:', error)
+      toast.error('An error occurred while adding to cart')
+    }
   }
 
   const getSizes = () => {
@@ -324,6 +363,7 @@ const Productdetail = () => {
 
             <div className="flex gap-4">
               <button 
+                onClick={handleAddToCart}
                 className="flex-1 bg-red-400 text-white py-4 rounded-lg font-semibold hover:bg-red-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 disabled={product.stock === 0}
               >

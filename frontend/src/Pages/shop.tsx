@@ -1,5 +1,6 @@
 import { useMemo, useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 import Header from "../Components/Header";
 import Topbar from "../Components/Topbar";
 import Footer from "../Components/Footer";
@@ -13,11 +14,51 @@ interface Product {
 }
 
 const Shop = () => {
+  const navigate = useNavigate();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [category, setCategory] = useState("All");
   const [priceRange, setPriceRange] = useState([0, 100000]);
   const [sortOption, setSortOption] = useState("featured");
+
+  const handleAddToCart = async (e: React.MouseEvent, productId: number) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    try {
+      const userStr = localStorage.getItem('user');
+      if (!userStr) {
+        toast.error('Please login to add items to cart');
+        navigate('/login?returnUrl=/shop');
+        return;
+      }
+
+      const user = JSON.parse(userStr);
+      const userId = user.userId;
+
+      const response = await fetch(`http://localhost:8080/api/cart/${userId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          productId: productId,
+          quantity: 1,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        toast.success('Product added to cart successfully!');
+      } else {
+        toast.error(data.message || 'Failed to add product to cart');
+      }
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+      toast.error('An error occurred while adding to cart');
+    }
+  };
 
   useEffect(() => {
     fetchProducts();
@@ -213,7 +254,7 @@ const Shop = () => {
                     <p className="text-gray-500 text-sm">{product.category}</p>
                     <p className="text-red-600 font-semibold mt-2">NRP {product.price}</p>
                     <button 
-                      onClick={(e) => e.preventDefault()}
+                      onClick={(e) => handleAddToCart(e, product.id)}
                       className="mt-3 w-full bg-red-400 text-white py-2 rounded-lg hover:bg-red-500 transition"
                     >
                       Add to Cart
