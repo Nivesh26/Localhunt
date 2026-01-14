@@ -5,7 +5,6 @@ import {
   FaFilter,
   FaCheckCircle,
   FaTimes,
-  FaDownload,
 } from 'react-icons/fa'
 import { toast } from 'react-toastify'
 
@@ -21,6 +20,8 @@ interface SellerRequest {
   businessLocation: string
   createdAt: string
   approved: boolean
+  businessRegistrationCertificate?: string
+  panVatCertificate?: string
 }
 
 const VendorApprove = () => {
@@ -146,7 +147,6 @@ const VendorApprove = () => {
     )
   })
 
-  const documents = ['Business Registration Certificate', 'PAN / VAT Certificate']
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -213,13 +213,81 @@ const VendorApprove = () => {
                       <p className="mt-1 text-sm text-gray-500">Location: {request.location}</p>
                       <p className="mt-1 text-sm text-gray-500">Business Location: {request.businessLocation}</p>
                       <p className="mt-1 text-sm text-gray-500">PAN/VAT: {request.businessPanVat}</p>
-                      <div className="mt-4 flex flex-wrap gap-2 text-xs text-gray-600">
-                        {documents.map(doc => (
-                          <span key={doc} className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-3 py-1">
-                            <FaDownload className="h-4 w-4 text-gray-400" />
-                            {doc}
-                          </span>
-                        ))}
+                      <div className="mt-4 space-y-4">
+                        <div>
+                          <h3 className="text-sm font-semibold text-gray-900 mb-2">Business Registration Certificate</h3>
+                          {request.businessRegistrationCertificate ? (
+                            <div className="relative">
+                              {(() => {
+                                const docUrl = request.businessRegistrationCertificate.startsWith('http') 
+                                  ? request.businessRegistrationCertificate 
+                                  : `http://localhost:8080${request.businessRegistrationCertificate.startsWith('/') ? request.businessRegistrationCertificate : '/' + request.businessRegistrationCertificate}`
+                                const isPdf = docUrl.toLowerCase().endsWith('.pdf')
+                                return isPdf ? (
+                                  <iframe
+                                    src={docUrl}
+                                    className="w-full max-w-md h-96 rounded-lg border border-gray-200 shadow-sm"
+                                    title="Business Registration Certificate"
+                                  />
+                                ) : (
+                                  <img
+                                    src={docUrl}
+                                    alt="Business Registration Certificate"
+                                    className="max-w-md rounded-lg border border-gray-200 shadow-sm"
+                                    onError={(e) => {
+                                      const target = e.target as HTMLImageElement
+                                      target.src = ''
+                                      target.style.display = 'none'
+                                      const parent = target.parentElement
+                                      if (parent) {
+                                        parent.innerHTML = '<p class="text-sm text-gray-500">Document not available</p>'
+                                      }
+                                    }}
+                                  />
+                                )
+                              })()}
+                            </div>
+                          ) : (
+                            <p className="text-sm text-gray-500">Not provided</p>
+                          )}
+                        </div>
+                        <div>
+                          <h3 className="text-sm font-semibold text-gray-900 mb-2">PAN / VAT Certificate</h3>
+                          {request.panVatCertificate ? (
+                            <div className="relative">
+                              {(() => {
+                                const docUrl = request.panVatCertificate.startsWith('http') 
+                                  ? request.panVatCertificate 
+                                  : `http://localhost:8080${request.panVatCertificate.startsWith('/') ? request.panVatCertificate : '/' + request.panVatCertificate}`
+                                const isPdf = docUrl.toLowerCase().endsWith('.pdf')
+                                return isPdf ? (
+                                  <iframe
+                                    src={docUrl}
+                                    className="w-full max-w-md h-96 rounded-lg border border-gray-200 shadow-sm"
+                                    title="PAN / VAT Certificate"
+                                  />
+                                ) : (
+                                  <img
+                                    src={docUrl}
+                                    alt="PAN / VAT Certificate"
+                                    className="max-w-md rounded-lg border border-gray-200 shadow-sm"
+                                    onError={(e) => {
+                                      const target = e.target as HTMLImageElement
+                                      target.src = ''
+                                      target.style.display = 'none'
+                                      const parent = target.parentElement
+                                      if (parent) {
+                                        parent.innerHTML = '<p class="text-sm text-gray-500">Document not available</p>'
+                                      }
+                                    }}
+                                  />
+                                )
+                              })()}
+                            </div>
+                          ) : (
+                            <p className="text-sm text-gray-500">Not provided</p>
+                          )}
+                        </div>
                       </div>
                     </div>
 

@@ -45,6 +45,10 @@ public class SellerSignupRequest {
     @NotBlank(message = "Confirm password is required")
     private String confirmPassword;
 
+    private String businessRegistrationCertificate;
+
+    private String panVatCertificate;
+
     public SellerSignupRequest() {
     }
 
@@ -127,5 +131,21 @@ public class SellerSignupRequest {
 
     public void setConfirmPassword(String confirmPassword) {
         this.confirmPassword = confirmPassword;
+    }
+
+    public String getBusinessRegistrationCertificate() {
+        return businessRegistrationCertificate;
+    }
+
+    public void setBusinessRegistrationCertificate(String businessRegistrationCertificate) {
+        this.businessRegistrationCertificate = businessRegistrationCertificate;
+    }
+
+    public String getPanVatCertificate() {
+        return panVatCertificate;
+    }
+
+    public void setPanVatCertificate(String panVatCertificate) {
+        this.panVatCertificate = panVatCertificate;
     }
 }

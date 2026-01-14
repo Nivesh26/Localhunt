@@ -15,6 +15,8 @@ public class SellerListResponse {
     private Boolean approved;
     private Role role;
     private String createdAt;
+    private String businessRegistrationCertificate;
+    private String panVatCertificate;
 
     public SellerListResponse() {
     }
@@ -114,5 +116,21 @@ public class SellerListResponse {
 
     public void setCreatedAt(String createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public String getBusinessRegistrationCertificate() {
+        return businessRegistrationCertificate;
+    }
+
+    public void setBusinessRegistrationCertificate(String businessRegistrationCertificate) {
+        this.businessRegistrationCertificate = businessRegistrationCertificate;
+    }
+
+    public String getPanVatCertificate() {
+        return panVatCertificate;
+    }
+
+    public void setPanVatCertificate(String panVatCertificate) {
+        this.panVatCertificate = panVatCertificate;
     }
 }

@@ -153,6 +153,59 @@ const Sellerlogin = () => {
   const handleSignup = async () => {
     setLoading(true)
     try {
+      // Upload certificate files first
+      let businessRegistrationCertUrl = null
+      let panVatCertUrl = null
+
+      if (documents['biz-cert']) {
+        try {
+          const uploadFormData = new FormData()
+          uploadFormData.append('file', documents['biz-cert'])
+          const uploadResponse = await fetch('http://localhost:8080/api/products/upload', {
+            method: 'POST',
+            body: uploadFormData,
+          })
+          const uploadData = await uploadResponse.json()
+          if (uploadData.success) {
+            businessRegistrationCertUrl = uploadData.fileUrl
+          } else {
+            toast.error('Failed to upload Business Registration Certificate')
+            setLoading(false)
+            return
+          }
+        } catch (error) {
+          console.error('Error uploading business registration certificate:', error)
+          toast.error('Failed to upload Business Registration Certificate')
+          setLoading(false)
+          return
+        }
+      }
+
+      if (documents['pan-cert']) {
+        try {
+          const uploadFormData = new FormData()
+          uploadFormData.append('file', documents['pan-cert'])
+          const uploadResponse = await fetch('http://localhost:8080/api/products/upload', {
+            method: 'POST',
+            body: uploadFormData,
+          })
+          const uploadData = await uploadResponse.json()
+          if (uploadData.success) {
+            panVatCertUrl = uploadData.fileUrl
+          } else {
+            toast.error('Failed to upload PAN / VAT Certificate')
+            setLoading(false)
+            return
+          }
+        } catch (error) {
+          console.error('Error uploading PAN/VAT certificate:', error)
+          toast.error('Failed to upload PAN / VAT Certificate')
+          setLoading(false)
+          return
+        }
+      }
+
+      // Submit signup with file URLs
       const response = await fetch('http://localhost:8080/api/seller/signup', {
         method: 'POST',
         headers: {
@@ -168,7 +221,9 @@ const Sellerlogin = () => {
           businessPanVat: formData.businessPanVat,
           businessLocation: formData.businessLocation,
           password: formData.password,
-          confirmPassword: formData.confirmPassword
+          confirmPassword: formData.confirmPassword,
+          businessRegistrationCertificate: businessRegistrationCertUrl,
+          panVatCertificate: panVatCertUrl
         }),
       })
 

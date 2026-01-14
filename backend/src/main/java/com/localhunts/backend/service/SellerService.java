@@ -58,6 +58,8 @@ public class SellerService {
         seller.setPassword(passwordEncoder.encode(signupRequest.getPassword()));
         seller.setRole(Role.VENDOR);
         seller.setApproved(false); // Needs admin approval
+        seller.setBusinessRegistrationCertificate(signupRequest.getBusinessRegistrationCertificate());
+        seller.setPanVatCertificate(signupRequest.getPanVatCertificate());
 
         Seller savedSeller = sellerRepository.save(seller);
 
@@ -160,6 +162,8 @@ public class SellerService {
         response.setBusinessLocation(seller.getBusinessLocation());
         response.setApproved(seller.getApproved());
         response.setRole(seller.getRole());
+        response.setBusinessRegistrationCertificate(seller.getBusinessRegistrationCertificate());
+        response.setPanVatCertificate(seller.getPanVatCertificate());
         
         if (seller.getCreatedAt() != null) {
             response.setCreatedAt(seller.getCreatedAt().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
