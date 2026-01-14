@@ -3,14 +3,17 @@ import Topbar from '../Components/Topbar'
 import Header from '../Components/Header'
 import Footer from '../Components/Footer'
 import hero from '../assets/Hero.png'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { FaEye, FaEyeSlash } from 'react-icons/fa'
+import { toast } from 'react-toastify'
 
 const SellerLogin = () => {
+  const navigate = useNavigate()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({})
+  const [loading, setLoading] = useState(false)
 
   const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -37,7 +40,49 @@ const SellerLogin = () => {
 
     if (Object.keys(newErrors).length === 0) {
       // Form is valid, proceed with login
-      console.log('Seller login submitted:', { email, password })
+      handleLogin()
+    }
+  }
+
+  const handleLogin = async () => {
+    setLoading(true)
+    try {
+      const response = await fetch('http://localhost:8080/api/seller/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          password
+        }),
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        toast.success(data.message || 'Login successful!')
+        // Store seller data in localStorage
+        localStorage.setItem('user', JSON.stringify({
+          userId: data.userId,
+          email: data.email,
+          fullName: data.fullName,
+          role: data.role
+        }))
+        // Dispatch event to update header
+        window.dispatchEvent(new Event('userLoginStatusChange'))
+        // Redirect to seller dashboard
+        setTimeout(() => {
+          navigate('/sellerdashboard')
+        }, 1000)
+      } else {
+        toast.error(data.message || 'Login failed')
+      }
+    } catch (error) {
+      console.error('Login error:', error)
+      toast.error('An error occurred. Please try again.')
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -124,14 +169,18 @@ const SellerLogin = () => {
                     </a>
                   </div>
 
-                  <button type="submit" className="w-full rounded-xl bg-red-400 py-3 text-sm font-semibold text-white transition hover:bg-red-500">
-                    Log In
+                  <button 
+                    type="submit" 
+                    disabled={loading}
+                    className="w-full rounded-xl bg-red-400 py-3 text-sm font-semibold text-white transition hover:bg-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {loading ? 'Logging in...' : 'Log In'}
                   </button>
                 </form>
 
                 <div className="text-center text-sm text-gray-600">
                   New to Local Hunt?{' '}
-                  <Link to="/seller-signup" className="font-semibold text-red-600 hover:underline">
+                  <Link to="/sellersignup" className="font-semibold text-red-600 hover:underline">
                     Create a seller account
                   </Link>
                 </div>

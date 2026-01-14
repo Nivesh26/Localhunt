@@ -7,7 +7,8 @@ import {
   FaCog,
   FaSignOutAlt,
 } from 'react-icons/fa'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import { toast } from 'react-toastify'
 import logo from '../assets/Local Hunt Logo NoBG.png'
 import profileImage from '../assets/Nivesh.png'
 
@@ -21,6 +22,15 @@ const navLinks = [
 ]
 
 const SellerNavbar = () => {
+  const navigate = useNavigate()
+
+  const handleLogout = () => {
+    localStorage.removeItem('user')
+    window.dispatchEvent(new Event('userLoginStatusChange'))
+    toast.success('Logged out successfully')
+    navigate('/sellerlogin')
+  }
+
   return (
     <aside className="hidden w-64 lg:block">
       <div className="sticky top-8 space-y-6">
@@ -41,9 +51,12 @@ const SellerNavbar = () => {
             </div>
           </div>
 
-          <button className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-red-600 hover:text-red-700">
+          <button
+            onClick={handleLogout}
+            className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-red-600 hover:text-red-700"
+          >
             <FaSignOutAlt className="h-4 w-4" />
-            Switch to buying
+            Logout
           </button>
         </div>
 

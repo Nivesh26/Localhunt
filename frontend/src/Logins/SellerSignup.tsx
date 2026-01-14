@@ -4,7 +4,8 @@ import Header from '../Components/Header'
 import Footer from '../Components/Footer'
 import hero from '../assets/Hero.png'
 import { FaShieldAlt, FaEye, FaEyeSlash } from 'react-icons/fa'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import { toast } from 'react-toastify'
 
 const documentFields = [
   { label: 'Business Registration Certificate', id: 'biz-cert' },
@@ -13,6 +14,7 @@ const documentFields = [
 ]
 
 const Sellerlogin = () => {
+  const navigate = useNavigate()
   const [formData, setFormData] = useState({
     userName: '',
     phoneNumber: '',
@@ -29,6 +31,7 @@ const Sellerlogin = () => {
   const [errors, setErrors] = useState<{ [key: string]: string | undefined }>({})
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [loading, setLoading] = useState(false)
 
   const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -132,18 +135,73 @@ const Sellerlogin = () => {
       newErrors.confirmPassword = 'Passwords do not match'
     }
 
-    // Document validation
-    documentFields.forEach(doc => {
-      if (!documents[doc.id]) {
-        newErrors[doc.id] = `${doc.label} is required`
-      }
-    })
+    // Document validation - made optional for now (can be handled later with file upload)
+    // documentFields.forEach(doc => {
+    //   if (!documents[doc.id]) {
+    //     newErrors[doc.id] = `${doc.label} is required`
+    //   }
+    // })
 
     setErrors(newErrors)
 
     if (Object.keys(newErrors).length === 0) {
       // Form is valid, proceed with submission
-      console.log('Seller signup submitted:', { formData, documents })
+      handleSignup()
+    }
+  }
+
+  const handleSignup = async () => {
+    setLoading(true)
+    try {
+      const response = await fetch('http://localhost:8080/api/seller/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userName: formData.userName,
+          phoneNumber: formData.phoneNumber,
+          contactEmail: formData.contactEmail,
+          location: formData.location,
+          businessName: formData.businessName,
+          businessCategory: formData.businessCategory,
+          businessPanVat: formData.businessPanVat,
+          businessLocation: formData.businessLocation,
+          password: formData.password,
+          confirmPassword: formData.confirmPassword
+        }),
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        toast.success(data.message || 'Registration submitted successfully!')
+        // Clear form
+        setFormData({
+          userName: '',
+          phoneNumber: '',
+          contactEmail: '',
+          location: '',
+          businessName: '',
+          businessCategory: '',
+          businessPanVat: '',
+          businessLocation: '',
+          password: '',
+          confirmPassword: ''
+        })
+        setDocuments({})
+        // Redirect to login after a short delay
+        setTimeout(() => {
+          navigate('/sellerlogin')
+        }, 2000)
+      } else {
+        toast.error(data.message || 'Registration failed')
+      }
+    } catch (error) {
+      console.error('Signup error:', error)
+      toast.error('An error occurred. Please try again.')
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -437,8 +495,12 @@ const Sellerlogin = () => {
 
           
 
-                  <button type="submit" className="w-full rounded-xl bg-red-400 py-3 text-sm font-semibold text-white transition hover:bg-red-500">
-                    Submit Application
+                  <button 
+                    type="submit" 
+                    disabled={loading}
+                    className="w-full rounded-xl bg-red-400 py-3 text-sm font-semibold text-white transition hover:bg-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {loading ? 'Submitting...' : 'Submit Application'}
                   </button>
                 </form>
 
