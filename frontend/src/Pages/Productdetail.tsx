@@ -51,8 +51,17 @@ const Productdetail = () => {
       const response = await fetch(`http://localhost:8080/api/products/${id}`)
       if (response.ok) {
         const data = await response.json()
-        setProduct(data)
-        setMainImage(data.imageUrl || '')
+        // Convert imageUrl path to full URL
+        let imageUrl = data.imageUrl || ''
+        if (imageUrl && !imageUrl.startsWith('http://') && !imageUrl.startsWith('https://')) {
+          imageUrl = `http://localhost:8080${imageUrl.startsWith('/') ? imageUrl : '/' + imageUrl}`
+        }
+        
+        setProduct({
+          ...data,
+          imageUrl: imageUrl,
+        })
+        setMainImage(imageUrl)
         // Set default size if available
         if (data.sizeEu) {
           const sizes = data.sizeEu.split(',').map((s: string) => s.trim())
@@ -85,12 +94,20 @@ const Productdetail = () => {
         // Get 4 random products excluding current product
         const filtered = data.filter((p: any) => p.id !== Number(id))
         const shuffled = filtered.sort(() => 0.5 - Math.random())
-        const selected = shuffled.slice(0, 4).map((p: any) => ({
-          id: p.id,
-          name: p.name,
-          price: p.price,
-          imageUrl: p.imageUrl,
-        }))
+        const selected = shuffled.slice(0, 4).map((p: any) => {
+          // Convert imageUrl path to full URL
+          let imageUrl = p.imageUrl || ''
+          if (imageUrl && !imageUrl.startsWith('http://') && !imageUrl.startsWith('https://')) {
+            imageUrl = `http://localhost:8080${imageUrl.startsWith('/') ? imageUrl : '/' + imageUrl}`
+          }
+          
+          return {
+            id: p.id,
+            name: p.name,
+            price: p.price,
+            imageUrl: imageUrl,
+          }
+        })
         setRelatedProducts(selected)
       }
     } catch (error) {
