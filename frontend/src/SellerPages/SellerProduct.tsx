@@ -18,6 +18,7 @@ type Product = {
   price: number
   stock: number
   status: 'Live' | 'Draft' | 'Out of stock'
+  category: string
   imageUrl?: string
   description: string
   handcrafted: boolean
@@ -34,6 +35,7 @@ const initialProducts: Product[] = [
     price: 1800,
     stock: 18,
     status: 'Live',
+    category: 'Textiles',
     imageUrl: P1,
     description:
       'Handwoven Dhaka scarf crafted with natural fibres for everyday wear and home styling.',
@@ -51,6 +53,7 @@ const initialProducts: Product[] = [
     price: 950,
     stock: 42,
     status: 'Live',
+    category: 'Gourmet Food',
     imageUrl: P2,
     description: 'Assorted Himalayan organic teas sourced from high altitude family farms.',
     handcrafted: false,
@@ -67,6 +70,7 @@ const initialProducts: Product[] = [
     price: 550,
     stock: 0,
     status: 'Out of stock',
+    category: 'Handicrafts',
     imageUrl: P3,
     description: 'Lokta paper journal with textured cover, ideal for sketching and journaling.',
     handcrafted: true,
@@ -78,12 +82,29 @@ const initialProducts: Product[] = [
   },
 ]
 
+const categories = [
+  'Home Decor',
+  'Gourmet Food',
+  'Textiles',
+  'Spiritual',
+  'Accessories',
+  'Clothing',
+  'Handicrafts',
+  'Jewelry',
+  'Masks',
+  'Pottery',
+  'Brassware',
+  'Traditional Food',
+  'Other',
+]
+
 const SellerProduct = () => {
   const [products, setProducts] = useState<Product[]>(initialProducts)
   const [name, setName] = useState('')
   const [sku, setSku] = useState('')
   const [price, setPrice] = useState('')
   const [stock, setStock] = useState('')
+  const [category, setCategory] = useState('')
   const [imageUrl, setImageUrl] = useState('')
   const [imageFilePreview, setImageFilePreview] = useState<string | null>(null)
   const [description, setDescription] = useState('')
@@ -97,6 +118,7 @@ const SellerProduct = () => {
     sku?: string
     price?: string
     stock?: string
+    category?: string
     description?: string
     image?: string
   }>({})
@@ -110,6 +132,10 @@ const SellerProduct = () => {
 
     if (!sku.trim()) {
       newErrors.sku = 'SKU is required'
+    }
+
+    if (!category) {
+      newErrors.category = 'Category is required'
     }
 
     if (!price || Number(price) <= 0) {
@@ -147,6 +173,7 @@ const SellerProduct = () => {
       price: Number(price),
       stock: Number(stock),
       status: Number(stock) > 0 ? 'Live' : 'Out of stock',
+      category: category,
       imageUrl: finalImage,
       description: description.trim(),
       handcrafted,
@@ -160,6 +187,7 @@ const SellerProduct = () => {
     setSku('')
     setPrice('')
     setStock('')
+    setCategory('')
     setImageUrl('')
     setImageFilePreview(null)
     setDescription('')
@@ -276,6 +304,27 @@ const SellerProduct = () => {
                     />
                     {errors.sku && <p className="text-red-500 text-xs mt-1">{errors.sku}</p>}
                   </div>
+                </div>
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs font-medium text-gray-700">Category</label>
+                  <select
+                    value={category}
+                    onChange={e => {
+                      setCategory(e.target.value)
+                      if (errors.category) setErrors({ ...errors, category: undefined })
+                    }}
+                    className={`rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-red-200 ${
+                      errors.category ? 'border-red-500' : 'border-gray-200 focus:border-red-500'
+                    }`}
+                  >
+                    <option value="">Select category</option>
+                    {categories.map(cat => (
+                      <option key={cat} value={cat}>
+                        {cat}
+                      </option>
+                    ))}
+                  </select>
+                  {errors.category && <p className="text-red-500 text-xs mt-1">{errors.category}</p>}
                 </div>
                 <div className="space-y-2">
                   <span className="text-xs font-medium text-gray-700">Product image</span>
@@ -429,6 +478,9 @@ const SellerProduct = () => {
                       SKU
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
+                      Category
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
                       Price
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
@@ -466,6 +518,7 @@ const SellerProduct = () => {
                       </td>
                       <td className="px-4 py-3 text-gray-900">{product.name}</td>
                       <td className="px-4 py-3 text-gray-500">{product.sku}</td>
+                      <td className="px-4 py-3 text-gray-500">{product.category}</td>
                       <td className="px-4 py-3 font-semibold text-gray-900">NRP {product.price}</td>
                       <td className="px-4 py-3 text-gray-500">{product.stock}</td>
                       <td className="px-4 py-3">
@@ -527,7 +580,7 @@ const SellerProduct = () => {
                   ))}
                   {products.length === 0 && (
                     <tr>
-                      <td colSpan={8} className="px-4 py-6 text-center text-xs text-gray-500">
+                      <td colSpan={9} className="px-4 py-6 text-center text-xs text-gray-500">
                         No products yet. Use the form above to add your first product.
                       </td>
                     </tr>
