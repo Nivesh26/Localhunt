@@ -91,6 +91,25 @@ public class ProductController {
         }
     }
 
+    @PutMapping("/{productId}")
+    public ResponseEntity<Map<String, Object>> updateProduct(
+            @PathVariable Long productId,
+            @Valid @RequestBody ProductRequest request) {
+        try {
+            ProductResponse product = productService.updateProduct(productId, request);
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "Product updated successfully");
+            response.put("product", product);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("message", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+    }
+
     @DeleteMapping("/{productId}")
     public ResponseEntity<Map<String, Object>> deleteProduct(@PathVariable Long productId) {
         try {

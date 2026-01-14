@@ -29,13 +29,21 @@ const Shop = () => {
       const response = await fetch('http://localhost:8080/api/products/live');
       if (response.ok) {
         const data = await response.json();
-        const formattedProducts: Product[] = data.map((p: any) => ({
-          id: p.id,
-          name: p.name,
-          category: p.category,
-          price: p.price,
-          imageUrl: p.imageUrl,
-        }));
+        const formattedProducts: Product[] = data.map((p: any) => {
+          // Convert imageUrl path to full URL
+          let imageUrl = p.imageUrl || '';
+          if (imageUrl && !imageUrl.startsWith('http://') && !imageUrl.startsWith('https://')) {
+            imageUrl = `http://localhost:8080${imageUrl.startsWith('/') ? imageUrl : '/' + imageUrl}`;
+          }
+          
+          return {
+            id: p.id,
+            name: p.name,
+            category: p.category,
+            price: p.price,
+            imageUrl: imageUrl,
+          };
+        });
         setProducts(formattedProducts);
       } else {
         console.error('Failed to fetch products');

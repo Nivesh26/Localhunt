@@ -3,6 +3,7 @@ package com.localhunts.backend.controller;
 import com.localhunts.backend.dto.AuthResponse;
 import com.localhunts.backend.dto.LoginRequest;
 import com.localhunts.backend.dto.SignupRequest;
+import com.localhunts.backend.dto.UpdateProfileRequest;
 import com.localhunts.backend.dto.UserProfileResponse;
 import com.localhunts.backend.service.UserService;
 import jakarta.validation.Valid;
@@ -49,5 +50,17 @@ public class AuthController {
         }
         
         return ResponseEntity.ok(profile);
+    }
+
+    @PutMapping("/profile/{userId}")
+    public ResponseEntity<?> updateUserProfile(
+            @PathVariable Long userId,
+            @Valid @RequestBody UpdateProfileRequest request) {
+        try {
+            UserProfileResponse profile = userService.updateUserProfile(userId, request);
+            return ResponseEntity.ok(profile);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
     }
 }

@@ -45,6 +45,7 @@ const SellerProduct = () => {
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [editingProductId, setEditingProductId] = useState<number | null>(null)
   const [name, setName] = useState('')
   const [sku, setSku] = useState('')
   const [price, setPrice] = useState('')
@@ -90,21 +91,29 @@ const SellerProduct = () => {
       if (response.ok) {
         const data = await response.json()
         // Convert backend response to frontend format
-        const formattedProducts: Product[] = data.map((p: any) => ({
-          id: p.id,
-          name: p.name,
-          sku: p.sku,
-          price: p.price,
-          stock: p.stock,
-          status: p.status as 'Live' | 'Draft' | 'Out of stock',
-          category: p.category,
-          imageUrl: p.imageUrl,
-          description: p.description || '',
-          handcrafted: false, // Not stored in backend currently
-          specs: p.specs ? p.specs.split('\n').filter((s: string) => s.trim()) : [],
-          sizeEu: p.sizeEu || '',
-          sizeClothing: p.sizeClothing || '',
-        }))
+        const formattedProducts: Product[] = data.map((p: any) => {
+          // Convert imageUrl path to full URL
+          let imageUrl = p.imageUrl || ''
+          if (imageUrl && !imageUrl.startsWith('http://') && !imageUrl.startsWith('https://')) {
+            imageUrl = `http://localhost:8080${imageUrl.startsWith('/') ? imageUrl : '/' + imageUrl}`
+          }
+          
+          return {
+            id: p.id,
+            name: p.name,
+            sku: p.sku,
+            price: p.price,
+            stock: p.stock,
+            status: p.status as 'Live' | 'Draft' | 'Out of stock',
+            category: p.category,
+            imageUrl: imageUrl,
+            description: p.description || '',
+            handcrafted: false, // Not stored in backend currently
+            specs: p.specs ? p.specs.split('\n').filter((s: string) => s.trim()) : [],
+            sizeEu: p.sizeEu || '',
+            sizeClothing: p.sizeClothing || '',
+          }
+        })
         setProducts(formattedProducts)
       } else {
         toast.error('Failed to fetch products')
@@ -115,6 +124,41 @@ const SellerProduct = () => {
     } finally {
       setLoading(false)
     }
+  }
+
+  const resetForm = () => {
+    setEditingProductId(null)
+    setName('')
+    setSku('')
+    setPrice('')
+    setStock('')
+    setCategory('')
+    setImageUrl('')
+    setImageFilePreview(null)
+    setDescription('')
+    setHandcrafted(true)
+    setSpecsText('')
+    setSizeEu([])
+    setSizeClothing([])
+    setErrors({})
+  }
+
+  const handleEdit = (product: Product) => {
+    setEditingProductId(product.id)
+    setName(product.name)
+    setSku(product.sku)
+    setPrice(product.price.toString())
+    setStock(product.stock.toString())
+    setCategory(product.category)
+    setImageUrl(product.imageUrl || '')
+    setDescription(product.description || '')
+    setSpecsText(product.specs.join('\n'))
+    setSizeEu(product.sizeEu ? product.sizeEu.split(',').map(s => s.trim()).filter(Boolean) : [])
+    setSizeClothing(product.sizeClothing ? product.sizeClothing.split(',').map(s => s.trim()).filter(Boolean) : [])
+    setErrors({})
+    
+    // Scroll to form
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   const handleAddProduct = async () => {
@@ -167,6 +211,12 @@ const SellerProduct = () => {
         .filter(Boolean)
         .join('\n')
 
+      // Extract path from imageUrl (remove http://localhost:8080 if present)
+      let imageUrlPath = imageUrl.trim()
+      if (imageUrlPath.startsWith('http://localhost:8080')) {
+        imageUrlPath = imageUrlPath.replace('http://localhost:8080', '')
+      }
+
       const productData = {
         name: name.trim(),
         sku: sku.trim(),
@@ -174,15 +224,21 @@ const SellerProduct = () => {
         stock: Number(stock),
         category: category,
         description: description.trim(),
-        imageUrl: imageUrl.trim() || '',
+        imageUrl: imageUrlPath || '',
         specs: specs,
         sizeEu: sizeEu.length > 0 ? sizeEu.join(', ') : null,
         sizeClothing: sizeClothing.length > 0 ? sizeClothing.join(', ') : null,
         sellerId: sellerId,
       }
 
-      const response = await fetch('http://localhost:8080/api/products', {
-        method: 'POST',
+      const url = editingProductId
+        ? `http://localhost:8080/api/products/${editingProductId}`
+        : 'http://localhost:8080/api/products'
+      
+      const method = editingProductId ? 'PUT' : 'POST'
+
+      const response = await fetch(url, {
+        method: method,
         headers: {
           'Content-Type': 'application/json',
         },
@@ -192,29 +248,17 @@ const SellerProduct = () => {
       const data = await response.json()
 
       if (data.success) {
-        toast.success('Product added successfully!')
+        toast.success(editingProductId ? 'Product updated successfully!' : 'Product added successfully!')
         // Reset form
-        setName('')
-        setSku('')
-        setPrice('')
-        setStock('')
-        setCategory('')
-        setImageUrl('')
-        setImageFilePreview(null)
-        setDescription('')
-        setHandcrafted(true)
-        setSpecsText('')
-        setSizeEu([])
-        setSizeClothing([])
-        setErrors({})
+        resetForm()
         // Refresh products list
         fetchProducts()
       } else {
-        toast.error(data.message || 'Failed to add product')
+        toast.error(data.message || (editingProductId ? 'Failed to update product' : 'Failed to add product'))
       }
     } catch (error) {
-      console.error('Error adding product:', error)
-      toast.error('An error occurred while adding the product')
+      console.error('Error saving product:', error)
+      toast.error(editingProductId ? 'An error occurred while updating the product' : 'An error occurred while adding the product')
     } finally {
       setSaving(false)
     }
@@ -311,9 +355,13 @@ const SellerProduct = () => {
             </article>
 
             <article className="rounded-2xl bg-white p-6 shadow-sm">
-              <h2 className="text-sm font-semibold text-gray-900">Add New Product</h2>
+              <h2 className="text-sm font-semibold text-gray-900">
+                {editingProductId ? 'Edit Product' : 'Add New Product'}
+              </h2>
               <p className="mt-1 text-xs text-gray-500">
-                Fill in the details and click &quot;Add product&quot; to create a new listing.
+                {editingProductId
+                  ? 'Update the product details and click &quot;Update product&quot; to save changes.'
+                  : 'Fill in the details and click &quot;Add product&quot; to create a new listing.'}
               </p>
 
               <div className="mt-4 space-y-3 text-sm">
@@ -635,15 +683,35 @@ const SellerProduct = () => {
                   </div>
                 </div>
 
-                <button
-                  type="button"
-                  onClick={handleAddProduct}
-                  disabled={saving}
-                  className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <FaPlus className="h-5 w-5" />
-                  {saving ? 'Adding...' : 'Add product'}
-                </button>
+                <div className="mt-2 flex gap-2">
+                  {editingProductId && (
+                    <button
+                      type="button"
+                      onClick={resetForm}
+                      disabled={saving}
+                      className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Cancel
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={handleAddProduct}
+                    disabled={saving}
+                    className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {editingProductId ? (
+                      <>
+                        {saving ? 'Updating...' : 'Update product'}
+                      </>
+                    ) : (
+                      <>
+                        <FaPlus className="h-5 w-5" />
+                        {saving ? 'Adding...' : 'Add product'}
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
             </article>
           </section>
@@ -761,7 +829,10 @@ const SellerProduct = () => {
                       </td>
                       <td className="px-4 py-3 text-right">
                         <div className="inline-flex items-center gap-2">
-                          <button className="rounded-lg border border-gray-200 p-1.5 text-gray-500 hover:border-gray-300 hover:bg-gray-50 hover:text-gray-700">
+                          <button
+                            onClick={() => handleEdit(product)}
+                            className="rounded-lg border border-gray-200 p-1.5 text-gray-500 hover:border-gray-300 hover:bg-gray-50 hover:text-gray-700"
+                          >
                             <FaEdit className="h-4 w-4" />
                           </button>
                           <button

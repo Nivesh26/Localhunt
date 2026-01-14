@@ -12,6 +12,7 @@
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/dto/SellerLoginRequest.java
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/dto/SellerSignupRequest.java
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/dto/SignupRequest.java
+/Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/dto/UpdateProfileRequest.java
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/dto/UserProfileResponse.java
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/model/Product.java
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/model/Role.java

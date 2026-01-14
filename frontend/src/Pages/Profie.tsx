@@ -94,7 +94,7 @@ const Profie = () => {
     return phoneRegex.test(phone.replace(/\D/g, ''))
   }
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const newErrors: typeof errors = {}
 
     if (!editForm.name.trim()) {
@@ -118,8 +118,50 @@ const Profie = () => {
     setErrors(newErrors)
 
     if (Object.keys(newErrors).length === 0) {
-      setUserData(editForm)
-      setIsEditing(false)
+      try {
+        const userStr = localStorage.getItem('user')
+        if (!userStr) {
+          toast.error('Please login to update your profile')
+          navigate('/login')
+          return
+        }
+
+        const user = JSON.parse(userStr)
+        const userId = user.userId
+
+        // Normalize phone number (remove any non-digit characters)
+        const normalizedPhone = editForm.phone.replace(/\D/g, '')
+
+        const response = await fetch(`http://localhost:8080/api/auth/profile/${userId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            fullName: editForm.name.trim(),
+            email: editForm.email.trim(),
+            phone: normalizedPhone,
+          }),
+        })
+
+        if (response.ok) {
+          const data = await response.json()
+          setUserData({
+            name: data.fullName || editForm.name,
+            email: data.email || editForm.email,
+            phone: data.phone || editForm.phone,
+            avatar: editForm.avatar,
+          })
+          setIsEditing(false)
+          toast.success('Profile updated successfully!')
+        } else {
+          const errorMessage = await response.text()
+          toast.error(errorMessage || 'Failed to update profile')
+        }
+      } catch (error) {
+        console.error('Error updating profile:', error)
+        toast.error('An error occurred while updating your profile')
+      }
     }
   }
 

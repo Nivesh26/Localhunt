@@ -23,12 +23,20 @@ const Shopnow = () => {
       if (response.ok) {
         const data = await response.json()
         // Get first 4 products
-        const limitedProducts = data.slice(0, 4).map((p: any) => ({
-          id: p.id,
-          name: p.name,
-          price: p.price,
-          imageUrl: p.imageUrl,
-        }))
+        const limitedProducts = data.slice(0, 4).map((p: any) => {
+          // Convert imageUrl path to full URL
+          let imageUrl = p.imageUrl || ''
+          if (imageUrl && !imageUrl.startsWith('http://') && !imageUrl.startsWith('https://')) {
+            imageUrl = `http://localhost:8080${imageUrl.startsWith('/') ? imageUrl : '/' + imageUrl}`
+          }
+          
+          return {
+            id: p.id,
+            name: p.name,
+            price: p.price,
+            imageUrl: imageUrl,
+          }
+        })
         setProducts(limitedProducts)
       } else {
         console.error('Failed to fetch products')

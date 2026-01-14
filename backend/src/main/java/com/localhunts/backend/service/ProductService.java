@@ -80,6 +80,39 @@ public class ProductService {
         return convertToResponse(product);
     }
 
+    public ProductResponse updateProduct(Long productId, ProductRequest request) {
+        // Find existing product
+        Product product = productRepository.findById(productId)
+            .orElseThrow(() -> new RuntimeException("Product not found"));
+
+        // Check if SKU is being changed and if new SKU already exists (for a different product)
+        if (!product.getSku().equals(request.getSku()) && productRepository.existsBySku(request.getSku())) {
+            throw new RuntimeException("SKU already exists");
+        }
+
+        // Update product fields
+        product.setName(request.getName());
+        product.setSku(request.getSku());
+        product.setPrice(request.getPrice());
+        product.setStock(request.getStock());
+        product.setCategory(request.getCategory());
+        product.setDescription(request.getDescription());
+        product.setImageUrl(request.getImageUrl());
+        product.setSpecs(request.getSpecs());
+        product.setSizeEu(request.getSizeEu());
+        product.setSizeClothing(request.getSizeClothing());
+        
+        // Update status based on stock
+        if (request.getStock() > 0) {
+            product.setStatus("Live");
+        } else {
+            product.setStatus("Out of stock");
+        }
+
+        Product updatedProduct = productRepository.save(product);
+        return convertToResponse(updatedProduct);
+    }
+
     public void deleteProduct(Long productId) {
         Product product = productRepository.findById(productId)
             .orElseThrow(() -> new RuntimeException("Product not found"));

@@ -3,6 +3,7 @@ package com.localhunts.backend.service;
 import com.localhunts.backend.dto.AuthResponse;
 import com.localhunts.backend.dto.LoginRequest;
 import com.localhunts.backend.dto.SignupRequest;
+import com.localhunts.backend.dto.UpdateProfileRequest;
 import com.localhunts.backend.dto.UserProfileResponse;
 import com.localhunts.backend.model.Role;
 import com.localhunts.backend.model.User;
@@ -86,6 +87,30 @@ public class UserService {
             user.getEmail(),
             user.getPhone(),
             user.getRole()
+        );
+    }
+
+    public UserProfileResponse updateUserProfile(Long userId, UpdateProfileRequest request) {
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // Check if email is being changed and if new email already exists (for a different user)
+        if (!user.getEmail().equals(request.getEmail()) && userRepository.existsByEmail(request.getEmail())) {
+            throw new RuntimeException("Email already exists");
+        }
+
+        // Update user fields
+        user.setFullName(request.getFullName());
+        user.setEmail(request.getEmail());
+        user.setPhone(request.getPhone());
+
+        User updatedUser = userRepository.save(user);
+        return new UserProfileResponse(
+            updatedUser.getId(),
+            updatedUser.getFullName(),
+            updatedUser.getEmail(),
+            updatedUser.getPhone(),
+            updatedUser.getRole()
         );
     }
 }
