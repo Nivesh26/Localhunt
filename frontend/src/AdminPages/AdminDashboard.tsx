@@ -8,9 +8,20 @@ import {
   FaSearch,
   FaSignOutAlt,
 } from 'react-icons/fa'
+import { useNavigate } from 'react-router-dom'
+import { toast } from 'react-toastify'
 import AdminNavbar from '../AdminComponents/AdminNavbar'
 
 const AdminDashboard = () => {
+  const navigate = useNavigate()
+
+  const handleLogout = () => {
+    localStorage.removeItem('user')
+    window.dispatchEvent(new Event('userLoginStatusChange'))
+    toast.success('Logged out successfully')
+    navigate('/login')
+  }
+
   const statCards = [
     { label: 'Total Vendors', value: '10',  icon: FaStore, color: 'bg-red-500' },
     { label: 'Active Products', value: '18',  icon: FaCube, color: 'bg-blue-500' },
@@ -69,7 +80,10 @@ const AdminDashboard = () => {
                   Alerts
                 </button>
 
-                <button className="flex items-center gap-2 rounded-xl border border-red-200 px-4 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-50">
+                <button 
+                  onClick={handleLogout}
+                  className="flex items-center gap-2 rounded-xl border border-red-200 px-4 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-50"
+                >
                   <FaSignOutAlt className="h-5 w-5" />
                   Log Out
                 </button>

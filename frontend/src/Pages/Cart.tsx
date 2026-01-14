@@ -175,7 +175,7 @@ const cart = () => {
                     </div>
                   </div>
 
-                  <button className="w-full bg-red-400 text-white py-4 rounded-lg font-semibold text-lg hover:bg-red-500 transition-colors mb-4"
+                  <button className="w-full bg-red-400 text-white py-4 rounded-lg font-semibold text-lg hover:bg-red-500 transition-colors mb-4">
                     Proceed to Checkout
                   </button>
                   

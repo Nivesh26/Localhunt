@@ -67,9 +67,17 @@ const Login_form = () => {
         }));
         // Dispatch event to update header
         window.dispatchEvent(new Event('userLoginStatusChange'));
-        // Redirect based on role or to home page
+        // Redirect based on role
         setTimeout(() => {
-          navigate('/');
+          const role = data.role;
+          if (role === 'SUPERADMIN') {
+            navigate('/admindashboard');
+          } else if (role === 'VENDOR') {
+            navigate('/sellerdashboard');
+          } else {
+            // USER role or default
+            navigate('/');
+          }
         }, 1000);
       } else {
         toast.error(data.message || 'Login failed');
