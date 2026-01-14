@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   FaPlus,
   FaEdit,
@@ -7,9 +7,7 @@ import {
   FaDollarSign,
 } from 'react-icons/fa'
 import SellerNavbar from '../SellerComponents/SellerNavbar'
-import P1 from '../assets/P1.png'
-import P2 from '../assets/P2.png'
-import P3 from '../assets/p3.png'
+import { toast } from 'react-toastify'
 
 type Product = {
   id: number
@@ -26,61 +24,6 @@ type Product = {
   sizeEu?: string
   sizeClothing?: string
 }
-
-const initialProducts: Product[] = [
-  {
-    id: 1,
-    name: 'Handwoven Dhaka Scarf',
-    sku: 'DHK-241',
-    price: 1800,
-    stock: 18,
-    status: 'Live',
-    category: 'Textiles',
-    imageUrl: P1,
-    description:
-      'Handwoven Dhaka scarf crafted with natural fibres for everyday wear and home styling.',
-    handcrafted: true,
-    specs: [
-      'Premium natural fibres with soft touch',
-      'Designed for everyday wear and home styling',
-      'Made in Nepal with traditional techniques',
-    ],
-  },
-  {
-    id: 2,
-    name: 'Himalayan Organic Tea Pack',
-    sku: 'TEA-112',
-    price: 950,
-    stock: 42,
-    status: 'Live',
-    category: 'Gourmet Food',
-    imageUrl: P2,
-    description: 'Assorted Himalayan organic teas sourced from high altitude family farms.',
-    handcrafted: false,
-    specs: [
-      'Organic tea leaves from high altitude farms',
-      'Balanced selection of flavours for daily use',
-      'Packed in eco-conscious materials',
-    ],
-  },
-  {
-    id: 3,
-    name: 'Lokta Paper Journal',
-    sku: 'LKT-089',
-    price: 550,
-    stock: 0,
-    status: 'Out of stock',
-    category: 'Handicrafts',
-    imageUrl: P3,
-    description: 'Lokta paper journal with textured cover, ideal for sketching and journaling.',
-    handcrafted: true,
-    specs: [
-      'Lokta paper pages with natural texture',
-      'Suitable for sketching, journaling and gifts',
-      'Handcrafted by local artisans in Nepal',
-    ],
-  },
-]
 
 const categories = [
   'Home Decor',
@@ -99,7 +42,9 @@ const categories = [
 ]
 
 const SellerProduct = () => {
-  const [products, setProducts] = useState<Product[]>(initialProducts)
+  const [products, setProducts] = useState<Product[]>([])
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
   const [name, setName] = useState('')
   const [sku, setSku] = useState('')
   const [price, setPrice] = useState('')
@@ -123,7 +68,54 @@ const SellerProduct = () => {
     image?: string
   }>({})
 
-  const handleAddProduct = () => {
+  useEffect(() => {
+    fetchProducts()
+  }, [])
+
+  const fetchProducts = async () => {
+    setLoading(true)
+    try {
+      const userStr = localStorage.getItem('user')
+      if (!userStr) {
+        toast.error('Please login to view products')
+        return
+      }
+
+      const user = JSON.parse(userStr)
+      const sellerId = user.userId
+
+      const response = await fetch(`http://localhost:8080/api/products/seller/${sellerId}`)
+      if (response.ok) {
+        const data = await response.json()
+        // Convert backend response to frontend format
+        const formattedProducts: Product[] = data.map((p: any) => ({
+          id: p.id,
+          name: p.name,
+          sku: p.sku,
+          price: p.price,
+          stock: p.stock,
+          status: p.status as 'Live' | 'Draft' | 'Out of stock',
+          category: p.category,
+          imageUrl: p.imageUrl,
+          description: p.description || '',
+          handcrafted: false, // Not stored in backend currently
+          specs: p.specs ? p.specs.split('\n').filter((s: string) => s.trim()) : [],
+          sizeEu: p.sizeEu,
+          sizeClothing: p.sizeClothing,
+        }))
+        setProducts(formattedProducts)
+      } else {
+        toast.error('Failed to fetch products')
+      }
+    } catch (error) {
+      console.error('Error fetching products:', error)
+      toast.error('An error occurred while fetching products')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleAddProduct = async () => {
     const newErrors: typeof errors = {}
 
     if (!name.trim()) {
@@ -152,54 +144,106 @@ const SellerProduct = () => {
       newErrors.description = 'Description must be at least 10 characters'
     }
 
-    if (!imageFilePreview && !imageUrl.trim()) {
-      newErrors.image = 'Product image is required'
-    }
-
     setErrors(newErrors)
 
     if (Object.keys(newErrors).length > 0) return
 
-    const finalImage = imageFilePreview || (imageUrl.trim() || undefined)
-    const specs = specsText
-      .split('\n')
-      .map(line => line.trim())
-      .filter(Boolean)
+    setSaving(true)
+    try {
+      const userStr = localStorage.getItem('user')
+      if (!userStr) {
+        toast.error('Please login to add products')
+        return
+      }
 
-    const newProduct: Product = {
-      id: Date.now(),
-      name: name.trim(),
-      sku: sku.trim(),
-      price: Number(price),
-      stock: Number(stock),
-      status: Number(stock) > 0 ? 'Live' : 'Out of stock',
-      category: category,
-      imageUrl: finalImage,
-      description: description.trim(),
-      handcrafted,
-      specs,
-      sizeEu: sizeEu.trim() || undefined,
-      sizeClothing: sizeClothing.trim() || undefined,
+      const user = JSON.parse(userStr)
+      const sellerId = user.userId
+
+      const specs = specsText
+        .split('\n')
+        .map(line => line.trim())
+        .filter(Boolean)
+        .join('\n')
+
+      const productData = {
+        name: name.trim(),
+        sku: sku.trim(),
+        price: Number(price),
+        stock: Number(stock),
+        category: category,
+        description: description.trim(),
+        imageUrl: imageUrl.trim() || '',
+        specs: specs,
+        sizeEu: sizeEu.trim() || null,
+        sizeClothing: sizeClothing.trim() || null,
+        sellerId: sellerId,
+      }
+
+      const response = await fetch('http://localhost:8080/api/products', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(productData),
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        toast.success('Product added successfully!')
+        // Reset form
+        setName('')
+        setSku('')
+        setPrice('')
+        setStock('')
+        setCategory('')
+        setImageUrl('')
+        setImageFilePreview(null)
+        setDescription('')
+        setHandcrafted(true)
+        setSpecsText('')
+        setSizeEu('')
+        setSizeClothing('')
+        setErrors({})
+        // Refresh products list
+        fetchProducts()
+      } else {
+        toast.error(data.message || 'Failed to add product')
+      }
+    } catch (error) {
+      console.error('Error adding product:', error)
+      toast.error('An error occurred while adding the product')
+    } finally {
+      setSaving(false)
     }
-
-    setProducts(prev => [newProduct, ...prev])
-    setName('')
-    setSku('')
-    setPrice('')
-    setStock('')
-    setCategory('')
-    setImageUrl('')
-    setImageFilePreview(null)
-    setDescription('')
-    setHandcrafted(true)
-    setSpecsText('')
-    setSizeEu('')
-    setSizeClothing('')
-    setErrors({})
   }
 
-  const handleDelete = (id: number) => {
-    setProducts(prev => prev.filter(product => product.id !== id))
+  const handleDelete = async (id: number) => {
+    if (!window.confirm('Are you sure you want to delete this product?')) {
+      return
+    }
+
+    try {
+      const response = await fetch(`http://localhost:8080/api/products/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        toast.success('Product deleted successfully')
+        // Refresh products list
+        fetchProducts()
+      } else {
+        toast.error(data.message || 'Failed to delete product')
+      }
+    } catch (error) {
+      console.error('Error deleting product:', error)
+      toast.error('An error occurred while deleting the product')
+    }
   }
 
   return (
@@ -334,13 +378,35 @@ const SellerProduct = () => {
                       <input
                         type="file"
                         accept="image/*"
-                        onChange={e => {
+                        onChange={async e => {
                           const file = e.target.files?.[0]
                           if (!file) return
+                          
                           const url = URL.createObjectURL(file)
                           setImageFilePreview(url)
                           setImageUrl('')
                           if (errors.image) setErrors({ ...errors, image: undefined })
+
+                          // Upload file immediately
+                          try {
+                            const formData = new FormData()
+                            formData.append('file', file)
+
+                            const uploadResponse = await fetch('http://localhost:8080/api/products/upload', {
+                              method: 'POST',
+                              body: formData,
+                            })
+
+                            const uploadData = await uploadResponse.json()
+                            if (uploadData.success && uploadData.fileUrl) {
+                              setImageUrl(`http://localhost:8080${uploadData.fileUrl}`)
+                            } else {
+                              toast.error('Failed to upload image')
+                            }
+                          } catch (error) {
+                            console.error('Error uploading file:', error)
+                            toast.error('Error uploading image')
+                          }
                         }}
                         className={`rounded-lg border bg-white px-2 py-1 text-xs file:mr-2 file:rounded-md file:border-0 file:bg-red-600 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-white hover:file:bg-red-700 ${
                           errors.image ? 'border-red-500' : 'border-gray-200'
@@ -448,10 +514,11 @@ const SellerProduct = () => {
                 <button
                   type="button"
                   onClick={handleAddProduct}
-                  className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700"
+                  disabled={saving}
+                  className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <FaPlus className="h-5 w-5" />
-                  Add product
+                  {saving ? 'Adding...' : 'Add product'}
                 </button>
               </div>
             </article>
@@ -464,7 +531,12 @@ const SellerProduct = () => {
               <p className="text-xs text-gray-500">Showing {products.length} products</p>
             </div>
 
-            <div className="mt-4 overflow-x-auto">
+            {loading ? (
+              <div className="mt-4 flex items-center justify-center py-12">
+                <p className="text-gray-500">Loading products...</p>
+              </div>
+            ) : (
+              <div className="mt-4 overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200 text-sm">
                 <thead className="bg-gray-50">
                   <tr>
@@ -588,6 +660,7 @@ const SellerProduct = () => {
                 </tbody>
               </table>
             </div>
+            )}
           </section>
         </main>
       </div>

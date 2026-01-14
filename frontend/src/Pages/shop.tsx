@@ -1,34 +1,66 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import Header from "../Components/Header";
 import Topbar from "../Components/Topbar";
 import Footer from "../Components/Footer";
-import bowl from "../assets/Bowl.png";
-import cranes from "../assets/Swan.png";
-import incense from "../assets/p3.png";
-import buddha from "../assets/P1.png";
-import pro from "../assets/P2.png";
-import ganesh from "../assets/P4.png";
 
-const productsData = [
-  { id: 1, name: "Handmade Pottery", category: "Crafts", price: 40, image: cranes },
-  { id: 2, name: "Organic Honey", category: "Food", price: 15, image: bowl },
-  { id: 3, name: "Wooden Sculpture", category: "Crafts", price: 120, image: incense  },
-  { id: 4, name: "Local Tea Pack", category: "Food", price: 25, image: buddha},
-  { id: 5, name: "Traditional Shawl", category: "Clothing", price: 85, image: pro},
-  { id: 6, name: "Handwoven Basket", category: "Crafts", price: 55, image: ganesh},
-  { id: 7, name: "Handwoven Basket", category: "Crafts", price: 2, image: cranes },
-  { id: 8, name: "Handwoven Basket", category: "Crafts", price: 5, image: buddha},
-  { id: 9, name: "Handwoven Basket", category: "Crafts", price: 15, image: bowl },
-];
+interface Product {
+  id: number;
+  name: string;
+  category: string;
+  price: number;
+  imageUrl?: string;
+}
 
 const Shop = () => {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
   const [category, setCategory] = useState("All");
-  const [priceRange, setPriceRange] = useState([0, 200]);
+  const [priceRange, setPriceRange] = useState([0, 100000]);
   const [sortOption, setSortOption] = useState("featured");
 
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  const fetchProducts = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch('http://localhost:8080/api/products/live');
+      if (response.ok) {
+        const data = await response.json();
+        const formattedProducts: Product[] = data.map((p: any) => ({
+          id: p.id,
+          name: p.name,
+          category: p.category,
+          price: p.price,
+          imageUrl: p.imageUrl,
+        }));
+        setProducts(formattedProducts);
+      } else {
+        console.error('Failed to fetch products');
+      }
+    } catch (error) {
+      console.error('Error fetching products:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Calculate max price for range
+  const maxPrice = useMemo(() => {
+    if (products.length === 0) return 100000;
+    return Math.max(...products.map(p => p.price), 100000);
+  }, [products]);
+
+  // Get unique categories from products
+  const uniqueCategories = useMemo(() => {
+    const categories = new Set(products.map(p => p.category));
+    return Array.from(categories);
+  }, [products]);
+
   const filteredProducts = useMemo(() => {
-    const filtered = productsData.filter((product) => {
+    const filtered = products.filter((product) => {
       const matchCategory = category === "All" || product.category === category;
       const matchPrice = product.price >= priceRange[0] && product.price <= priceRange[1];
       return matchCategory && matchPrice;
@@ -52,11 +84,11 @@ const Shop = () => {
         break;
     }
     return sorted;
-  }, [category, priceRange, sortOption]);
+  }, [products, category, priceRange, sortOption]);
 
   const resetFilters = () => {
     setCategory("All");
-    setPriceRange([0, 200]);
+    setPriceRange([0, maxPrice]);
     setSortOption("featured");
   };
 
@@ -80,9 +112,11 @@ const Shop = () => {
               className="w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-red-500"
             >
               <option value="All">All</option>
-              <option value="Food">Food</option>
-              <option value="Crafts">Crafts</option>
-              <option value="Clothing">Clothing</option>
+              {uniqueCategories.map((cat) => (
+                <option key={cat} value={cat}>
+                  {cat}
+                </option>
+              ))}
             </select>
           </div>
 
@@ -97,10 +131,10 @@ const Shop = () => {
             <input
               type="range"
               min="0"
-              max="200"
+              max={maxPrice}
               step="5"
               value={priceRange[1]}
-              onChange={(e) => setPriceRange([0, parseInt(e.target.value, 10)])}
+              onChange={(e) => setPriceRange([0, parseInt(e.target.value)])}
               className="w-full accent-blue-500"
             />
           </div>
@@ -139,7 +173,11 @@ const Shop = () => {
             </div>
           </div>
 
-          {filteredProducts.length === 0 ? (
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <p className="text-gray-500">Loading products...</p>
+            </div>
+          ) : filteredProducts.length === 0 ? (
             <p className="text-gray-500">No products found in this filter range.</p>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -149,7 +187,13 @@ const Shop = () => {
                   to="/productdetail"
                   className="bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden cursor-pointer"
                 >
-                  <img src={product.image} alt={product.name} className="w-full h-48 object-cover" />
+                  {product.imageUrl ? (
+                    <img src={product.imageUrl} alt={product.name} className="w-full h-48 object-cover" />
+                  ) : (
+                    <div className="w-full h-48 bg-gray-200 flex items-center justify-center">
+                      <p className="text-gray-400">No Image</p>
+                    </div>
+                  )}
                   <div className="p-4">
                     <h3 className="text-lg font-medium">{product.name}</h3>
                     <p className="text-gray-500 text-sm">{product.category}</p>
