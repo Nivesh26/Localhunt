@@ -50,6 +50,12 @@ public class SellerController {
         return ResponseEntity.ok(sellers);
     }
 
+    @GetMapping("/approved")
+    public ResponseEntity<List<SellerListResponse>> getApprovedSellers() {
+        List<SellerListResponse> sellers = sellerService.getApprovedSellers();
+        return ResponseEntity.ok(sellers);
+    }
+
     @PostMapping("/{sellerId}/approve")
     public ResponseEntity<Map<String, Object>> approveSeller(@PathVariable Long sellerId) {
         try {

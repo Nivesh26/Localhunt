@@ -95,6 +95,11 @@ public class SellerService {
         return sellers.stream().map(this::convertToResponse).collect(Collectors.toList());
     }
 
+    public List<SellerListResponse> getApprovedSellers() {
+        List<Seller> sellers = sellerRepository.findByApprovedTrue();
+        return sellers.stream().map(this::convertToResponse).collect(Collectors.toList());
+    }
+
     public SellerListResponse approveSeller(Long sellerId) {
         Seller seller = sellerRepository.findById(sellerId)
             .orElseThrow(() -> new RuntimeException("Seller not found"));
