@@ -55,8 +55,10 @@ const SellerProduct = () => {
   const [description, setDescription] = useState('')
   const [handcrafted, setHandcrafted] = useState(true)
   const [specsText, setSpecsText] = useState('')
-  const [sizeEu, setSizeEu] = useState('')
-  const [sizeClothing, setSizeClothing] = useState('')
+  const [sizeEu, setSizeEu] = useState<string[]>([])
+  const [sizeClothing, setSizeClothing] = useState<string[]>([])
+  const [sizeEuDropdownOpen, setSizeEuDropdownOpen] = useState(false)
+  const [sizeClothingDropdownOpen, setSizeClothingDropdownOpen] = useState(false)
 
   const [errors, setErrors] = useState<{
     name?: string
@@ -100,8 +102,8 @@ const SellerProduct = () => {
           description: p.description || '',
           handcrafted: false, // Not stored in backend currently
           specs: p.specs ? p.specs.split('\n').filter((s: string) => s.trim()) : [],
-          sizeEu: p.sizeEu,
-          sizeClothing: p.sizeClothing,
+          sizeEu: p.sizeEu || '',
+          sizeClothing: p.sizeClothing || '',
         }))
         setProducts(formattedProducts)
       } else {
@@ -174,8 +176,8 @@ const SellerProduct = () => {
         description: description.trim(),
         imageUrl: imageUrl.trim() || '',
         specs: specs,
-        sizeEu: sizeEu.trim() || null,
-        sizeClothing: sizeClothing.trim() || null,
+        sizeEu: sizeEu.length > 0 ? sizeEu.join(', ') : null,
+        sizeClothing: sizeClothing.length > 0 ? sizeClothing.join(', ') : null,
         sellerId: sellerId,
       }
 
@@ -202,8 +204,8 @@ const SellerProduct = () => {
         setDescription('')
         setHandcrafted(true)
         setSpecsText('')
-        setSizeEu('')
-        setSizeClothing('')
+        setSizeEu([])
+        setSizeClothing([])
         setErrors({})
         // Refresh products list
         fetchProducts()
@@ -438,26 +440,148 @@ const SellerProduct = () => {
                 </div>
 
                 <div className="grid gap-3 sm:grid-cols-2">
-                  <label className="flex flex-col gap-1">
-                    <span className="text-xs font-medium text-gray-700">Size EU (for footwear)</span>
-                    <input
-                      value={sizeEu}
-                      onChange={e => setSizeEu(e.target.value)}
-                      type="text"
-                      placeholder="EU sizes"
-                      className="rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-200"
-                    />
-                  </label>
-                  <label className="flex flex-col gap-1">
-                    <span className="text-xs font-medium text-gray-700">Size (for clothes)</span>
-                    <input
-                      value={sizeClothing}
-                      onChange={e => setSizeClothing(e.target.value)}
-                      type="text"
-                      placeholder="Clothing sizes"
-                      className="rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-200"
-                    />
-                  </label>
+                  <div className="flex flex-col gap-1 relative">
+                    <label className="text-xs font-medium text-gray-700">Size EU (for footwear)</label>
+                    <div className="relative">
+                      <button
+                        type="button"
+                        onClick={() => setSizeEuDropdownOpen(!sizeEuDropdownOpen)}
+                        className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-left focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-200 bg-white flex items-center justify-between"
+                      >
+                        <span className={sizeEu.length === 0 ? 'text-gray-400' : 'text-gray-900'}>
+                          {sizeEu.length === 0 ? 'Select sizes' : `${sizeEu.length} size(s) selected`}
+                        </span>
+                        <svg
+                          className={`w-4 h-4 text-gray-500 transition-transform ${sizeEuDropdownOpen ? 'rotate-180' : ''}`}
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </button>
+                      {sizeEuDropdownOpen && (
+                        <>
+                          <div
+                            className="fixed inset-0 z-10"
+                            onClick={() => setSizeEuDropdownOpen(false)}
+                          ></div>
+                          <div className="absolute z-20 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-auto">
+                            {['38', '39', '40', '41', '42'].map((size) => (
+                              <label
+                                key={size}
+                                className="flex items-center px-4 py-2 hover:bg-gray-50 cursor-pointer"
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={sizeEu.includes(size)}
+                                  onChange={(e) => {
+                                    if (e.target.checked) {
+                                      setSizeEu([...sizeEu, size])
+                                    } else {
+                                      setSizeEu(sizeEu.filter(s => s !== size))
+                                    }
+                                  }}
+                                  className="mr-3 rounded border-gray-300 text-red-600 focus:ring-red-500"
+                                />
+                                <span className="text-sm text-gray-700">{size}</span>
+                              </label>
+                            ))}
+                          </div>
+                        </>
+                      )}
+                    </div>
+                    {sizeEu.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {sizeEu.map(size => (
+                          <span
+                            key={size}
+                            className="inline-flex items-center gap-1 px-2 py-1 bg-red-100 text-red-700 rounded-md text-xs font-medium"
+                          >
+                            {size}
+                            <button
+                              type="button"
+                              onClick={() => setSizeEu(sizeEu.filter(s => s !== size))}
+                              className="hover:text-red-900"
+                            >
+                              ×
+                            </button>
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex flex-col gap-1 relative">
+                    <label className="text-xs font-medium text-gray-700">Size (for clothes)</label>
+                    <div className="relative">
+                      <button
+                        type="button"
+                        onClick={() => setSizeClothingDropdownOpen(!sizeClothingDropdownOpen)}
+                        className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-left focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-200 bg-white flex items-center justify-between"
+                      >
+                        <span className={sizeClothing.length === 0 ? 'text-gray-400' : 'text-gray-900'}>
+                          {sizeClothing.length === 0 ? 'Select sizes' : `${sizeClothing.length} size(s) selected`}
+                        </span>
+                        <svg
+                          className={`w-4 h-4 text-gray-500 transition-transform ${sizeClothingDropdownOpen ? 'rotate-180' : ''}`}
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </button>
+                      {sizeClothingDropdownOpen && (
+                        <>
+                          <div
+                            className="fixed inset-0 z-10"
+                            onClick={() => setSizeClothingDropdownOpen(false)}
+                          ></div>
+                          <div className="absolute z-20 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-auto">
+                            {['S', 'M', 'L', 'XL', 'XXL', 'XXXL'].map((size) => (
+                              <label
+                                key={size}
+                                className="flex items-center px-4 py-2 hover:bg-gray-50 cursor-pointer"
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={sizeClothing.includes(size)}
+                                  onChange={(e) => {
+                                    if (e.target.checked) {
+                                      setSizeClothing([...sizeClothing, size])
+                                    } else {
+                                      setSizeClothing(sizeClothing.filter(s => s !== size))
+                                    }
+                                  }}
+                                  className="mr-3 rounded border-gray-300 text-red-600 focus:ring-red-500"
+                                />
+                                <span className="text-sm text-gray-700">{size}</span>
+                              </label>
+                            ))}
+                          </div>
+                        </>
+                      )}
+                    </div>
+                    {sizeClothing.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {sizeClothing.map(size => (
+                          <span
+                            key={size}
+                            className="inline-flex items-center gap-1 px-2 py-1 bg-red-100 text-red-700 rounded-md text-xs font-medium"
+                          >
+                            {size}
+                            <button
+                              type="button"
+                              onClick={() => setSizeClothing(sizeClothing.filter(s => s !== size))}
+                              className="hover:text-red-900"
+                            >
+                              ×
+                            </button>
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 <label className="flex flex-col gap-1">
