@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import {
   FaSearch,
   FaFilter,
@@ -11,17 +11,12 @@ import {
   FaTrash,
 } from 'react-icons/fa';
 import AdminNavbar from '../AdminComponents/AdminNavbar';
-import bowl from '../assets/Bowl.png';
-import honey from '../assets/P2.png';
-import shawl from '../assets/P1.png';
-import prayerWheel from '../assets/P4.png';
-import backpack from '../assets/Swan.png';
-import teaSet from '../assets/p3.png';
+import { toast } from 'react-toastify';
 
 type ProductStatus = 'Active' | 'Low Stock' | 'Draft' | 'Inactive';
 
 type Product = {
-  id: string;
+  id: number;
   name: string;
   category: string;
   vendor: string;
@@ -31,109 +26,128 @@ type Product = {
   rating: number;
   updated: string;
   image: string;
+  sku: string;
 };
 
-const initialProducts: Product[] = [
-  {
-    id: 'PRD-1201',
-    name: 'Handcrafted Singing Bowl Set',
-    category: 'Home Decor',
-    vendor: 'Everest Crafts',
-    price: 2400,
-    stock: 128,
-    status: 'Active' as ProductStatus,
-    rating: 4.8,
-    updated: '2h ago',
-    image: bowl,
-  },
-  {
-    id: 'PRD-1189',
-    name: 'Organic Wildflower Honey',
-    category: 'Gourmet Food',
-    vendor: 'Kathmandu Organics',
-    price: 650,
-    stock: 46,
-    status: 'Low Stock' as ProductStatus,
-    rating: 4.6,
-    updated: '1h ago',
-    image: honey,
-  },
-  {
-    id: 'PRD-1176',
-    name: 'Pashmina Shawl (Limited Edition)',
-    category: 'Textiles',
-    vendor: 'Himalayan Threads',
-    price: 4200,
-    stock: 12,
-    status: 'Active' as ProductStatus,
-    rating: 4.9,
-    updated: 'Yesterday',
-    image: shawl,
-  },
-
-  {
-    id: 'PRD-1',
-    name: 'Set',
-    category: 'Home Decor',
-    vendor: 'Everest Crafts',
-    price: 1750,
-    stock: 8,
-    status: 'Draft' as ProductStatus,
-    rating: 0,
-    updated: 'Draft',
-    image: teaSet,
-  },
-  {
-    id: 'PRD-1162',
-    name: 'Copper Prayer Wheel',
-    category: 'Spiritual',
-    vendor: 'Artisan Metalworks',
-    price: 1850,
-    stock: 0,
-    status: 'Inactive' as ProductStatus,
-    rating: 4.2,
-    updated: '3d ago',
-    image: prayerWheel,
-  },
-  {
-    id: 'PRD-1148',
-    name: 'Hemp Backpack',
-    category: 'Accessories',
-    vendor: 'Summit Gear',
-    price: 2150,
-    stock: 34,
-    status: 'Active' as ProductStatus,
-    rating: 4.4,
-    updated: '5h ago',
-    image: backpack,
-  },
-  {
-    id: 'PRD-1135',
-    name: 'Ceramic Tea Set',
-    category: 'Home Decor',
-    vendor: 'Everest Crafts',
-    price: 1750,
-    stock: 18,
-    status: 'Draft' as ProductStatus,
-    rating: 0,
-    updated: 'Draft',
-    image: teaSet,
-  },
-
-];
-
-const categories = ['All categories', 'Home Decor', 'Gourmet Food', 'Textiles', 'Spiritual', 'Accessories'];
+type BackendProduct = {
+  id: number;
+  name: string;
+  sku: string;
+  price: number;
+  stock: number;
+  category: string;
+  description: string;
+  imageUrl: string;
+  status: string;
+  specs: string;
+  sizeEu: string;
+  sizeClothing: string;
+  sellerId: number;
+  sellerName: string;
+  createdAt: string;
+  updatedAt: string;
+};
 
 const AdminProduct = () => {
-  const [products, setProducts] = useState<Product[]>(initialProducts);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('All categories');
 
-  const handleDelete = (productId: string) => {
+  // Format relative time
+  const formatRelativeTime = (dateString: string): string => {
+    if (!dateString) return 'N/A';
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+    if (diffInSeconds < 60) return 'Just now';
+    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
+    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
+    if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)}d ago`;
+    return date.toLocaleDateString();
+  };
+
+  // Map backend status to frontend status
+  const mapStatus = (status: string, stock: number): ProductStatus => {
+    if (status === 'Draft') return 'Draft';
+    if (status === 'Out of stock' || stock === 0) return 'Inactive';
+    if (stock < 25) return 'Low Stock';
+    return 'Active';
+  };
+
+  // Fetch products from backend
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch('http://localhost:8080/api/products');
+        if (!response.ok) {
+          throw new Error('Failed to fetch products');
+        }
+        const data: BackendProduct[] = await response.json();
+        
+        const formattedProducts: Product[] = data.map((p) => {
+          // Handle image URL - backend returns path like /uploads/products/filename.png
+          let imageUrl = '';
+          if (p.imageUrl) {
+            // If it already starts with http, use it as is
+            if (p.imageUrl.startsWith('http://') || p.imageUrl.startsWith('https://')) {
+              imageUrl = p.imageUrl;
+            } else {
+              // Otherwise, prepend the backend URL
+              imageUrl = `http://localhost:8080${p.imageUrl.startsWith('/') ? p.imageUrl : '/' + p.imageUrl}`;
+            }
+          }
+          
+          return {
+            id: p.id,
+            name: p.name,
+            category: p.category,
+            vendor: p.sellerName || 'Unknown Vendor',
+            price: p.price,
+            stock: p.stock,
+            status: mapStatus(p.status, p.stock),
+            rating: 0, // Backend doesn't have rating yet
+            updated: formatRelativeTime(p.updatedAt),
+            image: imageUrl,
+            sku: p.sku,
+          };
+        });
+
+        setProducts(formattedProducts);
+      } catch (error) {
+        console.error('Error fetching products:', error);
+        toast.error('Failed to load products');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
+  const handleDelete = async (productId: number) => {
     const shouldDelete = window.confirm('Are you sure you want to delete this product?');
     if (!shouldDelete) return;
 
-    setProducts((prev) => prev.filter((product) => product.id !== productId));
+    try {
+      const response = await fetch(`http://localhost:8080/api/products/${productId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to delete product');
+      }
+
+      // Remove from local state
+      setProducts((prev) => prev.filter((product) => product.id !== productId));
+      toast.success('Product deleted successfully');
+    } catch (error) {
+      console.error('Error deleting product:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to delete product');
+    }
   };
 
   const filteredProducts = useMemo(() => {
@@ -143,13 +157,20 @@ const AdminProduct = () => {
         term.length === 0 ||
         product.name.toLowerCase().includes(term) ||
         product.vendor.toLowerCase().includes(term) ||
-        product.id.toLowerCase().includes(term);
+        product.sku.toLowerCase().includes(term) ||
+        product.id.toString().includes(term);
 
       const matchesCategory = selectedCategory === 'All categories' || product.category === selectedCategory;
 
       return matchesTerm && matchesCategory;
     });
   }, [products, searchTerm, selectedCategory]);
+
+  // Get unique categories from products
+  const categories = useMemo(() => {
+    const uniqueCategories = Array.from(new Set(products.map((p) => p.category))).sort();
+    return ['All categories', ...uniqueCategories];
+  }, [products]);
 
   const stats = useMemo(() => {
     const total = products.length;
@@ -274,30 +295,53 @@ const AdminProduct = () => {
             </div>
 
             <div className="mt-6 overflow-x-auto">
-              <table className="min-w-full text-left text-sm">
-                <thead>
-                  <tr className="text-gray-500">
-                    <th className="py-3 pr-6 font-medium">Product</th>
-                    <th className="py-3 pr-6 font-medium">Category</th>
-                    <th className="py-3 pr-6 font-medium">Vendor</th>
-                    <th className="py-3 pr-6 font-medium">Price</th>
-                    <th className="py-3 pr-6 font-medium">Stock</th>
-                    <th className="py-3 pr-6 font-medium">Rating</th>
-                    <th className="py-3 pr-6 font-medium text-right">Updated</th>
-                    <th className="py-3 pl-6 font-medium text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100 text-gray-700">
-                  {filteredProducts.map((product) => (
+              {loading ? (
+                <div className="rounded-2xl border border-dashed border-gray-200 py-16 text-center text-sm text-gray-500">
+                  Loading products...
+                </div>
+              ) : (
+                <table className="min-w-full text-left text-sm">
+                  <thead>
+                    <tr className="text-gray-500">
+                      <th className="py-3 pr-6 font-medium">Product</th>
+                      <th className="py-3 pr-6 font-medium">Category</th>
+                      <th className="py-3 pr-6 font-medium">Vendor</th>
+                      <th className="py-3 pr-6 font-medium">Price</th>
+                      <th className="py-3 pr-6 font-medium">Stock</th>
+                      <th className="py-3 pr-6 font-medium">Rating</th>
+                      <th className="py-3 pr-6 font-medium text-right">Updated</th>
+                      <th className="py-3 pl-6 font-medium text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100 text-gray-700">
+                    {filteredProducts.map((product) => (
                     <tr key={product.id} className="hover:bg-gray-50 transition">
                       <td className="py-4 pr-6">
                         <div className="flex items-center gap-4">
                           <div className="h-14 w-14 shrink-0 overflow-hidden rounded-lg border border-gray-200 bg-gray-50">
-                            <img src={product.image} alt={product.name} className="h-full w-full object-cover" />
+                            {product.image ? (
+                              <img 
+                                src={product.image} 
+                                alt={product.name} 
+                                className="h-full w-full object-cover"
+                                onError={(e) => {
+                                  // Replace broken image with placeholder
+                                  const target = e.target as HTMLImageElement;
+                                  const parent = target.parentElement;
+                                  if (parent) {
+                                    parent.innerHTML = '<div class="flex h-full w-full items-center justify-center bg-gray-100 text-gray-400"><svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg></div>';
+                                  }
+                                }}
+                              />
+                            ) : (
+                              <div className="flex h-full w-full items-center justify-center bg-gray-100 text-gray-400">
+                                <FaCube className="h-6 w-6" />
+                              </div>
+                            )}
                           </div>
                           <div className="flex flex-col">
                             <span className="font-semibold text-gray-900">{product.name}</span>
-                            <span className="text-xs text-gray-400">{product.id}</span>
+                            <span className="text-xs text-gray-400">{product.sku}</span>
                           </div>
                         </div>
                       </td>
@@ -353,13 +397,16 @@ const AdminProduct = () => {
                         </button>
                       </td>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                    ))}
+                  </tbody>
+                </table>
+              )}
 
-              {filteredProducts.length === 0 && (
+              {!loading && filteredProducts.length === 0 && (
                 <div className="rounded-2xl border border-dashed border-gray-200 py-16 text-center text-sm text-gray-500">
-                  No products match the selected filters. Adjust filters or search for another product.
+                  {products.length === 0
+                    ? 'No products found. Products will appear here once vendors add them.'
+                    : 'No products match the selected filters. Adjust filters or search for another product.'}
                 </div>
               )}
             </div>
