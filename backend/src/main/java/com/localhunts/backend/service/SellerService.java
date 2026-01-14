@@ -4,12 +4,16 @@ import com.localhunts.backend.dto.AuthResponse;
 import com.localhunts.backend.dto.SellerListResponse;
 import com.localhunts.backend.dto.SellerLoginRequest;
 import com.localhunts.backend.dto.SellerSignupRequest;
+import com.localhunts.backend.model.Product;
 import com.localhunts.backend.model.Role;
 import com.localhunts.backend.model.Seller;
+import com.localhunts.backend.repository.CartRepository;
+import com.localhunts.backend.repository.ProductRepository;
 import com.localhunts.backend.repository.SellerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -23,6 +27,12 @@ public class SellerService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private ProductRepository productRepository;
+
+    @Autowired
+    private CartRepository cartRepository;
 
     public AuthResponse signup(SellerSignupRequest signupRequest) {
         // Check if passwords match
@@ -114,6 +124,26 @@ public class SellerService {
         Seller seller = sellerRepository.findById(sellerId)
             .orElseThrow(() -> new RuntimeException("Seller not found"));
         
+        sellerRepository.delete(seller);
+    }
+
+    @Transactional
+    public void deleteSeller(Long sellerId) {
+        Seller seller = sellerRepository.findById(sellerId)
+            .orElseThrow(() -> new RuntimeException("Seller not found"));
+        
+        // Find all products by this seller
+        List<Product> products = productRepository.findBySeller(seller);
+        
+        // Delete all cart items that reference these products
+        for (Product product : products) {
+            cartRepository.deleteByProduct(product);
+        }
+        
+        // Delete all products
+        productRepository.deleteAll(products);
+        
+        // Delete the seller
         sellerRepository.delete(seller);
     }
 

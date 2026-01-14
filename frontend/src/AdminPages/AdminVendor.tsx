@@ -3,6 +3,7 @@ import AdminNavbar from '../AdminComponents/AdminNavbar'
 import {
   FaSearch,
   FaFilter,
+  FaTrash,
 } from 'react-icons/fa'
 import { toast } from 'react-toastify'
 
@@ -55,6 +56,32 @@ const AdminVender = () => {
       vendor.businessCategory.toLowerCase().includes(search)
     )
   })
+
+  const handleDelete = async (vendorId: number) => {
+    const shouldDelete = window.confirm(
+      'Are you sure you want to delete this vendor? This will also delete all their products. This action cannot be undone.'
+    )
+    if (!shouldDelete) return
+
+    try {
+      const response = await fetch(`http://localhost:8080/api/seller/${vendorId}`, {
+        method: 'DELETE',
+      })
+
+      const data = await response.json()
+
+      if (response.ok && data.success) {
+        // Remove from local state
+        setVendors((prev) => prev.filter((vendor) => vendor.id !== vendorId))
+        toast.success('Vendor and all their products deleted successfully')
+      } else {
+        toast.error(data.message || 'Failed to delete vendor')
+      }
+    } catch (error) {
+      console.error('Error deleting vendor:', error)
+      toast.error('An error occurred while deleting the vendor')
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -112,6 +139,7 @@ const AdminVender = () => {
                       <th className="py-2 pr-6 font-medium">Location</th>
                       <th className="py-2 pr-6 font-medium">Email</th>
                       <th className="py-2 pr-6 font-medium">Phone</th>
+                      <th className="py-2 pr-6 text-right font-medium">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100 text-gray-700">
@@ -123,6 +151,15 @@ const AdminVender = () => {
                         <td className="py-3 pr-6">{vendor.businessLocation}</td>
                         <td className="py-3 pr-6 text-sm text-gray-600">{vendor.contactEmail}</td>
                         <td className="py-3 pr-6 text-sm text-gray-600">{vendor.phoneNumber}</td>
+                        <td className="py-3 pr-6 text-right">
+                          <button
+                            onClick={() => handleDelete(vendor.id)}
+                            className="inline-flex items-center gap-2 rounded-lg border border-red-200 px-3 py-2 text-xs font-semibold text-red-600 transition hover:bg-red-50"
+                          >
+                            <FaTrash className="h-4 w-4" />
+                            Delete
+                          </button>
+                        </td>
                       </tr>
                     ))}
                   </tbody>

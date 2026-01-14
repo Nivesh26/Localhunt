@@ -88,4 +88,20 @@ public class SellerController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
     }
+
+    @DeleteMapping("/{sellerId}")
+    public ResponseEntity<Map<String, Object>> deleteSeller(@PathVariable Long sellerId) {
+        try {
+            sellerService.deleteSeller(sellerId);
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "Vendor and all their products deleted successfully");
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("message", e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
+    }
 }
