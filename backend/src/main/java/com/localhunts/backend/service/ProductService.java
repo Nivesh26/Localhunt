@@ -74,6 +74,12 @@ public class ProductService {
         return products.stream().map(this::convertToResponse).collect(Collectors.toList());
     }
 
+    public ProductResponse getProductById(Long productId) {
+        Product product = productRepository.findById(productId)
+            .orElseThrow(() -> new RuntimeException("Product not found"));
+        return convertToResponse(product);
+    }
+
     public void deleteProduct(Long productId) {
         Product product = productRepository.findById(productId)
             .orElseThrow(() -> new RuntimeException("Product not found"));

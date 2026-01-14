@@ -81,6 +81,16 @@ public class ProductController {
         }
     }
 
+    @GetMapping("/{productId}")
+    public ResponseEntity<ProductResponse> getProductById(@PathVariable Long productId) {
+        try {
+            ProductResponse product = productService.getProductById(productId);
+            return ResponseEntity.ok(product);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+    }
+
     @DeleteMapping("/{productId}")
     public ResponseEntity<Map<String, Object>> deleteProduct(@PathVariable Long productId) {
         try {

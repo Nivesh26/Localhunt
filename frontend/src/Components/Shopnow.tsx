@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
 
 interface Product {
   id: number
@@ -54,8 +55,9 @@ const Shopnow = () => {
       ) : (
         <div className="flex justify-center items-center gap-6 md:gap-10">
           {products.map((item) => (
-            <div
+            <Link
               key={item.id}
+              to={`/productdetail/${item.id}`}
               className="group relative w-[220px] md:w-[260px] bg-white shadow-sm hover:shadow-md rounded-md overflow-hidden transition-all duration-300"
             >
               <div className="overflow-hidden">
@@ -79,7 +81,7 @@ const Shopnow = () => {
 
               {/* Black line on hover */}
               <div className="absolute bottom-0 left-0 w-0 h-[2px] bg-black transition-all duration-300 group-hover:w-full"></div>
-            </div>
+            </Link>
           ))}
         </div>
       )}

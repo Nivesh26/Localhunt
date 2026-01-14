@@ -184,7 +184,7 @@ const Shop = () => {
               {filteredProducts.map((product) => (
                 <Link
                   key={product.id}
-                  to="/productdetail"
+                  to={`/productdetail/${product.id}`}
                   className="bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden cursor-pointer"
                 >
                   {product.imageUrl ? (
