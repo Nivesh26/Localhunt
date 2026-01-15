@@ -10,14 +10,13 @@ import {
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import AdminNavbar from '../AdminComponents/AdminNavbar'
+import { sessionUtils } from '../utils/sessionUtils'
 
 const AdminDashboard = () => {
   const navigate = useNavigate()
 
   const handleLogout = () => {
-    localStorage.removeItem('user')
-    localStorage.removeItem('sessionTime')
-    window.dispatchEvent(new Event('userLoginStatusChange'))
+    sessionUtils.clearSession()
     toast.success('Logged out successfully')
     navigate('/login')
   }

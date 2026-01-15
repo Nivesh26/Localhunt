@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import SellerNavbar from '../SellerComponents/SellerNavbar'
 import { FaLock, FaEye, FaEyeSlash } from 'react-icons/fa'
+import { sessionUtils } from '../utils/sessionUtils'
 
 const SellerChangepassword = () => {
   const navigate = useNavigate()
@@ -69,14 +70,13 @@ const SellerChangepassword = () => {
     setLoading(true)
 
     try {
-      const userStr = localStorage.getItem('user')
-      if (!userStr) {
+      const user = sessionUtils.getUser()
+      if (!user) {
         toast.error('Please login to change your password')
         navigate('/sellerlogin')
         return
       }
 
-      const user = JSON.parse(userStr)
       const sellerId = user.userId
 
       // Check if user is a seller

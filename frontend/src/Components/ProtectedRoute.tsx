@@ -1,6 +1,7 @@
 import { Navigate, useLocation } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { toast } from 'react-toastify'
+import { sessionUtils } from '../utils/sessionUtils'
 
 // Session timeout: 24 hours
 const SESSION_TIMEOUT = 24 * 60 * 60 * 1000 // 24 hours in milliseconds
@@ -18,39 +19,26 @@ const ProtectedRoute = ({ children, allowedRoles, redirectTo = '/login' }: Prote
   useEffect(() => {
     const checkAuth = () => {
       try {
-        const userStr = localStorage.getItem('user')
-        
-        if (!userStr) {
+        // Check if session is valid
+        if (!sessionUtils.isSessionValid(SESSION_TIMEOUT)) {
+          sessionUtils.clearSession()
           setIsAuthorized(false)
+          toast.error('Your session has expired. Please login again.')
           return
         }
 
-        const user = JSON.parse(userStr)
+        const user = sessionUtils.getUser()
+        
+        if (!user) {
+          setIsAuthorized(false)
+          return
+        }
         
         // Check if user has required role
         if (!allowedRoles.includes(user.role)) {
           setIsAuthorized(false)
           toast.error('Access denied. You do not have permission to access this page.')
           return
-        }
-
-        // Check session expiry
-        const sessionTime = localStorage.getItem('sessionTime')
-        if (sessionTime) {
-          const sessionAge = Date.now() - parseInt(sessionTime)
-          
-          if (sessionAge > SESSION_TIMEOUT) {
-            // Session expired
-            localStorage.removeItem('user')
-            localStorage.removeItem('sessionTime')
-            window.dispatchEvent(new Event('userLoginStatusChange'))
-            setIsAuthorized(false)
-            toast.error('Your session has expired. Please login again.')
-            return
-          }
-          
-          // Refresh session time on activity (optional - extend session on use)
-          // localStorage.setItem('sessionTime', Date.now().toString())
         }
 
         setIsAuthorized(true)

@@ -11,6 +11,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import logo from '../assets/Local Hunt Logo NoBG.png'
 import profileImage from '../assets/Nivesh.png'
+import { sessionUtils } from '../utils/sessionUtils'
 
 const navLinks = [
   { label: 'Overview', icon: FaHome, to: '/sellerdashboard' },
@@ -25,9 +26,7 @@ const SellerNavbar = () => {
   const navigate = useNavigate()
 
   const handleLogout = () => {
-    localStorage.removeItem('user')
-    localStorage.removeItem('sessionTime')
-    window.dispatchEvent(new Event('userLoginStatusChange'))
+    sessionUtils.clearSession()
     toast.success('Logged out successfully')
     navigate('/sellerlogin')
   }

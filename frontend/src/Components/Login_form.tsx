@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
+import { sessionUtils } from '../utils/sessionUtils';
 
 const Login_form = () => {
   const navigate = useNavigate();
@@ -12,20 +13,15 @@ const Login_form = () => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // Redirect if already logged in
-    const userStr = localStorage.getItem('user')
-    if (userStr) {
-      try {
-        const user = JSON.parse(userStr)
-        if (user.role === 'SUPERADMIN') {
-          navigate('/admindashboard')
-        } else if (user.role === 'VENDOR') {
-          navigate('/sellerdashboard')
-        } else {
-          navigate('/')
-        }
-      } catch (error) {
-        // Invalid user data, continue to login
+    // Redirect if already logged in (check sessionStorage for this tab)
+    const user = sessionUtils.getUser()
+    if (user) {
+      if (user.role === 'SUPERADMIN') {
+        navigate('/admindashboard')
+      } else if (user.role === 'VENDOR') {
+        navigate('/sellerdashboard')
+      } else {
+        navigate('/')
       }
     }
   }, [navigate])
@@ -77,17 +73,13 @@ const Login_form = () => {
 
       if (data.success) {
         toast.success(data.message || 'Login successful!');
-        // Store user data in localStorage
-        localStorage.setItem('user', JSON.stringify({
+        // Store user data in sessionStorage (tab-specific)
+        sessionUtils.setUser({
           userId: data.userId,
           email: data.email,
           fullName: data.fullName,
           role: data.role
-        }));
-        // Store session timestamp for session management
-        localStorage.setItem('sessionTime', Date.now().toString());
-        // Dispatch event to update header
-        window.dispatchEvent(new Event('userLoginStatusChange'));
+        });
         // Redirect based on role
         setTimeout(() => {
           const role = data.role;

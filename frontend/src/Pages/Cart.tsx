@@ -5,6 +5,7 @@ import Topbar from '../Components/Topbar'
 import Footer from '../Components/Footer'
 import Header from '../Components/Header'
 import { FaTrash, FaPlus, FaMinus } from 'react-icons/fa'
+import { sessionUtils } from '../utils/sessionUtils'
 
 interface CartItem {
   id: number
@@ -27,13 +28,12 @@ const cart = () => {
 
   const fetchCartItems = async () => {
     try {
-      const userStr = localStorage.getItem('user')
-      if (!userStr) {
+      const user = sessionUtils.getUser()
+      if (!user) {
         setLoading(false)
         return
       }
 
-      const user = JSON.parse(userStr)
       const userId = user.userId
 
       const response = await fetch(`http://localhost:8080/api/cart/${userId}`)
@@ -69,14 +69,13 @@ const cart = () => {
 
   const updateQuantity = async (cartId: number, change: number) => {
     try {
-      const userStr = localStorage.getItem('user')
-      if (!userStr) {
+      const user = sessionUtils.getUser()
+      if (!user) {
         toast.error('Please login to update cart')
         navigate('/login')
         return
       }
 
-      const user = JSON.parse(userStr)
       const userId = user.userId
 
       const item = cartItems.find(item => item.id === cartId)
@@ -118,14 +117,13 @@ const cart = () => {
 
   const removeFromCart = async (cartId: number) => {
     try {
-      const userStr = localStorage.getItem('user')
-      if (!userStr) {
+      const user = sessionUtils.getUser()
+      if (!user) {
         toast.error('Please login to remove items from cart')
         navigate('/login')
         return
       }
 
-      const user = JSON.parse(userStr)
       const userId = user.userId
 
       const response = await fetch(`http://localhost:8080/api/cart/${userId}/${cartId}`, {

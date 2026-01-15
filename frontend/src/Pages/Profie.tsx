@@ -6,6 +6,7 @@ import Header from '../Components/Header'
 import Footer from '../Components/Footer'
 import { FaEdit, FaCheck, FaTimes, FaUser, FaEnvelope, FaPhone, FaLock } from 'react-icons/fa'
 import profileImage from '../assets/Nivesh.png'
+import { sessionUtils } from '../utils/sessionUtils'
 
 interface UserData {
   name: string
@@ -37,14 +38,13 @@ const Profie = () => {
 
   const fetchUserProfile = async () => {
     try {
-      const userStr = localStorage.getItem('user')
-      if (!userStr) {
+      const user = sessionUtils.getUser()
+      if (!user) {
         toast.error('Please login to view your profile')
         navigate('/login')
         return
       }
 
-      const user = JSON.parse(userStr)
       const userId = user.userId
 
       const response = await fetch(`http://localhost:8080/api/auth/profile/${userId}`)
@@ -119,14 +119,13 @@ const Profie = () => {
 
     if (Object.keys(newErrors).length === 0) {
       try {
-        const userStr = localStorage.getItem('user')
-        if (!userStr) {
+        const user = sessionUtils.getUser()
+        if (!user) {
           toast.error('Please login to update your profile')
           navigate('/login')
           return
         }
 
-        const user = JSON.parse(userStr)
         const userId = user.userId
 
         // Normalize phone number (remove any non-digit characters)
@@ -194,9 +193,7 @@ const Profie = () => {
   }
 
   const clearSession = () => {
-    localStorage.removeItem('user')
-    localStorage.removeItem('sessionTime')
-    window.dispatchEvent(new Event('userLoginStatusChange'))
+    sessionUtils.clearSession()
   }
 
   const handleDeleteAccount = async () => {
@@ -216,16 +213,15 @@ const Profie = () => {
       return
     }
 
-    try {
-      const userStr = localStorage.getItem('user')
-      if (!userStr) {
-        toast.error('Please login to delete your account')
-        navigate('/login')
-        return
-      }
+      try {
+        const user = sessionUtils.getUser()
+        if (!user) {
+          toast.error('Please login to delete your account')
+          navigate('/login')
+          return
+        }
 
-      const user = JSON.parse(userStr)
-      const userId = user.userId
+        const userId = user.userId
 
       // Check if user is SUPERADMIN (prevent deletion)
       if (user.role === 'SUPERADMIN') {

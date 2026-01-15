@@ -2,27 +2,25 @@ import React, { useState, useEffect } from "react";
 import profile from "../assets/Local Hunt Logo NoBG.png";
 import { FaSearch, FaShoppingCart, FaUserCircle } from "react-icons/fa";
 import { Link } from "react-router-dom";
+import { sessionUtils } from "../utils/sessionUtils";
 
 const Header = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
-    // Check if user is logged in
+    // Check if user is logged in (using sessionStorage - tab-specific)
     const checkLoginStatus = () => {
-      const user = localStorage.getItem('user');
-      setIsLoggedIn(!!user);
+      const isLoggedIn = sessionUtils.isLoggedIn();
+      setIsLoggedIn(isLoggedIn);
     };
 
     checkLoginStatus();
 
-    // Listen for storage changes (when user logs in/out in another tab)
-    window.addEventListener('storage', checkLoginStatus);
-
     // Listen for custom login event (when user logs in/out in same tab)
+    // Note: sessionStorage doesn't trigger 'storage' event across tabs, which is what we want
     window.addEventListener('userLoginStatusChange', checkLoginStatus);
 
     return () => {
-      window.removeEventListener('storage', checkLoginStatus);
       window.removeEventListener('userLoginStatusChange', checkLoginStatus);
     };
   }, []);

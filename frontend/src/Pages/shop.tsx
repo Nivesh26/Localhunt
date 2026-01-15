@@ -4,6 +4,7 @@ import { toast } from "react-toastify";
 import Header from "../Components/Header";
 import Topbar from "../Components/Topbar";
 import Footer from "../Components/Footer";
+import { sessionUtils } from "../utils/sessionUtils";
 
 interface Product {
   id: number;
@@ -26,14 +27,13 @@ const Shop = () => {
     e.stopPropagation();
 
     try {
-      const userStr = localStorage.getItem('user');
-      if (!userStr) {
+      const user = sessionUtils.getUser();
+      if (!user) {
         toast.error('Please login to add items to cart');
         navigate('/login?returnUrl=/shop');
         return;
       }
 
-      const user = JSON.parse(userStr);
       const userId = user.userId;
 
       const response = await fetch(`http://localhost:8080/api/cart/${userId}`, {

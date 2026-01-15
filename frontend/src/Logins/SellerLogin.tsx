@@ -6,6 +6,7 @@ import hero from '../assets/Hero.png'
 import { Link, useNavigate } from 'react-router-dom'
 import { FaEye, FaEyeSlash } from 'react-icons/fa'
 import { toast } from 'react-toastify'
+import { sessionUtils } from '../utils/sessionUtils'
 
 const SellerLogin = () => {
   const navigate = useNavigate()
@@ -16,20 +17,15 @@ const SellerLogin = () => {
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    // Redirect if already logged in
-    const userStr = localStorage.getItem('user')
-    if (userStr) {
-      try {
-        const user = JSON.parse(userStr)
-        if (user.role === 'VENDOR') {
-          navigate('/sellerdashboard')
-        } else if (user.role === 'SUPERADMIN') {
-          navigate('/admindashboard')
-        } else {
-          navigate('/')
-        }
-      } catch (error) {
-        // Invalid user data, continue to login
+    // Redirect if already logged in (check sessionStorage for this tab)
+    const user = sessionUtils.getUser()
+    if (user) {
+      if (user.role === 'VENDOR') {
+        navigate('/sellerdashboard')
+      } else if (user.role === 'SUPERADMIN') {
+        navigate('/admindashboard')
+      } else {
+        navigate('/')
       }
     }
   }, [navigate])
@@ -81,17 +77,13 @@ const SellerLogin = () => {
 
       if (data.success) {
         toast.success(data.message || 'Login successful!')
-        // Store seller data in localStorage
-        localStorage.setItem('user', JSON.stringify({
+        // Store seller data in sessionStorage (tab-specific)
+        sessionUtils.setUser({
           userId: data.userId,
           email: data.email,
           fullName: data.fullName,
           role: data.role
-        }))
-        // Store session timestamp for session management
-        localStorage.setItem('sessionTime', Date.now().toString())
-        // Dispatch event to update header
-        window.dispatchEvent(new Event('userLoginStatusChange'))
+        })
         // Redirect to seller dashboard
         setTimeout(() => {
           navigate('/sellerdashboard')

@@ -12,6 +12,7 @@ import {
   FaTruck,
 } from 'react-icons/fa'
 import SellerNavbar from '../SellerComponents/SellerNavbar'
+import { sessionUtils } from '../utils/sessionUtils'
 
 const notificationSettings = [
   { id: 'newOrders', label: 'New orders', description: 'Get notified when customers place new orders.' },
@@ -56,14 +57,13 @@ const SellerSetting = () => {
 
   const fetchSellerProfile = async () => {
     try {
-      const userStr = localStorage.getItem('user')
-      if (!userStr) {
+      const user = sessionUtils.getUser()
+      if (!user) {
         toast.error('Please login to view your settings')
         navigate('/sellerlogin')
         return
       }
 
-      const user = JSON.parse(userStr)
       const sellerId = user.userId
 
       // Check if user is a seller
@@ -169,14 +169,13 @@ const SellerSetting = () => {
     if (Object.keys(newErrors).length === 0) {
       setSaving(true)
       try {
-        const userStr = localStorage.getItem('user')
-        if (!userStr) {
+        const user = sessionUtils.getUser()
+        if (!user) {
           toast.error('Please login to save settings')
           navigate('/sellerlogin')
           return
         }
 
-        const user = JSON.parse(userStr)
         const sellerId = user.userId
 
         const response = await fetch(`http://localhost:8080/api/seller/settings/${sellerId}`, {

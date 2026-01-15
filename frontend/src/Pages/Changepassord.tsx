@@ -5,6 +5,7 @@ import Topbar from '../Components/Topbar'
 import Header from '../Components/Header'
 import Footer from '../Components/Footer'
 import { FaLock, FaEye, FaEyeSlash } from 'react-icons/fa'
+import { sessionUtils } from '../utils/sessionUtils'
 
 const Changepassord = () => {
   const navigate = useNavigate()
@@ -71,14 +72,13 @@ const Changepassord = () => {
     setLoading(true)
 
     try {
-      const userStr = localStorage.getItem('user')
-      if (!userStr) {
+      const user = sessionUtils.getUser()
+      if (!user) {
         toast.error('Please login to change your password')
         navigate('/login')
         return
       }
 
-      const user = JSON.parse(userStr)
       const userId = user.userId
 
       const response = await fetch(`http://localhost:8080/api/auth/change-password/${userId}`, {

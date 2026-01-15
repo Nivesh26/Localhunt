@@ -9,6 +9,7 @@ import {
 } from 'react-icons/fa'
 import SellerNavbar from '../SellerComponents/SellerNavbar'
 import { toast } from 'react-toastify'
+import { sessionUtils } from '../utils/sessionUtils'
 
 type Product = {
   id: number
@@ -78,13 +79,12 @@ const SellerProduct = () => {
   const fetchProducts = async () => {
     setLoading(true)
     try {
-      const userStr = localStorage.getItem('user')
-      if (!userStr) {
+      const user = sessionUtils.getUser()
+      if (!user) {
         toast.error('Please login to view products')
         return
       }
 
-      const user = JSON.parse(userStr)
       const sellerId = user.userId
 
       const response = await fetch(`http://localhost:8080/api/products/seller/${sellerId}`)
@@ -211,13 +211,12 @@ const SellerProduct = () => {
 
     setSaving(true)
     try {
-      const userStr = localStorage.getItem('user')
-      if (!userStr) {
+      const user = sessionUtils.getUser()
+      if (!user) {
         toast.error('Please login to add products')
         return
       }
 
-      const user = JSON.parse(userStr)
       const sellerId = user.userId
 
       const specs = specsText
