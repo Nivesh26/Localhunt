@@ -1,6 +1,7 @@
 package com.localhunts.backend.controller;
 
 import com.localhunts.backend.dto.AuthResponse;
+import com.localhunts.backend.dto.ChangePasswordRequest;
 import com.localhunts.backend.dto.SellerListResponse;
 import com.localhunts.backend.dto.SellerLoginRequest;
 import com.localhunts.backend.dto.SellerProfileResponse;
@@ -110,6 +111,23 @@ public class SellerController {
             return ResponseEntity.ok(profile);
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
+    @PutMapping("/change-password/{sellerId}")
+    public ResponseEntity<AuthResponse> changePassword(
+            @PathVariable Long sellerId,
+            @Valid @RequestBody ChangePasswordRequest request) {
+        try {
+            AuthResponse response = sellerService.changePassword(sellerId, request);
+            if (response.isSuccess()) {
+                return ResponseEntity.ok(response);
+            } else {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+            }
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new AuthResponse("Seller not found", false));
         }
     }
 

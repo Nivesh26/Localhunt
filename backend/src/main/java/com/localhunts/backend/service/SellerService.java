@@ -1,6 +1,7 @@
 package com.localhunts.backend.service;
 
 import com.localhunts.backend.dto.AuthResponse;
+import com.localhunts.backend.dto.ChangePasswordRequest;
 import com.localhunts.backend.dto.SellerListResponse;
 import com.localhunts.backend.dto.SellerLoginRequest;
 import com.localhunts.backend.dto.SellerProfileResponse;
@@ -186,6 +187,33 @@ public class SellerService {
             updatedSeller.getStoreDescription() != null ? updatedSeller.getStoreDescription() : "",
             updatedSeller.getRole()
         );
+    }
+
+    public AuthResponse changePassword(Long sellerId, ChangePasswordRequest request) {
+        // Find seller
+        Seller seller = sellerRepository.findById(sellerId)
+            .orElseThrow(() -> new RuntimeException("Seller not found"));
+
+        // Verify old password
+        if (!passwordEncoder.matches(request.getOldPassword(), seller.getPassword())) {
+            return new AuthResponse("Old password is incorrect", false);
+        }
+
+        // Check if new password and confirm password match
+        if (!request.getNewPassword().equals(request.getConfirmPassword())) {
+            return new AuthResponse("New password and confirm password do not match", false);
+        }
+
+        // Check if new password is different from old password
+        if (passwordEncoder.matches(request.getNewPassword(), seller.getPassword())) {
+            return new AuthResponse("New password must be different from old password", false);
+        }
+
+        // Update password
+        seller.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        sellerRepository.save(seller);
+
+        return new AuthResponse("Password changed successfully", true);
     }
 
     @Transactional
