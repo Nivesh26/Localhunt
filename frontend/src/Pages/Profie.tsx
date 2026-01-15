@@ -181,6 +181,60 @@ const Profie = () => {
     }
   }
 
+  const handleDeleteAccount = async () => {
+    // Double confirmation for account deletion
+    const confirmMessage = 'Are you sure you want to delete your account? This action cannot be undone and will permanently delete:\n\n' +
+      '• Your profile information\n' +
+      '• All your cart items\n' +
+      '• All associated data\n\n' +
+      'Type "DELETE" to confirm:'
+    
+    const userInput = window.prompt(confirmMessage)
+    
+    if (userInput !== 'DELETE') {
+      if (userInput !== null) { // User clicked cancel or entered wrong text
+        toast.error('Account deletion cancelled. You must type "DELETE" to confirm.')
+      }
+      return
+    }
+
+    try {
+      const userStr = localStorage.getItem('user')
+      if (!userStr) {
+        toast.error('Please login to delete your account')
+        navigate('/login')
+        return
+      }
+
+      const user = JSON.parse(userStr)
+      const userId = user.userId
+
+      // Check if user is SUPERADMIN (prevent deletion)
+      if (user.role === 'SUPERADMIN') {
+        toast.error('Superadmin accounts cannot be deleted')
+        return
+      }
+
+      const response = await fetch(`http://localhost:8080/api/admin/users/${userId}`, {
+        method: 'DELETE',
+      })
+
+      if (response.ok) {
+        // Clear user data
+        localStorage.removeItem('user')
+        window.dispatchEvent(new Event('userLoginStatusChange'))
+        toast.success('Your account has been deleted successfully')
+        navigate('/')
+      } else {
+        const error = await response.text()
+        toast.error(error || 'Failed to delete account')
+      }
+    } catch (error) {
+      console.error('Error deleting account:', error)
+      toast.error('An error occurred while deleting your account')
+    }
+  }
+
   const handleLogout = () => {
     localStorage.removeItem('user')
     window.dispatchEvent(new Event('userLoginStatusChange'))
@@ -367,7 +421,10 @@ const Profie = () => {
 
       
 
-                <button className="w-full flex items-center justify-between p-4 border border-red-200 rounded-lg hover:bg-red-50 transition text-red-600">
+                <button 
+                  onClick={handleDeleteAccount}
+                  className="w-full flex items-center justify-between p-4 border border-red-200 rounded-lg hover:bg-red-50 transition text-red-600"
+                >
                   <span className="font-medium">Delete Account</span>
                   <span>→</span>
                 </button>
