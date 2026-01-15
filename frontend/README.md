@@ -1,1 +1,1 @@
-localhunt by nivesh
+Local Hunt is a multi-vendor online marketplace that connects Nepali artisans and small businesses with customers seeking authentic local products. It promotes Nepali culture, empowers entrepreneurs, and encourages everyone to “Buy Local, Support Local.” by nivesh and aaloka
