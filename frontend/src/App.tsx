@@ -13,7 +13,6 @@ import Productdetail from './Pages/Productdetail'
 import Profile from './Pages/Profie'
 import Sellersignup from './Logins/SellerSignup'
 import AdminDashboard from './AdminPages/AdminDashboard'
-import Vendorpipeline from './AdminPages/Vendorpipeline'
 import AdminVender from './AdminPages/AdminVendor'
 import VendorApprove from './AdminPages/VendorApprove'
 import SellerLogin from './Logins/SellerLogin'
@@ -28,6 +27,7 @@ import SellerSetting from './SellerPages/SellerSetting'
 import AdminUser from './AdminPages/AdminUser'
 import Changepassword from './Pages/Changepassord'
 import SellerChangepassword from './SellerPages/SellerChangepassword'
+import ProtectedRoute from './Components/ProtectedRoute'
 
 
 const App = () => {
@@ -40,10 +40,22 @@ const App = () => {
       <Route path="/shop" element={<Shop/>}/>
       <Route path="/about" element={<About/>}/>
       <Route path="/contact" element={<Contact/>}/>
-      <Route path="/cart" element={<Cart/>}/>
+      <Route path="/cart" element={
+        <ProtectedRoute allowedRoles={['USER']} redirectTo="/login">
+          <Cart/>
+        </ProtectedRoute>
+      }/>
       <Route path="/productdetail/:id" element={<Productdetail/>}/>
-      <Route path="/profile" element={<Profile/>}/>
-      <Route path="/changepassword" element={<Changepassword/>}/>
+      <Route path="/profile" element={
+        <ProtectedRoute allowedRoles={['USER']} redirectTo="/login">
+          <Profile/>
+        </ProtectedRoute>
+      }/>
+      <Route path="/changepassword" element={
+        <ProtectedRoute allowedRoles={['USER']} redirectTo="/login">
+          <Changepassword/>
+        </ProtectedRoute>
+      }/>
 
       {/* Login and Signup */}
       <Route path="/login" element={<Login/>}/>
@@ -54,22 +66,74 @@ const App = () => {
       <Route path="/sellerlogin" element={<SellerLogin/>}/>
      
 
-      {/* Seller Pages */}
-      <Route path="/sellerdashboard" element={<SellerDashboard/>}/>
-      <Route path="/sellerproduct" element={<SellerProduct/>}/>
-      <Route path="/sellerorder" element={<SellerOrder/>}/>
-      <Route path="/sellerpayout" element={<SellerPayout/>}/>
-      <Route path="/sellermessage" element={<SellerMessage/>}/>
-      <Route path="/sellersetting" element={<SellerSetting/>}/>
-      <Route path="/sellerchangepassword" element={<SellerChangepassword/>}/>
+      {/* Seller Pages - Protected: VENDOR only */}
+      <Route path="/sellerdashboard" element={
+        <ProtectedRoute allowedRoles={['VENDOR']}>
+          <SellerDashboard/>
+        </ProtectedRoute>
+      }/>
+      <Route path="/sellerproduct" element={
+        <ProtectedRoute allowedRoles={['VENDOR']}>
+          <SellerProduct/>
+        </ProtectedRoute>
+      }/>
+      <Route path="/sellerorder" element={
+        <ProtectedRoute allowedRoles={['VENDOR']}>
+          <SellerOrder/>
+        </ProtectedRoute>
+      }/>
+      <Route path="/sellerpayout" element={
+        <ProtectedRoute allowedRoles={['VENDOR']}>
+          <SellerPayout/>
+        </ProtectedRoute>
+      }/>
+      <Route path="/sellermessage" element={
+        <ProtectedRoute allowedRoles={['VENDOR']}>
+          <SellerMessage/>
+        </ProtectedRoute>
+      }/>
+      <Route path="/sellersetting" element={
+        <ProtectedRoute allowedRoles={['VENDOR']}>
+          <SellerSetting/>
+        </ProtectedRoute>
+      }/>
+      <Route path="/sellerchangepassword" element={
+        <ProtectedRoute allowedRoles={['VENDOR']}>
+          <SellerChangepassword/>
+        </ProtectedRoute>
+      }/>
 
-      {/* Admin Pages */}
-        <Route path="/admindashboard" element={<AdminDashboard/>}/>
-        <Route path="/adminvendors" element={<AdminVender/>}/>
-        <Route path="/adminvendorsapprove" element={<VendorApprove/>}/>
-        <Route path="/adminproducts" element={<AdminProduct/>}/>
-        <Route path="/adminsettings" element={<AdminSetting/>}/>  
-        <Route path="/adminuser" element={<AdminUser/>}/>
+      {/* Admin Pages - Protected: SUPERADMIN only */}
+      <Route path="/admindashboard" element={
+        <ProtectedRoute allowedRoles={['SUPERADMIN']}>
+          <AdminDashboard/>
+        </ProtectedRoute>
+      }/>
+      <Route path="/adminvendors" element={
+        <ProtectedRoute allowedRoles={['SUPERADMIN']}>
+          <AdminVender/>
+        </ProtectedRoute>
+      }/>
+      <Route path="/adminvendorsapprove" element={
+        <ProtectedRoute allowedRoles={['SUPERADMIN']}>
+          <VendorApprove/>
+        </ProtectedRoute>
+      }/>
+      <Route path="/adminproducts" element={
+        <ProtectedRoute allowedRoles={['SUPERADMIN']}>
+          <AdminProduct/>
+        </ProtectedRoute>
+      }/>
+      <Route path="/adminsettings" element={
+        <ProtectedRoute allowedRoles={['SUPERADMIN']}>
+          <AdminSetting/>
+        </ProtectedRoute>
+      }/>  
+      <Route path="/adminuser" element={
+        <ProtectedRoute allowedRoles={['SUPERADMIN']}>
+          <AdminUser/>
+        </ProtectedRoute>
+      }/>
    </Routes> 
    <ToastContainer position="top-right" autoClose={3000} />
    </BrowserRouter>

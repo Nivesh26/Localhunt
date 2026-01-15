@@ -193,6 +193,12 @@ const Profie = () => {
     }
   }
 
+  const clearSession = () => {
+    localStorage.removeItem('user')
+    localStorage.removeItem('sessionTime')
+    window.dispatchEvent(new Event('userLoginStatusChange'))
+  }
+
   const handleDeleteAccount = async () => {
     // Double confirmation for account deletion
     const confirmMessage = 'Are you sure you want to delete your account? This action cannot be undone and will permanently delete:\n\n' +
@@ -233,8 +239,7 @@ const Profie = () => {
 
       if (response.ok) {
         // Clear user data
-        localStorage.removeItem('user')
-        window.dispatchEvent(new Event('userLoginStatusChange'))
+        clearSession()
         toast.success('Your account has been deleted successfully')
         navigate('/')
       } else {
@@ -248,8 +253,7 @@ const Profie = () => {
   }
 
   const handleLogout = () => {
-    localStorage.removeItem('user')
-    window.dispatchEvent(new Event('userLoginStatusChange'))
+    clearSession()
     toast.success('Logged out successfully')
     navigate('/')
   }

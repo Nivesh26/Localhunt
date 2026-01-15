@@ -16,6 +16,7 @@ const AdminDashboard = () => {
 
   const handleLogout = () => {
     localStorage.removeItem('user')
+    localStorage.removeItem('sessionTime')
     window.dispatchEvent(new Event('userLoginStatusChange'))
     toast.success('Logged out successfully')
     navigate('/login')

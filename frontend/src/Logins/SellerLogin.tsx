@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Topbar from '../Components/Topbar'
 import Header from '../Components/Header'
 import Footer from '../Components/Footer'
@@ -14,6 +14,25 @@ const SellerLogin = () => {
   const [showPassword, setShowPassword] = useState(false)
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({})
   const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    // Redirect if already logged in
+    const userStr = localStorage.getItem('user')
+    if (userStr) {
+      try {
+        const user = JSON.parse(userStr)
+        if (user.role === 'VENDOR') {
+          navigate('/sellerdashboard')
+        } else if (user.role === 'SUPERADMIN') {
+          navigate('/admindashboard')
+        } else {
+          navigate('/')
+        }
+      } catch (error) {
+        // Invalid user data, continue to login
+      }
+    }
+  }, [navigate])
 
   const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -69,6 +88,8 @@ const SellerLogin = () => {
           fullName: data.fullName,
           role: data.role
         }))
+        // Store session timestamp for session management
+        localStorage.setItem('sessionTime', Date.now().toString())
         // Dispatch event to update header
         window.dispatchEvent(new Event('userLoginStatusChange'))
         // Redirect to seller dashboard

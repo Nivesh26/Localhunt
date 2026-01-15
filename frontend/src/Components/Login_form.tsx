@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
@@ -10,6 +10,25 @@ const Login_form = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    // Redirect if already logged in
+    const userStr = localStorage.getItem('user')
+    if (userStr) {
+      try {
+        const user = JSON.parse(userStr)
+        if (user.role === 'SUPERADMIN') {
+          navigate('/admindashboard')
+        } else if (user.role === 'VENDOR') {
+          navigate('/sellerdashboard')
+        } else {
+          navigate('/')
+        }
+      } catch (error) {
+        // Invalid user data, continue to login
+      }
+    }
+  }, [navigate])
 
   const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -65,6 +84,8 @@ const Login_form = () => {
           fullName: data.fullName,
           role: data.role
         }));
+        // Store session timestamp for session management
+        localStorage.setItem('sessionTime', Date.now().toString());
         // Dispatch event to update header
         window.dispatchEvent(new Event('userLoginStatusChange'));
         // Redirect based on role
