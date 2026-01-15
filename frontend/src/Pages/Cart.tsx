@@ -57,6 +57,11 @@ const cart = () => {
           }
         })
         setCartItems(formattedItems)
+      } else if (response.status === 404) {
+        // User was deleted from database
+        sessionUtils.clearSession()
+        toast.error('Your account has been deleted. Please contact support.')
+        navigate('/login')
       } else {
         console.error('Failed to fetch cart items')
       }
@@ -105,6 +110,11 @@ const cart = () => {
             ? { ...item, quantity: updatedItem.quantity, subtotal: updatedItem.subtotal, productImageUrl: imageUrl }
             : item
         ))
+      } else if (response.status === 404) {
+        // User was deleted from database
+        sessionUtils.clearSession()
+        toast.error('Your account has been deleted. Please contact support.')
+        navigate('/login')
       } else {
         const errorData = await response.json()
         toast.error(errorData.message || 'Failed to update quantity')
@@ -133,6 +143,11 @@ const cart = () => {
       if (response.ok) {
         setCartItems(cartItems.filter(item => item.id !== cartId))
         toast.success('Item removed from cart')
+      } else if (response.status === 404) {
+        // User was deleted from database
+        sessionUtils.clearSession()
+        toast.error('Your account has been deleted. Please contact support.')
+        navigate('/login')
       } else {
         const errorData = await response.json()
         toast.error(errorData.message || 'Failed to remove item')

@@ -110,6 +110,11 @@ const SellerChangepassword = () => {
         })
         // Navigate back to seller settings
         navigate('/sellersetting')
+      } else if (response.status === 404) {
+        // Seller was deleted from database
+        sessionUtils.clearSession()
+        toast.error('Your account has been deleted. Please contact support.')
+        navigate('/sellerlogin')
       } else {
         toast.error(data.message || 'Failed to change password')
       }

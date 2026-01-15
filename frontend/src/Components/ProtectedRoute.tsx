@@ -17,7 +17,7 @@ const ProtectedRoute = ({ children, allowedRoles, redirectTo = '/login' }: Prote
   const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null)
 
   useEffect(() => {
-    const checkAuth = () => {
+    const checkAuth = async () => {
       try {
         // Check if session is valid
         if (!sessionUtils.isSessionValid(SESSION_TIMEOUT)) {
@@ -38,6 +38,26 @@ const ProtectedRoute = ({ children, allowedRoles, redirectTo = '/login' }: Prote
         if (!allowedRoles.includes(user.role)) {
           setIsAuthorized(false)
           toast.error('Access denied. You do not have permission to access this page.')
+          return
+        }
+
+        // Verify user/seller still exists in database
+        let exists = false
+        if (user.role === 'USER' || user.role === 'SUPERADMIN') {
+          // Check if user exists
+          const response = await fetch(`http://localhost:8080/api/auth/profile/${user.userId}`)
+          exists = response.ok
+        } else if (user.role === 'VENDOR') {
+          // Check if seller exists
+          const response = await fetch(`http://localhost:8080/api/seller/profile/${user.userId}`)
+          exists = response.ok
+        }
+
+        if (!exists) {
+          // User/Seller was deleted from database
+          sessionUtils.clearSession()
+          setIsAuthorized(false)
+          toast.error('Your account has been deleted. Please contact support.')
           return
         }
 

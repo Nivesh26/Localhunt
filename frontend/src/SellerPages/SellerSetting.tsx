@@ -88,6 +88,11 @@ const SellerSetting = () => {
           processingTime: '1-2 business days',
           returnPolicy: 'We accept returns within 7 days of delivery. Items must be unused and in original packaging.'
         })
+      } else if (response.status === 404) {
+        // Seller was deleted from database
+        sessionUtils.clearSession()
+        toast.error('Your account has been deleted. Please contact support.')
+        navigate('/sellerlogin')
       } else {
         toast.error('Failed to fetch seller profile')
       }
@@ -198,6 +203,11 @@ const SellerSetting = () => {
 
         if (response.ok) {
           toast.success('Settings saved successfully!')
+        } else if (response.status === 404) {
+          // Seller was deleted from database
+          sessionUtils.clearSession()
+          toast.error('Your account has been deleted. Please contact support.')
+          navigate('/sellerlogin')
         } else {
           const errorMessage = await response.text()
           toast.error(errorMessage || 'Failed to save settings')

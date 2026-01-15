@@ -62,6 +62,11 @@ const Profie = () => {
           phone: data.phone || '',
           avatar: profileImage
         })
+      } else if (response.status === 404) {
+        // User was deleted from database
+        sessionUtils.clearSession()
+        toast.error('Your account has been deleted. Please contact support.')
+        navigate('/login')
       } else {
         toast.error('Failed to fetch profile data')
       }
@@ -153,6 +158,11 @@ const Profie = () => {
           })
           setIsEditing(false)
           toast.success('Profile updated successfully!')
+        } else if (response.status === 404) {
+          // User was deleted from database
+          sessionUtils.clearSession()
+          toast.error('Your account has been deleted. Please contact support.')
+          navigate('/login')
         } else {
           const errorMessage = await response.text()
           toast.error(errorMessage || 'Failed to update profile')
@@ -238,6 +248,11 @@ const Profie = () => {
         clearSession()
         toast.success('Your account has been deleted successfully')
         navigate('/')
+      } else if (response.status === 404) {
+        // User already deleted
+        clearSession()
+        toast.error('Account not found')
+        navigate('/login')
       } else {
         const error = await response.text()
         toast.error(error || 'Failed to delete account')

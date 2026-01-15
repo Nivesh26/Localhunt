@@ -105,6 +105,11 @@ const Changepassord = () => {
         })
         // Optionally navigate back to profile
         navigate('/profile')
+      } else if (response.status === 404) {
+        // User was deleted from database
+        sessionUtils.clearSession()
+        toast.error('Your account has been deleted. Please contact support.')
+        navigate('/login')
       } else {
         toast.error(data.message || 'Failed to change password')
       }

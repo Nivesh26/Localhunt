@@ -10,6 +10,7 @@ import {
 import SellerNavbar from '../SellerComponents/SellerNavbar'
 import { toast } from 'react-toastify'
 import { sessionUtils } from '../utils/sessionUtils'
+import { useNavigate } from 'react-router-dom'
 
 type Product = {
   id: number
@@ -44,6 +45,7 @@ const categories = [
 ]
 
 const SellerProduct = () => {
+  const navigate = useNavigate()
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -123,6 +125,11 @@ const SellerProduct = () => {
           }
         })
         setProducts(formattedProducts)
+      } else if (response.status === 404) {
+        // Seller was deleted from database
+        sessionUtils.clearSession()
+        toast.error('Your account has been deleted. Please contact support.')
+        navigate('/sellerlogin')
       } else {
         toast.error('Failed to fetch products')
       }
@@ -270,6 +277,11 @@ const SellerProduct = () => {
         resetForm()
         // Refresh products list
         fetchProducts()
+      } else if (response.status === 404) {
+        // Seller was deleted from database
+        sessionUtils.clearSession()
+        toast.error('Your account has been deleted. Please contact support.')
+        navigate('/sellerlogin')
       } else {
         toast.error(data.message || (editingProductId ? 'Failed to update product' : 'Failed to add product'))
       }
