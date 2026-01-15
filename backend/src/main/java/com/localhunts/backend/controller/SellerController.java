@@ -3,7 +3,9 @@ package com.localhunts.backend.controller;
 import com.localhunts.backend.dto.AuthResponse;
 import com.localhunts.backend.dto.SellerListResponse;
 import com.localhunts.backend.dto.SellerLoginRequest;
+import com.localhunts.backend.dto.SellerProfileResponse;
 import com.localhunts.backend.dto.SellerSignupRequest;
+import com.localhunts.backend.dto.UpdateSellerSettingsRequest;
 import com.localhunts.backend.service.SellerService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -86,6 +88,28 @@ public class SellerController {
             response.put("success", false);
             response.put("message", e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
+    }
+
+    @GetMapping("/profile/{sellerId}")
+    public ResponseEntity<SellerProfileResponse> getSellerProfile(@PathVariable Long sellerId) {
+        try {
+            SellerProfileResponse profile = sellerService.getSellerProfile(sellerId);
+            return ResponseEntity.ok(profile);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+    }
+
+    @PutMapping("/settings/{sellerId}")
+    public ResponseEntity<?> updateSellerSettings(
+            @PathVariable Long sellerId,
+            @Valid @RequestBody UpdateSellerSettingsRequest request) {
+        try {
+            SellerProfileResponse profile = sellerService.updateSellerSettings(sellerId, request);
+            return ResponseEntity.ok(profile);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
 

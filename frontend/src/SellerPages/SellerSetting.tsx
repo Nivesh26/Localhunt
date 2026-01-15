@@ -1,4 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { toast } from 'react-toastify'
 import {
   FaBell,
   FaEnvelope,
@@ -22,7 +24,10 @@ const notificationSettings = [
 ]
 
 const SellerSetting = () => {
+  const navigate = useNavigate()
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
   const [notifications, setNotifications] = useState<Record<string, boolean>>({
     newOrders: true,
     messages: true,
@@ -33,19 +38,68 @@ const SellerSetting = () => {
   })
 
   const [formData, setFormData] = useState({
-    storeName: 'Nepal Handicrafts Store',
-    businessCategory: 'Handmade & Crafts',
-    storeDescription: 'Authentic Nepali handicrafts and handmade products, sourced directly from local artisans.',
-    storeLocation: 'Kathmandu, Nepal',
-    businessPanVat: '123456789',
-    fullName: 'Mr. Nivesh Shrestha',
-    phoneNumber: '+977 9841234567',
-    emailAddress: 'nivesh@nepalhandicrafts.com',
+    storeName: '',
+    businessCategory: '',
+    storeDescription: '',
+    storeLocation: '',
+    businessPanVat: '',
+    fullName: '',
+    phoneNumber: '',
+    emailAddress: '',
     processingTime: '1-2 business days',
     returnPolicy: 'We accept returns within 7 days of delivery. Items must be unused and in original packaging.'
   })
 
   const [errors, setErrors] = useState<{ [key: string]: string }>({})
+
+  useEffect(() => {
+    fetchSellerProfile()
+  }, [])
+
+  const fetchSellerProfile = async () => {
+    try {
+      const userStr = localStorage.getItem('user')
+      if (!userStr) {
+        toast.error('Please login to view your settings')
+        navigate('/sellerlogin')
+        return
+      }
+
+      const user = JSON.parse(userStr)
+      const sellerId = user.userId
+
+      // Check if user is a seller
+      if (user.role !== 'VENDOR') {
+        toast.error('Access denied. This page is for sellers only.')
+        navigate('/')
+        return
+      }
+
+      const response = await fetch(`http://localhost:8080/api/seller/profile/${sellerId}`)
+      if (response.ok) {
+        const data = await response.json()
+        setFormData({
+          storeName: data.businessName || '',
+          businessCategory: data.businessCategory || '',
+          storeDescription: data.storeDescription || '',
+          storeLocation: data.businessLocation || '',
+          businessPanVat: data.businessPanVat || '',
+          fullName: data.userName || '',
+          phoneNumber: data.phoneNumber || '',
+          emailAddress: data.contactEmail || '',
+          processingTime: '1-2 business days',
+          returnPolicy: 'We accept returns within 7 days of delivery. Items must be unused and in original packaging.'
+        })
+      } else {
+        toast.error('Failed to fetch seller profile')
+      }
+    } catch (error) {
+      console.error('Error fetching seller profile:', error)
+      toast.error('An error occurred while fetching your profile')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -68,7 +122,7 @@ const SellerSetting = () => {
     }
   }
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const newErrors: { [key: string]: string } = {}
 
     if (!formData.storeName.trim()) {
@@ -79,9 +133,8 @@ const SellerSetting = () => {
       newErrors.businessCategory = 'Business category is required'
     }
 
-    if (!formData.storeDescription.trim()) {
-      newErrors.storeDescription = 'Store description is required'
-    }
+    // Store description is optional, but if provided, validate
+    // (Removed required validation for storeDescription as per user requirement)
 
     if (!formData.storeLocation.trim()) {
       newErrors.storeLocation = 'Store location is required'
@@ -105,16 +158,67 @@ const SellerSetting = () => {
       newErrors.emailAddress = 'Please enter a valid email address'
     }
 
-    if (!formData.returnPolicy.trim()) {
-      newErrors.returnPolicy = 'Return policy is required'
-    }
-
     setErrors(newErrors)
 
     if (Object.keys(newErrors).length === 0) {
-      // Form is valid, proceed with save
-      console.log('Settings saved:', formData)
+      setSaving(true)
+      try {
+        const userStr = localStorage.getItem('user')
+        if (!userStr) {
+          toast.error('Please login to save settings')
+          navigate('/sellerlogin')
+          return
+        }
+
+        const user = JSON.parse(userStr)
+        const sellerId = user.userId
+
+        const response = await fetch(`http://localhost:8080/api/seller/settings/${sellerId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            userName: formData.fullName.trim(),
+            phoneNumber: formData.phoneNumber.trim(),
+            contactEmail: formData.emailAddress.trim(),
+            location: formData.storeLocation.trim(),
+            businessName: formData.storeName.trim(),
+            businessCategory: formData.businessCategory,
+            businessPanVat: formData.businessPanVat.trim(),
+            businessLocation: formData.storeLocation.trim(),
+            storeDescription: formData.storeDescription.trim() || ''
+          }),
+        })
+
+        if (response.ok) {
+          toast.success('Settings saved successfully!')
+        } else {
+          const errorMessage = await response.text()
+          toast.error(errorMessage || 'Failed to save settings')
+        }
+      } catch (error) {
+        console.error('Error saving settings:', error)
+        toast.error('An error occurred while saving your settings')
+      } finally {
+        setSaving(false)
+      }
     }
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-100">
+        <div className="mx-auto flex max-w-7xl gap-6 px-6 py-8">
+          <SellerNavbar />
+          <main className="flex-1 space-y-8">
+            <div className="flex justify-center items-center min-h-[60vh]">
+              <p className="text-gray-600">Loading settings...</p>
+            </div>
+          </main>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -133,11 +237,21 @@ const SellerSetting = () => {
                 </p>
               </div>
               <div className="flex gap-3">
-                <button type="button" className="rounded-xl border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-100">
+                <button 
+                  type="button" 
+                  onClick={() => fetchSellerProfile()}
+                  disabled={saving}
+                  className="rounded-xl border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
                   Cancel
                 </button>
-                <button type="button" onClick={handleSave} className="rounded-xl bg-red-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-600">
-                  Save changes
+                <button 
+                  type="button" 
+                  onClick={handleSave} 
+                  disabled={saving || loading}
+                  className="rounded-xl bg-red-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {saving ? 'Saving...' : 'Save changes'}
                 </button>
               </div>
             </div>
@@ -196,6 +310,7 @@ const SellerSetting = () => {
                           value={formData.storeDescription}
                           onChange={handleChange}
                           rows={3}
+                          placeholder="Describe your store (optional)"
                           className={`rounded-xl border px-3 py-2 text-sm text-gray-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-red-200 ${
                             errors.storeDescription ? 'border-red-500' : 'border-gray-200 focus:border-red-400'
                           }`}

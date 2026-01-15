@@ -65,6 +65,9 @@ public class Seller {
     @Column(length = 500)
     private String panVatCertificate;
 
+    @Column(length = 2000)
+    private String storeDescription;
+
     @Column(nullable = false)
     private Boolean approved = false;
 
@@ -187,6 +190,14 @@ public class Seller {
 
     public void setPanVatCertificate(String panVatCertificate) {
         this.panVatCertificate = panVatCertificate;
+    }
+
+    public String getStoreDescription() {
+        return storeDescription;
+    }
+
+    public void setStoreDescription(String storeDescription) {
+        this.storeDescription = storeDescription;
     }
 
     public Boolean getApproved() {

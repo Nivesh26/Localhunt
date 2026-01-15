@@ -3,7 +3,9 @@ package com.localhunts.backend.service;
 import com.localhunts.backend.dto.AuthResponse;
 import com.localhunts.backend.dto.SellerListResponse;
 import com.localhunts.backend.dto.SellerLoginRequest;
+import com.localhunts.backend.dto.SellerProfileResponse;
 import com.localhunts.backend.dto.SellerSignupRequest;
+import com.localhunts.backend.dto.UpdateSellerSettingsRequest;
 import com.localhunts.backend.model.Product;
 import com.localhunts.backend.model.Role;
 import com.localhunts.backend.model.Seller;
@@ -127,6 +129,63 @@ public class SellerService {
             .orElseThrow(() -> new RuntimeException("Seller not found"));
         
         sellerRepository.delete(seller);
+    }
+
+    public SellerProfileResponse getSellerProfile(Long sellerId) {
+        Seller seller = sellerRepository.findById(sellerId)
+            .orElseThrow(() -> new RuntimeException("Seller not found"));
+        
+        return new SellerProfileResponse(
+            seller.getId(),
+            seller.getUserName(),
+            seller.getPhoneNumber(),
+            seller.getContactEmail(),
+            seller.getLocation(),
+            seller.getBusinessName(),
+            seller.getBusinessCategory(),
+            seller.getBusinessPanVat(),
+            seller.getBusinessLocation(),
+            seller.getStoreDescription() != null ? seller.getStoreDescription() : "",
+            seller.getRole()
+        );
+    }
+
+    public SellerProfileResponse updateSellerSettings(Long sellerId, UpdateSellerSettingsRequest request) {
+        Seller seller = sellerRepository.findById(sellerId)
+            .orElseThrow(() -> new RuntimeException("Seller not found"));
+
+        // Check if email is being changed and if new email already exists (for a different seller)
+        if (!seller.getContactEmail().equals(request.getContactEmail()) && 
+            sellerRepository.existsByContactEmail(request.getContactEmail())) {
+            throw new RuntimeException("Email already exists");
+        }
+
+        // Update seller fields
+        seller.setUserName(request.getUserName());
+        seller.setPhoneNumber(request.getPhoneNumber());
+        seller.setContactEmail(request.getContactEmail());
+        seller.setLocation(request.getLocation());
+        seller.setBusinessName(request.getBusinessName());
+        seller.setBusinessCategory(request.getBusinessCategory());
+        seller.setBusinessPanVat(request.getBusinessPanVat());
+        seller.setBusinessLocation(request.getBusinessLocation());
+        seller.setStoreDescription(request.getStoreDescription() != null ? request.getStoreDescription() : "");
+
+        Seller updatedSeller = sellerRepository.save(seller);
+        
+        return new SellerProfileResponse(
+            updatedSeller.getId(),
+            updatedSeller.getUserName(),
+            updatedSeller.getPhoneNumber(),
+            updatedSeller.getContactEmail(),
+            updatedSeller.getLocation(),
+            updatedSeller.getBusinessName(),
+            updatedSeller.getBusinessCategory(),
+            updatedSeller.getBusinessPanVat(),
+            updatedSeller.getBusinessLocation(),
+            updatedSeller.getStoreDescription() != null ? updatedSeller.getStoreDescription() : "",
+            updatedSeller.getRole()
+        );
     }
 
     @Transactional
