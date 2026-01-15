@@ -1,6 +1,7 @@
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/LocalhuntBackendApplication.java
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/config/SecurityConfig.java
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/config/WebConfig.java
+/Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/controller/AdminController.java
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/controller/AuthController.java
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/controller/CartController.java
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/controller/ProductController.java
@@ -16,6 +17,7 @@
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/dto/SellerSignupRequest.java
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/dto/SignupRequest.java
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/dto/UpdateProfileRequest.java
+/Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/dto/UserListResponse.java
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/dto/UserProfileResponse.java
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/model/Cart.java
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/model/Product.java

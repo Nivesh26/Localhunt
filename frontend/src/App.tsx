@@ -25,6 +25,7 @@ import SellerOrder from './SellerPages/SellerOrder'
 import SellerPayout from './SellerPages/SellerPayout'
 import SellerMessage from './SellerPages/SellerMessage'
 import SellerSetting from './SellerPages/SellerSetting'
+import AdminUser from './AdminPages/AdminUser'
 
 const App = () => {
   return (
@@ -63,7 +64,7 @@ const App = () => {
         <Route path="/adminvendorsapprove" element={<VendorApprove/>}/>
         <Route path="/adminproducts" element={<AdminProduct/>}/>
         <Route path="/adminsettings" element={<AdminSetting/>}/>  
-        
+        <Route path="/adminuser" element={<AdminUser/>}/>
    </Routes> 
    <ToastContainer position="top-right" autoClose={3000} />
    </BrowserRouter>

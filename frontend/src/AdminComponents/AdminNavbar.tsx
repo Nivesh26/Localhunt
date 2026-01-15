@@ -4,6 +4,7 @@ import {
   FaCube,
   FaShieldAlt,
   FaSignOutAlt,
+  FaUsers,
 } from 'react-icons/fa'
 import logo from '../assets/Local Hunt Logo NoBG.png'
 import profileImage from '../assets/Nivesh.png'
@@ -11,10 +12,12 @@ import { Link } from 'react-router-dom'
 
 const navLinks = [
   { label: 'Overview', icon: FaHome, to: '/admindashboard' },
+  { label: 'Users', icon: FaUsers, to: '/adminuser' },
   { label: 'Vendors', icon: FaStore, to: '/adminvendors' },
   { label: 'Approve Vendors', icon: FaShieldAlt, to: '/adminvendorsapprove  ' },
   { label: 'Products', icon: FaCube, to: '/adminproducts' },
   { label: 'Settings', icon: FaShieldAlt, to: '/adminsettings' },
+ 
 ]
 
 

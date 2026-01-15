@@ -4,13 +4,19 @@ import com.localhunts.backend.dto.AuthResponse;
 import com.localhunts.backend.dto.LoginRequest;
 import com.localhunts.backend.dto.SignupRequest;
 import com.localhunts.backend.dto.UpdateProfileRequest;
+import com.localhunts.backend.dto.UserListResponse;
 import com.localhunts.backend.dto.UserProfileResponse;
 import com.localhunts.backend.model.Role;
 import com.localhunts.backend.model.User;
+import com.localhunts.backend.repository.CartRepository;
 import com.localhunts.backend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class UserService {
@@ -20,6 +26,9 @@ public class UserService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private CartRepository cartRepository;
 
     public AuthResponse signup(SignupRequest signupRequest) {
         // Check if passwords match
@@ -112,5 +121,30 @@ public class UserService {
             updatedUser.getPhone(),
             updatedUser.getRole()
         );
+    }
+
+    public List<UserListResponse> getAllUsers() {
+        List<User> users = userRepository.findAll();
+        return users.stream()
+                .map(user -> new UserListResponse(
+                    user.getId(),
+                    user.getFullName(),
+                    user.getEmail(),
+                    user.getPhone(),
+                    user.getRole()
+                ))
+                .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public void deleteUser(Long userId) {
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // Delete all cart items associated with this user
+        cartRepository.deleteByUser(user);
+
+        // Delete the user
+        userRepository.delete(user);
     }
 }

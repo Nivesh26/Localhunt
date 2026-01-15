@@ -3,7 +3,6 @@ import {
   FaDollarSign,
   FaShieldAlt,
   FaStore,
-  FaTicketAlt,
   FaBell,
   FaSearch,
   FaSignOutAlt,
@@ -40,12 +39,6 @@ const AdminDashboard = () => {
     { store: 'Nepal Spice Hub', owner: 'Meera Thapa', submitted: '2h ago', docs: 'GST & Bank Statement', status: 'High Priority' },
     { store: 'Sherpa Leather', owner: 'Nima Sherpa', submitted: '5h ago', docs: 'ID Pending', status: 'Follow-up' },
     { store: 'EcoLife Essentials', owner: 'Anil Shrestha', submitted: 'Yesterday', docs: 'Complete', status: 'Ready to Approve' },
-  ]
-
-  const supportTickets = [
-    { id: '#4527', vendor: 'Mountain Brew Co.', topic: 'Payout Delay', priority: 'High', time: '14m ago' },
-    { id: '#4522', vendor: 'Lotus Crafts', topic: 'Listing Visibility', priority: 'Medium', time: '1h ago' },
-    { id: '#4519', vendor: 'Summit Gear', topic: 'Return Dispute', priority: 'High', time: '2h ago' },
   ]
 
   return (
