@@ -411,7 +411,10 @@ const Profie = () => {
               <h3 className="text-2xl font-bold text-gray-900 mb-6">Account Settings</h3>
               
               <div className="space-y-4">
-                <button className="w-full flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition">
+                <button 
+                  onClick={() => navigate('/changepassword')}
+                  className="w-full flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition"
+                >
                   <div className="flex items-center gap-3">
                     <FaLock className="w-5 h-5 text-red-600" />
                     <span className="font-medium text-gray-900">Change Password</span>

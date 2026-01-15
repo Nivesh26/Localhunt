@@ -26,6 +26,8 @@ import SellerPayout from './SellerPages/SellerPayout'
 import SellerMessage from './SellerPages/SellerMessage'
 import SellerSetting from './SellerPages/SellerSetting'
 import AdminUser from './AdminPages/AdminUser'
+import Changepassword from './Pages/Changepassord'
+
 
 const App = () => {
   return (
@@ -40,6 +42,7 @@ const App = () => {
       <Route path="/cart" element={<Cart/>}/>
       <Route path="/productdetail/:id" element={<Productdetail/>}/>
       <Route path="/profile" element={<Profile/>}/>
+      <Route path="/changepassword" element={<Changepassword/>}/>
 
       {/* Login and Signup */}
       <Route path="/login" element={<Login/>}/>

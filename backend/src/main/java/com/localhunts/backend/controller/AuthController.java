@@ -1,6 +1,7 @@
 package com.localhunts.backend.controller;
 
 import com.localhunts.backend.dto.AuthResponse;
+import com.localhunts.backend.dto.ChangePasswordRequest;
 import com.localhunts.backend.dto.LoginRequest;
 import com.localhunts.backend.dto.SignupRequest;
 import com.localhunts.backend.dto.UpdateProfileRequest;
@@ -61,6 +62,23 @@ public class AuthController {
             return ResponseEntity.ok(profile);
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
+    @PutMapping("/change-password/{userId}")
+    public ResponseEntity<AuthResponse> changePassword(
+            @PathVariable Long userId,
+            @Valid @RequestBody ChangePasswordRequest request) {
+        try {
+            AuthResponse response = userService.changePassword(userId, request);
+            if (response.isSuccess()) {
+                return ResponseEntity.ok(response);
+            } else {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+            }
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new AuthResponse("User not found", false));
         }
     }
 }

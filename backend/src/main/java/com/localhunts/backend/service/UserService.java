@@ -1,6 +1,7 @@
 package com.localhunts.backend.service;
 
 import com.localhunts.backend.dto.AuthResponse;
+import com.localhunts.backend.dto.ChangePasswordRequest;
 import com.localhunts.backend.dto.LoginRequest;
 import com.localhunts.backend.dto.SignupRequest;
 import com.localhunts.backend.dto.UpdateProfileRequest;
@@ -134,6 +135,33 @@ public class UserService {
                     user.getRole()
                 ))
                 .collect(Collectors.toList());
+    }
+
+    public AuthResponse changePassword(Long userId, ChangePasswordRequest request) {
+        // Find user
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // Verify old password
+        if (!passwordEncoder.matches(request.getOldPassword(), user.getPassword())) {
+            return new AuthResponse("Old password is incorrect", false);
+        }
+
+        // Check if new password and confirm password match
+        if (!request.getNewPassword().equals(request.getConfirmPassword())) {
+            return new AuthResponse("New password and confirm password do not match", false);
+        }
+
+        // Check if new password is different from old password
+        if (passwordEncoder.matches(request.getNewPassword(), user.getPassword())) {
+            return new AuthResponse("New password must be different from old password", false);
+        }
+
+        // Update password
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
+
+        return new AuthResponse("Password changed successfully", true);
     }
 
     @Transactional
