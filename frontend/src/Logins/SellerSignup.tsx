@@ -45,7 +45,15 @@ const Sellerlogin = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target
-    setFormData(prev => ({ ...prev, [name]: value }))
+    
+    // For phone number, only allow digits and limit to 10
+    if (name === 'phoneNumber') {
+      const digitsOnly = value.replace(/\D/g, '').slice(0, 10)
+      setFormData(prev => ({ ...prev, [name]: digitsOnly }))
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }))
+    }
+    
     if (errors[name]) {
       setErrors(prev => {
         const newErrors = { ...prev }
@@ -322,12 +330,13 @@ const Sellerlogin = () => {
                         <label className="text-sm font-medium text-gray-700">
                           Phone Number
                           <input
-                            type="text"
+                            type="tel"
                             name="phoneNumber"
                             value={formData.phoneNumber}
                             onChange={handleChange}
-                            placeholder="Phone Number"
+                            placeholder="10 digits only"
                             maxLength={10}
+                            inputMode="numeric"
                             className={`mt-1 w-full border-b py-2 text-sm focus:outline-none ${
                               errors.phoneNumber ? 'border-red-500' : 'border-gray-300 focus:border-red-500'
                             }`}

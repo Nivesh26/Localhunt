@@ -171,13 +171,25 @@ const Profie = () => {
   }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setEditForm({
-      ...editForm,
-      [e.target.name]: e.target.value
-    })
+    const { name, value } = e.target
+    
+    // For phone, only allow digits and limit to 10
+    if (name === 'phone') {
+      const digitsOnly = value.replace(/\D/g, '').slice(0, 10)
+      setEditForm({
+        ...editForm,
+        [name]: digitsOnly
+      })
+    } else {
+      setEditForm({
+        ...editForm,
+        [name]: value
+      })
+    }
+    
     // Clear error when user starts typing
-    if (errors[e.target.name as keyof typeof errors]) {
-      setErrors(prev => ({ ...prev, [e.target.name]: undefined }))
+    if (errors[name as keyof typeof errors]) {
+      setErrors(prev => ({ ...prev, [name]: undefined }))
     }
   }
 
@@ -392,6 +404,9 @@ const Profie = () => {
                         name="phone"
                         value={editForm.phone}
                         onChange={handleChange}
+                        maxLength={10}
+                        inputMode="numeric"
+                        placeholder="10 digits only"
                         className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${
                           errors.phone ? 'border-red-500' : 'border-gray-300'
                         }`}

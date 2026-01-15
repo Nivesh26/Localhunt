@@ -6,7 +6,6 @@ import {
   FaEnvelope,
   FaKey,
   FaShieldAlt,
-  FaMobileAlt,
   FaUserCircle,
   FaStore,
   FaMoneyBillWave,
@@ -25,7 +24,6 @@ const notificationSettings = [
 
 const SellerSetting = () => {
   const navigate = useNavigate()
-  const [twoFactorEnabled, setTwoFactorEnabled] = useState(false)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [notifications, setNotifications] = useState<Record<string, boolean>>({
@@ -112,7 +110,15 @@ const SellerSetting = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target
-    setFormData(prev => ({ ...prev, [name]: value }))
+    
+    // For phone number, only allow digits and limit to 10
+    if (name === 'phoneNumber') {
+      const digitsOnly = value.replace(/\D/g, '').slice(0, 10)
+      setFormData(prev => ({ ...prev, [name]: digitsOnly }))
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }))
+    }
+    
     if (errors[name]) {
       setErrors(prev => {
         const newErrors = { ...prev }
@@ -381,6 +387,9 @@ const SellerSetting = () => {
                           name="phoneNumber"
                           value={formData.phoneNumber}
                           onChange={handleChange}
+                          maxLength={10}
+                          inputMode="numeric"
+                          placeholder="10 digits only"
                           className={`rounded-xl border px-3 py-2 text-sm text-gray-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-red-200 ${
                             errors.phoneNumber ? 'border-red-500' : 'border-gray-200 focus:border-red-400'
                           }`}
@@ -405,50 +414,52 @@ const SellerSetting = () => {
                 </div>
               </div>
 
-              {/* Shipping & Policies */}
-              <div className="rounded-2xl bg-white p-6 shadow-sm sm:p-8">
-                <div className="flex items-start gap-4">
-                  <div className="rounded-xl bg-emerald-50 p-3">
-                    <FaTruck className="h-6 w-6 text-emerald-500" />
-                  </div>
-                  <div className="flex-1">
-                    <h2 className="text-lg font-semibold text-gray-900">Shipping & policies</h2>
-                    <p className="mt-1 text-sm text-gray-500">
-                      Configure shipping options and return policies for your store.
-                    </p>
+              {/* Shipping & Policies - Hidden */}
+              {false && (
+                <div className="rounded-2xl bg-white p-6 shadow-sm sm:p-8">
+                  <div className="flex items-start gap-4">
+                    <div className="rounded-xl bg-emerald-50 p-3">
+                      <FaTruck className="h-6 w-6 text-emerald-500" />
+                    </div>
+                    <div className="flex-1">
+                      <h2 className="text-lg font-semibold text-gray-900">Shipping & policies</h2>
+                      <p className="mt-1 text-sm text-gray-500">
+                        Configure shipping options and return policies for your store.
+                      </p>
 
-                    <div className="mt-6 space-y-5">
-                      <div className="flex flex-col gap-2">
-                        <label className="text-sm font-medium text-gray-700">Processing time</label>
-                        <select
-                          name="processingTime"
-                          value={formData.processingTime}
-                          onChange={handleChange}
-                          className="rounded-xl border border-gray-200 px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-red-400 focus:outline-none focus:ring-2 focus:ring-red-200"
-                        >
-                          <option>1-2 business days</option>
-                          <option>2-3 business days</option>
-                          <option>3-5 business days</option>
-                          <option>5-7 business days</option>
-                        </select>
-                      </div>
-                      <div className="flex flex-col gap-2">
-                        <label className="text-sm font-medium text-gray-700">Return policy</label>
-                        <textarea
-                          name="returnPolicy"
-                          value={formData.returnPolicy}
-                          onChange={handleChange}
-                          rows={3}
-                          className={`rounded-xl border px-3 py-2 text-sm text-gray-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-red-200 ${
-                            errors.returnPolicy ? 'border-red-500' : 'border-gray-200 focus:border-red-400'
-                          }`}
-                        />
-                        {errors.returnPolicy && <p className="text-red-500 text-xs mt-1">{errors.returnPolicy}</p>}
+                      <div className="mt-6 space-y-5">
+                        <div className="flex flex-col gap-2">
+                          <label className="text-sm font-medium text-gray-700">Processing time</label>
+                          <select
+                            name="processingTime"
+                            value={formData.processingTime}
+                            onChange={handleChange}
+                            className="rounded-xl border border-gray-200 px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-red-400 focus:outline-none focus:ring-2 focus:ring-red-200"
+                          >
+                            <option>1-2 business days</option>
+                            <option>2-3 business days</option>
+                            <option>3-5 business days</option>
+                            <option>5-7 business days</option>
+                          </select>
+                        </div>
+                        <div className="flex flex-col gap-2">
+                          <label className="text-sm font-medium text-gray-700">Return policy</label>
+                          <textarea
+                            name="returnPolicy"
+                            value={formData.returnPolicy}
+                            onChange={handleChange}
+                            rows={3}
+                            className={`rounded-xl border px-3 py-2 text-sm text-gray-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-red-200 ${
+                              errors.returnPolicy ? 'border-red-500' : 'border-gray-200 focus:border-red-400'
+                            }`}
+                          />
+                          {errors.returnPolicy && <p className="text-red-500 text-xs mt-1">{errors.returnPolicy}</p>}
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
+              )}
 
               {/* Security */}
               <div className="rounded-2xl bg-white p-6 shadow-sm sm:p-8">
@@ -459,7 +470,7 @@ const SellerSetting = () => {
                   <div className="flex-1">
                     <h2 className="text-lg font-semibold text-gray-900">Security</h2>
                     <p className="mt-1 text-sm text-gray-500">
-                      Protect your account with strong passwords and two-factor authentication.
+                      Protect your account with strong passwords.
                     </p>
 
                     <div className="mt-6 space-y-5">
@@ -477,26 +488,6 @@ const SellerSetting = () => {
                           Change
                         </button>
                       </div>
-
-                      <div className="flex flex-col gap-3 rounded-2xl border border-gray-200 p-4 sm:flex-row sm:items-center sm:justify-between">
-                        <div className="flex items-start gap-3">
-                          <FaMobileAlt className="mt-0.5 h-5 w-5 text-gray-500" />
-                          <div>
-                            <p className="text-sm font-semibold text-gray-900">Two-factor authentication</p>
-                            <p className="text-sm text-gray-500">
-                              Add an extra layer of security to your account.
-                            </p>
-                          </div>
-                        </div>
-                        <button
-                          className={`self-start rounded-full px-4 py-2 text-xs font-semibold transition ${
-                            twoFactorEnabled ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'
-                          }`}
-                          onClick={() => setTwoFactorEnabled(!twoFactorEnabled)}
-                        >
-                          {twoFactorEnabled ? 'Enabled' : 'Disabled'}
-                        </button>
-                      </div>
                     </div>
                   </div>
                 </div>
@@ -504,45 +495,47 @@ const SellerSetting = () => {
             </div>
 
             <aside className="space-y-6">
-              {/* Notifications */}
-              <div className="rounded-2xl bg-white p-6 shadow-sm sm:p-8">
-                <div className="flex items-start gap-4">
-                  <div className="rounded-xl bg-yellow-50 p-3">
-                    <FaBell className="h-6 w-6 text-yellow-500" />
-                  </div>
-                  <div className="flex-1">
-                    <h2 className="text-lg font-semibold text-gray-900">Notification preferences</h2>
-                    <p className="mt-1 text-sm text-gray-500">Choose how you get alerted about store activity.</p>
+              {/* Notifications - Hidden */}
+              {false && (
+                <div className="rounded-2xl bg-white p-6 shadow-sm sm:p-8">
+                  <div className="flex items-start gap-4">
+                    <div className="rounded-xl bg-yellow-50 p-3">
+                      <FaBell className="h-6 w-6 text-yellow-500" />
+                    </div>
+                    <div className="flex-1">
+                      <h2 className="text-lg font-semibold text-gray-900">Notification preferences</h2>
+                      <p className="mt-1 text-sm text-gray-500">Choose how you get alerted about store activity.</p>
 
-                    <div className="mt-6 space-y-4">
-                      {notificationSettings.map(option => (
-                        <div
-                          key={option.id}
-                          className="flex gap-3 rounded-2xl border border-gray-200 p-4 transition hover:border-red-200"
-                        >
-                          <div className="h-10 w-10 shrink-0 rounded-xl bg-red-50 p-2">
-                            <FaEnvelope className="h-6 w-6 text-red-500" />
-                          </div>
-                          <div className="flex-1">
-                            <p className="text-sm font-semibold text-gray-900">{option.label}</p>
-                            <p className="text-xs text-gray-500">{option.description}</p>
-                          </div>
-                          <button
-                            onClick={() => toggleNotification(option.id)}
-                            className={`h-7 rounded-full px-3 text-xs font-semibold transition ${
-                              notifications[option.id]
-                                ? 'bg-red-100 text-red-600'
-                                : 'bg-gray-100 text-gray-500 hover:text-gray-700'
-                            }`}
+                      <div className="mt-6 space-y-4">
+                        {notificationSettings.map(option => (
+                          <div
+                            key={option.id}
+                            className="flex gap-3 rounded-2xl border border-gray-200 p-4 transition hover:border-red-200"
                           >
-                            {notifications[option.id] ? 'On' : 'Off'}
-                          </button>
-                        </div>
-                      ))}
+                            <div className="h-10 w-10 shrink-0 rounded-xl bg-red-50 p-2">
+                              <FaEnvelope className="h-6 w-6 text-red-500" />
+                            </div>
+                            <div className="flex-1">
+                              <p className="text-sm font-semibold text-gray-900">{option.label}</p>
+                              <p className="text-xs text-gray-500">{option.description}</p>
+                            </div>
+                            <button
+                              onClick={() => toggleNotification(option.id)}
+                              className={`h-7 rounded-full px-3 text-xs font-semibold transition ${
+                                notifications[option.id]
+                                  ? 'bg-red-100 text-red-600'
+                                  : 'bg-gray-100 text-gray-500 hover:text-gray-700'
+                              }`}
+                            >
+                              {notifications[option.id] ? 'On' : 'Off'}
+                            </button>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
+              )}
 
               {/* Payment Settings */}
               <div className="rounded-2xl bg-white p-6 shadow-sm sm:p-8">
