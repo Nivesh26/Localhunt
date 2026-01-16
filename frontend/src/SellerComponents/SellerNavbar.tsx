@@ -9,6 +9,7 @@ import {
 } from 'react-icons/fa'
 import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
+import { useState, useEffect } from 'react'
 import logo from '../assets/Local Hunt Logo NoBG.png'
 import profileImage from '../assets/Nivesh.png'
 import { sessionUtils } from '../utils/sessionUtils'
@@ -24,6 +25,30 @@ const navLinks = [
 
 const SellerNavbar = () => {
   const navigate = useNavigate()
+  const [sellerName, setSellerName] = useState('Store owner')
+
+  useEffect(() => {
+    const fetchSellerName = async () => {
+      try {
+        const user = sessionUtils.getUser()
+        if (!user || user.role !== 'VENDOR') {
+          return
+        }
+
+        const sellerId = user.userId
+        const response = await fetch(`http://localhost:8080/api/seller/profile/${sellerId}`)
+        
+        if (response.ok) {
+          const data = await response.json()
+          setSellerName(data.userName || 'Store owner')
+        }
+      } catch (error) {
+        console.error('Error fetching seller name:', error)
+      }
+    }
+
+    fetchSellerName()
+  }, [])
 
   const handleLogout = () => {
     sessionUtils.clearSession()
@@ -47,7 +72,7 @@ const SellerNavbar = () => {
             <img src={profileImage} alt="Seller profile" className="h-12 w-12 rounded-full object-cover" />
             <div>
               <p className="text-sm text-gray-500">Store owner</p>
-              <p className="text-lg font-semibold text-gray-900">Mr. Nivesh Shrestha</p>
+              <p className="text-lg font-semibold text-gray-900">{sellerName}</p>
             </div>
           </div>
 
