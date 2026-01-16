@@ -188,7 +188,7 @@ const Signup_form = () => {
               name="phone"
               value={formData.phone}
               onChange={handleChange}
-              placeholder="10 digits only"
+              placeholder="Phone Number"
               maxLength={10}
               inputMode="numeric"
               className={`w-full border-b py-2 focus:outline-none ${
