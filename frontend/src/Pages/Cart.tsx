@@ -21,6 +21,7 @@ const cart = () => {
   const navigate = useNavigate()
   const [cartItems, setCartItems] = useState<CartItem[]>([])
   const [loading, setLoading] = useState(true)
+  const [selectedItems, setSelectedItems] = useState<Set<number>>(new Set())
 
   useEffect(() => {
     fetchCartItems()
@@ -158,12 +159,48 @@ const cart = () => {
     }
   }
 
+  const handleSelectItem = (itemId: number) => {
+    setSelectedItems(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(itemId)) {
+        newSet.delete(itemId)
+      } else {
+        newSet.add(itemId)
+      }
+      return newSet
+    })
+  }
+
+  const handleSelectAll = () => {
+    if (selectedItems.size === cartItems.length) {
+      // Deselect all
+      setSelectedItems(new Set())
+    } else {
+      // Select all
+      setSelectedItems(new Set(cartItems.map(item => item.id)))
+    }
+  }
+
+  const getSelectedItems = () => {
+    return cartItems.filter(item => selectedItems.has(item.id))
+  }
+
   const getTotalPrice = () => {
-    return cartItems.reduce((total, item) => total + item.productPrice * item.quantity, 0)
+    return getSelectedItems().reduce((total, item) => total + item.productPrice * item.quantity, 0)
   }
 
   const getTotalItems = () => {
-    return cartItems.reduce((total, item) => total + item.quantity, 0)
+    return getSelectedItems().reduce((total, item) => total + item.quantity, 0)
+  }
+
+  const handleCheckout = () => {
+    const selected = getSelectedItems()
+    if (selected.length === 0) {
+      toast.error('Please select at least one item to checkout')
+      return
+    }
+    // TODO: Implement checkout functionality
+    toast.success(`Proceeding to checkout with ${selected.length} item(s)`)
   }
 
   if (loading) {
@@ -201,18 +238,41 @@ const cart = () => {
               <div className="md:col-span-2 space-y-4">
                 {/* Cart Header Actions */}
                 <div className="flex justify-between items-center bg-white rounded-xl shadow-md p-4">
-                  <h2 className="text-xl font-semibold text-gray-900">
-                    Cart Items ({getTotalItems()})
-                  </h2>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="checkbox"
+                      checked={cartItems.length > 0 && selectedItems.size === cartItems.length}
+                      onChange={handleSelectAll}
+                      className="w-5 h-5 text-red-600 border-gray-300 rounded focus:ring-red-500 cursor-pointer"
+                    />
+                    <h2 className="text-xl font-semibold text-gray-900">
+                      Cart Items ({cartItems.length})
+                      {selectedItems.size > 0 && (
+                        <span className="text-sm font-normal text-gray-600 ml-2">
+                          ({selectedItems.size} selected)
+                        </span>
+                      )}
+                    </h2>
+                  </div>
                 </div>
 
                 {/* Cart Item List */}
                 {cartItems.map((item) => (
                   <div
                     key={item.id}
-                    className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow"
+                    className={`bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow ${
+                      !selectedItems.has(item.id) ? 'opacity-60' : ''
+                    }`}
                   >
                     <div className="flex gap-4">
+                      {/* Checkbox */}
+                      <input
+                        type="checkbox"
+                        checked={selectedItems.has(item.id)}
+                        onChange={() => handleSelectItem(item.id)}
+                        className="w-5 h-5 text-red-600 border-gray-300 rounded focus:ring-red-500 cursor-pointer mt-1"
+                      />
+                      
                       {/* Product Image */}
                       <img
                         src={item.productImageUrl || '/placeholder.png'}
@@ -281,7 +341,7 @@ const cart = () => {
                   
                   <div className="space-y-4 mb-6">
                     <div className="flex justify-between text-gray-700">
-                      <span>Subtotal ({getTotalItems()} items)</span>
+                      <span>Subtotal ({getTotalItems()} selected item{getTotalItems() !== 1 ? 's' : ''})</span>
                       <span className="font-semibold">NRP {getTotalPrice().toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between text-gray-700">
@@ -300,8 +360,16 @@ const cart = () => {
                     </div>
                   </div>
 
-                  <button className="w-full bg-red-400 text-white py-4 rounded-lg font-semibold text-lg hover:bg-red-500 transition-colors mb-4">
-                    Proceed to Checkout
+                  <button 
+                    onClick={handleCheckout}
+                    disabled={selectedItems.size === 0}
+                    className={`w-full py-4 rounded-lg font-semibold text-lg transition-colors mb-4 ${
+                      selectedItems.size === 0
+                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                        : 'bg-red-400 text-white hover:bg-red-500'
+                    }`}
+                  >
+                    Proceed to Checkout ({selectedItems.size} item{selectedItems.size !== 1 ? 's' : ''})
                   </button>
                   
                   <a
