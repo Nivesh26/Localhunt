@@ -17,6 +17,7 @@
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/dto/LoginRequest.java
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/dto/OrderItemRequest.java
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/dto/OrderResponse.java
+/Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/dto/OrderTrackingResponse.java
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/dto/ProductRequest.java
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/dto/ProductResponse.java
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/dto/SellerListResponse.java

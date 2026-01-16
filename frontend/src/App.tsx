@@ -31,6 +31,7 @@ import ProtectedRoute from './Components/ProtectedRoute'
 import Checkout from './Pages/Checkout'
 import Payment from './Pages/Payment'
 import COD from './Pages/COD'
+import OrderTracking from './Pages/OrderTracking'
 
 
 const App = () => {
@@ -72,6 +73,11 @@ const App = () => {
       <Route path="/cod" element={
         <ProtectedRoute allowedRoles={['USER']} redirectTo="/login">
           <COD/>
+        </ProtectedRoute>
+      }/>
+      <Route path="/ordertracking" element={
+        <ProtectedRoute allowedRoles={['USER']} redirectTo="/login">
+          <OrderTracking/>
         </ProtectedRoute>
       }/>
       

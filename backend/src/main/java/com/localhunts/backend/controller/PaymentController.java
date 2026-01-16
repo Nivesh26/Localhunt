@@ -2,6 +2,7 @@ package com.localhunts.backend.controller;
 
 import com.localhunts.backend.dto.CreateOrderRequest;
 import com.localhunts.backend.dto.OrderResponse;
+import com.localhunts.backend.dto.OrderTrackingResponse;
 import com.localhunts.backend.service.PaymentService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +37,16 @@ public class PaymentController {
             response.put("success", false);
             response.put("message", e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+    }
+
+    @GetMapping("/orders/{userId}")
+    public ResponseEntity<?> getUserOrders(@PathVariable Long userId) {
+        try {
+            List<OrderTrackingResponse> orders = paymentService.getUserOrders(userId);
+            return ResponseEntity.ok(orders);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
     }
 }

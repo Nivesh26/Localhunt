@@ -2,6 +2,7 @@ package com.localhunts.backend.service;
 
 import com.localhunts.backend.dto.CreateOrderRequest;
 import com.localhunts.backend.dto.OrderResponse;
+import com.localhunts.backend.dto.OrderTrackingResponse;
 import com.localhunts.backend.model.Payment;
 import com.localhunts.backend.model.Product;
 import com.localhunts.backend.model.User;
@@ -69,6 +70,47 @@ public class PaymentService {
         response.setSubtotal(payment.getSubtotal());
         response.setPaymentMethod(payment.getPaymentMethod());
         response.setStatus(payment.getStatus());
+        
+        if (payment.getCreatedAt() != null) {
+            response.setCreatedAt(payment.getCreatedAt().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+        }
+        
+        return response;
+    }
+
+    public List<OrderTrackingResponse> getUserOrders(Long userId) {
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new RuntimeException("User not found"));
+
+        List<Payment> payments = paymentRepository.findByUser(user);
+        return payments.stream().map(this::convertToTrackingResponse).collect(Collectors.toList());
+    }
+
+    private OrderTrackingResponse convertToTrackingResponse(Payment payment) {
+        Product product = payment.getProduct();
+        
+        // Get first image from comma-separated imageUrl
+        String imageUrl = product.getImageUrl() != null ? product.getImageUrl().split(",")[0].trim() : "";
+        
+        OrderTrackingResponse response = new OrderTrackingResponse();
+        response.setOrderId(payment.getId());
+        response.setProductId(product.getId());
+        response.setProductName(product.getName());
+        response.setProductImageUrl(imageUrl);
+        response.setQuantity(payment.getQuantity());
+        response.setUnitPrice(payment.getUnitPrice());
+        response.setSubtotal(payment.getSubtotal());
+        response.setPaymentMethod(payment.getPaymentMethod());
+        response.setStatus(payment.getStatus());
+        response.setRegion(payment.getRegion());
+        response.setCity(payment.getCity());
+        response.setArea(payment.getArea());
+        response.setAddress(payment.getAddress());
+        
+        // Add seller name (business name)
+        if (product.getSeller() != null) {
+            response.setSellerName(product.getSeller().getBusinessName());
+        }
         
         if (payment.getCreatedAt() != null) {
             response.setCreatedAt(payment.getCreatedAt().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
