@@ -47,10 +47,21 @@ public class PaymentService {
         User user = userRepository.findById(userId)
             .orElseThrow(() -> new RuntimeException("User not found"));
 
-        // Create payment records for each item
+        // Create payment records for each item and reduce stock
         List<Payment> payments = request.getItems().stream().map(itemRequest -> {
             Product product = productRepository.findById(itemRequest.getProductId())
                 .orElseThrow(() -> new RuntimeException("Product not found: " + itemRequest.getProductId()));
+
+            // Check if there's enough stock
+            if (product.getStock() < itemRequest.getQuantity()) {
+                throw new RuntimeException("Insufficient stock for product: " + product.getName() + 
+                    ". Available: " + product.getStock() + ", Requested: " + itemRequest.getQuantity());
+            }
+
+            // Reduce stock by the quantity ordered
+            int newStock = product.getStock() - itemRequest.getQuantity();
+            product.setStock(newStock);
+            productRepository.save(product);
 
             Payment payment = new Payment();
             payment.setUser(user);
