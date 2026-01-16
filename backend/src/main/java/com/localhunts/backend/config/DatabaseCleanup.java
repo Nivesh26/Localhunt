@@ -38,18 +38,18 @@ public class DatabaseCleanup {
             
             // Modify delivered table to allow NULL for user_id and product_id
             // Check if delivered table exists
-            String checkTableSql = "SELECT COUNT(*) FROM information_schema.TABLES " +
+            String checkDeliveredTableSql = "SELECT COUNT(*) FROM information_schema.TABLES " +
                     "WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'delivered'";
             
-            Integer tableExists = jdbcTemplate.queryForObject(checkTableSql, Integer.class);
+            Integer deliveredTableExists = jdbcTemplate.queryForObject(checkDeliveredTableSql, Integer.class);
             
-            if (tableExists != null && tableExists > 0) {
+            if (deliveredTableExists != null && deliveredTableExists > 0) {
                 // Modify user_id to allow NULL
                 try {
                     jdbcTemplate.execute("ALTER TABLE delivered MODIFY COLUMN user_id BIGINT NULL");
                     System.out.println("✓ Modified delivered.user_id to allow NULL");
                 } catch (Exception e) {
-                    System.out.println("Note: user_id column modification: " + e.getMessage());
+                    System.out.println("Note: delivered.user_id column modification: " + e.getMessage());
                 }
                 
                 // Modify product_id to allow NULL
@@ -57,7 +57,24 @@ public class DatabaseCleanup {
                     jdbcTemplate.execute("ALTER TABLE delivered MODIFY COLUMN product_id BIGINT NULL");
                     System.out.println("✓ Modified delivered.product_id to allow NULL");
                 } catch (Exception e) {
-                    System.out.println("Note: product_id column modification: " + e.getMessage());
+                    System.out.println("Note: delivered.product_id column modification: " + e.getMessage());
+                }
+            }
+            
+            // Modify payment table to allow NULL for product_id
+            // Check if payment table exists
+            String checkPaymentTableSql = "SELECT COUNT(*) FROM information_schema.TABLES " +
+                    "WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'payment'";
+            
+            Integer paymentTableExists = jdbcTemplate.queryForObject(checkPaymentTableSql, Integer.class);
+            
+            if (paymentTableExists != null && paymentTableExists > 0) {
+                // Modify product_id to allow NULL
+                try {
+                    jdbcTemplate.execute("ALTER TABLE payment MODIFY COLUMN product_id BIGINT NULL");
+                    System.out.println("✓ Modified payment.product_id to allow NULL");
+                } catch (Exception e) {
+                    System.out.println("Note: payment.product_id column modification: " + e.getMessage());
                 }
             }
         } catch (Exception e) {

@@ -108,16 +108,20 @@ public class PaymentService {
         List<OrderTrackingResponse> orders = new java.util.ArrayList<>();
         
         // Get non-delivered orders from Payment table
+        // Filter out orders where product is null (product was deleted)
         List<Payment> payments = paymentRepository.findByUser(user);
         orders.addAll(payments.stream()
             .filter(payment -> !Boolean.TRUE.equals(payment.getHiddenFromUser()))
+            .filter(payment -> payment.getProduct() != null) // Exclude orders with deleted products
             .map(this::convertToTrackingResponse)
             .collect(Collectors.toList()));
         
         // Get delivered orders from Delivered table
+        // Filter out orders where product is null (product was deleted)
         List<Delivered> deliveredOrders = deliveredRepository.findByUser(user);
         orders.addAll(deliveredOrders.stream()
             .filter(delivered -> !Boolean.TRUE.equals(delivered.getHiddenFromUser()))
+            .filter(delivered -> delivered.getProduct() != null) // Exclude orders with deleted products
             .map(this::convertDeliveredToResponse)
             .collect(Collectors.toList()));
         
@@ -127,13 +131,21 @@ public class PaymentService {
     private OrderTrackingResponse convertToTrackingResponse(Payment payment) {
         Product product = payment.getProduct();
         
-        // Get first image from comma-separated imageUrl
-        String imageUrl = product.getImageUrl() != null ? product.getImageUrl().split(",")[0].trim() : "";
+        // Get first image from comma-separated imageUrl (if product exists)
+        String imageUrl = "";
+        String productName = "Product Deleted";
+        Long productId = null;
+        
+        if (product != null) {
+            imageUrl = product.getImageUrl() != null ? product.getImageUrl().split(",")[0].trim() : "";
+            productName = product.getName();
+            productId = product.getId();
+        }
         
         OrderTrackingResponse response = new OrderTrackingResponse();
         response.setOrderId(payment.getId());
-        response.setProductId(product.getId());
-        response.setProductName(product.getName());
+        response.setProductId(productId);
+        response.setProductName(productName);
         response.setProductImageUrl(imageUrl);
         response.setQuantity(payment.getQuantity());
         response.setUnitPrice(payment.getUnitPrice());
@@ -145,8 +157,8 @@ public class PaymentService {
         response.setArea(payment.getArea());
         response.setAddress(payment.getAddress());
         
-        // Add seller name (business name)
-        if (product.getSeller() != null) {
+        // Add seller name (business name) - only if product and seller exist
+        if (product != null && product.getSeller() != null) {
             response.setSellerName(product.getSeller().getBusinessName());
         }
         
@@ -165,10 +177,18 @@ public class PaymentService {
     }
 
     public List<OrderTrackingResponse> getSellerOrders(Long sellerId) {
-        Seller seller = sellerRepository.findById(sellerId)
+        // Verify seller exists
+        sellerRepository.findById(sellerId)
             .orElseThrow(() -> new RuntimeException("Seller not found"));
 
-        List<Payment> payments = paymentRepository.findBySeller(seller);
+        // Get all payments and filter by seller (handling null products)
+        List<Payment> allPayments = paymentRepository.findAll();
+        List<Payment> payments = allPayments.stream()
+            .filter(payment -> payment.getProduct() != null && 
+                   payment.getProduct().getSeller() != null &&
+                   payment.getProduct().getSeller().getId().equals(sellerId))
+            .collect(Collectors.toList());
+        
         // Filter out orders hidden from seller and exclude delivered orders (they're in Delivered table)
         return payments.stream()
             .filter(payment -> !Boolean.TRUE.equals(payment.getHiddenFromSeller()))
@@ -182,7 +202,11 @@ public class PaymentService {
         Payment payment = paymentRepository.findById(orderId)
             .orElseThrow(() -> new RuntimeException("Order not found"));
 
-        // Verify that the order belongs to the seller
+        // Verify that the order belongs to the seller (only if product exists)
+        if (payment.getProduct() == null || payment.getProduct().getSeller() == null) {
+            throw new RuntimeException("Product has been deleted. Cannot update order status.");
+        }
+        
         if (!payment.getProduct().getSeller().getId().equals(sellerId)) {
             throw new RuntimeException("Order does not belong to this seller");
         }
