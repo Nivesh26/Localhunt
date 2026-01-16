@@ -201,6 +201,7 @@ const cart = () => {
     }
     // TODO: Implement checkout functionality
     toast.success(`Proceeding to checkout with ${selected.length} item(s)`)
+    navigate('/checkout')
   }
 
   if (loading) {

@@ -28,6 +28,7 @@ import AdminUser from './AdminPages/AdminUser'
 import Changepassword from './Pages/Changepassord'
 import SellerChangepassword from './SellerPages/SellerChangepassword'
 import ProtectedRoute from './Components/ProtectedRoute'
+import Checkout from './Pages/Checkout'
 
 
 const App = () => {
@@ -54,6 +55,11 @@ const App = () => {
       <Route path="/changepassword" element={
         <ProtectedRoute allowedRoles={['USER']} redirectTo="/login">
           <Changepassword/>
+        </ProtectedRoute> 
+      }/>
+      <Route path="/checkout" element={
+        <ProtectedRoute allowedRoles={['USER']} redirectTo="/login">
+          <Checkout/>
         </ProtectedRoute>
       }/>
 
