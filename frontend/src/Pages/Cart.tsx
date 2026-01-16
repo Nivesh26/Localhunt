@@ -351,13 +351,13 @@ const cart = () => {
                       <span className="font-semibold">Free</span>
                     </div>
                     <div className="flex justify-between text-gray-700">
-                      <span>Tax</span>
-                      <span className="font-semibold">NRP {(getTotalPrice() * 0.08).toFixed(2)}</span>
+                      <span>Tax (13%)</span>
+                      <span className="font-semibold">NRP {(getTotalPrice() * 0.13).toFixed(2)}</span>
                     </div>
                     <div className="border-t pt-4 flex justify-between text-xl font-bold text-gray-900">
                       <span>Total</span>
                       <span className="text-red-600">
-                        NRP {(getTotalPrice() * 1.08).toFixed(2)}
+                        NRP {(getTotalPrice() * 1.13).toFixed(2)}
                       </span>
                     </div>
                   </div>

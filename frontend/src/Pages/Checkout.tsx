@@ -5,6 +5,7 @@ import Topbar from '../Components/Topbar'
 import Header from '../Components/Header'
 import Footer from '../Components/Footer'
 import { sessionUtils } from '../utils/sessionUtils'
+import { nepalRegions, nepalCities, nepalAreas } from '../data/nepalAddressData'
 
 interface CartItem {
   id: number
@@ -18,12 +19,10 @@ interface CartItem {
 }
 
 interface LocationData {
-  addressLine1: string
-  addressLine2: string
+  region: string
   city: string
-  state: string
-  postalCode: string
-  country: string
+  area: string
+  address: string
 }
 
 const Checkout = () => {
@@ -33,14 +32,14 @@ const Checkout = () => {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [locationData, setLocationData] = useState<LocationData>({
-    addressLine1: '',
-    addressLine2: '',
+    region: '',
     city: '',
-    state: '',
-    postalCode: '',
-    country: 'Nepal'
+    area: '',
+    address: ''
   })
   const [errors, setErrors] = useState<Partial<LocationData>>({})
+  const [availableCities, setAvailableCities] = useState<string[]>([])
+  const [availableAreas, setAvailableAreas] = useState<string[]>([])
 
   useEffect(() => {
     // Get selected items from location state (passed from Cart)
@@ -70,15 +69,20 @@ const Checkout = () => {
       if (response.ok) {
         const data = await response.json()
         // Pre-fill location if user has saved address
-        if (data.addressLine1 || data.city) {
+        if (data.region || data.city) {
           setLocationData({
-            addressLine1: data.addressLine1 || '',
-            addressLine2: data.addressLine2 || '',
+            region: data.region || '',
             city: data.city || '',
-            state: data.state || '',
-            postalCode: data.postalCode || '',
-            country: data.country || 'Nepal'
+            area: data.area || '',
+            address: data.address || ''
           })
+          // Update available cities and areas based on saved region
+          if (data.region) {
+            setAvailableCities(nepalCities[data.region] || [])
+            if (data.city) {
+              setAvailableAreas(nepalAreas[data.region]?.[data.city] || [])
+            }
+          }
         }
       }
     } catch (error) {
@@ -91,28 +95,45 @@ const Checkout = () => {
   const validateForm = (): boolean => {
     const newErrors: Partial<LocationData> = {}
 
-    if (!locationData.addressLine1.trim()) {
-      newErrors.addressLine1 = 'Address line 1 is required'
+    if (!locationData.region.trim()) {
+      newErrors.region = 'Region is required'
     }
 
     if (!locationData.city.trim()) {
       newErrors.city = 'City is required'
     }
 
-    if (!locationData.state.trim()) {
-      newErrors.state = 'State is required'
+    if (!locationData.area.trim()) {
+      newErrors.area = 'Area is required'
     }
 
-    if (!locationData.postalCode.trim()) {
-      newErrors.postalCode = 'Postal code is required'
-    }
-
-    if (!locationData.country.trim()) {
-      newErrors.country = 'Country is required'
+    if (!locationData.address.trim()) {
+      newErrors.address = 'Address is required'
     }
 
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
+  }
+
+  const handleRegionChange = (region: string) => {
+    setLocationData({
+      region: region,
+      city: '',
+      area: '',
+      address: locationData.address
+    })
+    setAvailableCities(nepalCities[region] || [])
+    setAvailableAreas([])
+  }
+
+  const handleCityChange = (city: string) => {
+    setLocationData({
+      ...locationData,
+      city: city,
+      area: '',
+      address: locationData.address
+    })
+    setAvailableAreas(nepalAreas[locationData.region]?.[city] || [])
   }
 
   const handleInputChange = (field: keyof LocationData, value: string) => {
@@ -220,7 +241,7 @@ const Checkout = () => {
   }
 
   const getTax = () => {
-    return getSubtotal() * 0.08
+    return getSubtotal() * 0.13
   }
 
   const getTotal = () => {
@@ -267,111 +288,97 @@ const Checkout = () => {
               <div className="bg-white rounded-xl shadow-md p-6">
                 <h2 className="text-xl font-semibold text-gray-900 mb-4">Delivery Address</h2>
                 <div className="space-y-4">
+                  {/* Region Dropdown */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Address Line 1 <span className="text-red-500">*</span>
+                      Region <span className="text-red-500">*</span>
                     </label>
-                    <input
-                      type="text"
-                      value={locationData.addressLine1}
-                      onChange={(e) => handleInputChange('addressLine1', e.target.value)}
+                    <select
+                      value={locationData.region}
+                      onChange={(e) => handleRegionChange(e.target.value)}
                       className={`w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 ${
-                        errors.addressLine1 ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-red-500'
+                        errors.region ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-red-500'
                       }`}
-                      placeholder="Street address, P.O. Box"
-                    />
-                    {errors.addressLine1 && (
-                      <p className="text-red-500 text-xs mt-1">{errors.addressLine1}</p>
+                    >
+                      <option value="">Select Region</option>
+                      {nepalRegions.map((region) => (
+                        <option key={region} value={region}>
+                          {region}
+                        </option>
+                      ))}
+                    </select>
+                    {errors.region && (
+                      <p className="text-red-500 text-xs mt-1">{errors.region}</p>
                     )}
                   </div>
 
+                  {/* City Dropdown */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Address Line 2
+                      City <span className="text-red-500">*</span>
                     </label>
-                    <input
-                      type="text"
-                      value={locationData.addressLine2}
-                      onChange={(e) => handleInputChange('addressLine2', e.target.value)}
-                      className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-500"
-                      placeholder="Apartment, suite, unit, building, floor, etc."
+                    <select
+                      value={locationData.city}
+                      onChange={(e) => handleCityChange(e.target.value)}
+                      disabled={!locationData.region}
+                      className={`w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 ${
+                        errors.city ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-red-500'
+                      } ${!locationData.region ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                    >
+                      <option value="">Select City</option>
+                      {availableCities.map((city) => (
+                        <option key={city} value={city}>
+                          {city}
+                        </option>
+                      ))}
+                    </select>
+                    {errors.city && (
+                      <p className="text-red-500 text-xs mt-1">{errors.city}</p>
+                    )}
+                  </div>
+
+                  {/* Area/Ward Dropdown */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Area (Ward) <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      value={locationData.area}
+                      onChange={(e) => handleInputChange('area', e.target.value)}
+                      disabled={!locationData.city}
+                      className={`w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 ${
+                        errors.area ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-red-500'
+                      } ${!locationData.city ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                    >
+                      <option value="">Select Area/Ward</option>
+                      {availableAreas.map((area) => (
+                        <option key={area} value={area}>
+                          {area}
+                        </option>
+                      ))}
+                    </select>
+                    {errors.area && (
+                      <p className="text-red-500 text-xs mt-1">{errors.area}</p>
+                    )}
+                  </div>
+
+                  {/* Address Text Field */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Address <span className="text-red-500">*</span>
+                    </label>
+                    <textarea
+                      value={locationData.address}
+                      onChange={(e) => handleInputChange('address', e.target.value)}
+                      rows={3}
+                      className={`w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 ${
+                        errors.address ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-red-500'
+                      }`}
+                      placeholder="Street address, house number, landmark, etc."
                     />
-                  </div>
-
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        City <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        type="text"
-                        value={locationData.city}
-                        onChange={(e) => handleInputChange('city', e.target.value)}
-                        className={`w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 ${
-                          errors.city ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-red-500'
-                        }`}
-                        placeholder="City"
-                      />
-                      {errors.city && (
-                        <p className="text-red-500 text-xs mt-1">{errors.city}</p>
-                      )}
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        State/Province <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        type="text"
-                        value={locationData.state}
-                        onChange={(e) => handleInputChange('state', e.target.value)}
-                        className={`w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 ${
-                          errors.state ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-red-500'
-                        }`}
-                        placeholder="State/Province"
-                      />
-                      {errors.state && (
-                        <p className="text-red-500 text-xs mt-1">{errors.state}</p>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Postal Code <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        type="text"
-                        value={locationData.postalCode}
-                        onChange={(e) => handleInputChange('postalCode', e.target.value)}
-                        className={`w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 ${
-                          errors.postalCode ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-red-500'
-                        }`}
-                        placeholder="Postal Code"
-                      />
-                      {errors.postalCode && (
-                        <p className="text-red-500 text-xs mt-1">{errors.postalCode}</p>
-                      )}
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Country <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        type="text"
-                        value={locationData.country}
-                        onChange={(e) => handleInputChange('country', e.target.value)}
-                        className={`w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 ${
-                          errors.country ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-red-500'
-                        }`}
-                        placeholder="Country"
-                      />
-                      {errors.country && (
-                        <p className="text-red-500 text-xs mt-1">{errors.country}</p>
-                      )}
-                    </div>
+                    {errors.address && (
+                      <p className="text-red-500 text-xs mt-1">{errors.address}</p>
+                    )}
                   </div>
                 </div>
 
@@ -435,7 +442,7 @@ const Checkout = () => {
                     <span className="font-semibold">Free</span>
                   </div>
                   <div className="flex justify-between text-gray-700">
-                    <span>Tax (8%)</span>
+                    <span>Tax (13%)</span>
                     <span className="font-semibold">NRP {getTax().toFixed(2)}</span>
                   </div>
                   <div className="border-t pt-4 flex justify-between text-xl font-bold text-gray-900">

@@ -4,47 +4,32 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 public class AddressRequest {
-    @NotBlank(message = "Address line 1 is required")
-    @Size(max = 500, message = "Address line 1 must not exceed 500 characters")
-    private String addressLine1;
-
-    @Size(max = 500, message = "Address line 2 must not exceed 500 characters")
-    private String addressLine2;
+    @NotBlank(message = "Region is required")
+    @Size(max = 100, message = "Region must not exceed 100 characters")
+    private String region;
 
     @NotBlank(message = "City is required")
     @Size(max = 100, message = "City must not exceed 100 characters")
     private String city;
 
-    @NotBlank(message = "State is required")
-    @Size(max = 100, message = "State must not exceed 100 characters")
-    private String state;
+    @NotBlank(message = "Area is required")
+    @Size(max = 100, message = "Area must not exceed 100 characters")
+    private String area;
 
-    @NotBlank(message = "Postal code is required")
-    @Size(max = 20, message = "Postal code must not exceed 20 characters")
-    private String postalCode;
-
-    @NotBlank(message = "Country is required")
-    @Size(max = 100, message = "Country must not exceed 100 characters")
-    private String country;
+    @NotBlank(message = "Address is required")
+    @Size(max = 500, message = "Address must not exceed 500 characters")
+    private String address;
 
     public AddressRequest() {
     }
 
     // Getters and Setters
-    public String getAddressLine1() {
-        return addressLine1;
+    public String getRegion() {
+        return region;
     }
 
-    public void setAddressLine1(String addressLine1) {
-        this.addressLine1 = addressLine1;
-    }
-
-    public String getAddressLine2() {
-        return addressLine2;
-    }
-
-    public void setAddressLine2(String addressLine2) {
-        this.addressLine2 = addressLine2;
+    public void setRegion(String region) {
+        this.region = region;
     }
 
     public String getCity() {
@@ -55,27 +40,19 @@ public class AddressRequest {
         this.city = city;
     }
 
-    public String getState() {
-        return state;
+    public String getArea() {
+        return area;
     }
 
-    public void setState(String state) {
-        this.state = state;
+    public void setArea(String area) {
+        this.area = area;
     }
 
-    public String getPostalCode() {
-        return postalCode;
+    public String getAddress() {
+        return address;
     }
 
-    public void setPostalCode(String postalCode) {
-        this.postalCode = postalCode;
-    }
-
-    public String getCountry() {
-        return country;
-    }
-
-    public void setCountry(String country) {
-        this.country = country;
+    public void setAddress(String address) {
+        this.address = address;
     }
 }

@@ -8,12 +8,10 @@ public class UserProfileResponse {
     private String email;
     private String phone;
     private Role role;
-    private String addressLine1;
-    private String addressLine2;
+    private String region;
     private String city;
-    private String state;
-    private String postalCode;
-    private String country;
+    private String area;
+    private String address;
 
     public UserProfileResponse() {
     }
@@ -67,20 +65,12 @@ public class UserProfileResponse {
         this.role = role;
     }
 
-    public String getAddressLine1() {
-        return addressLine1;
+    public String getRegion() {
+        return region;
     }
 
-    public void setAddressLine1(String addressLine1) {
-        this.addressLine1 = addressLine1;
-    }
-
-    public String getAddressLine2() {
-        return addressLine2;
-    }
-
-    public void setAddressLine2(String addressLine2) {
-        this.addressLine2 = addressLine2;
+    public void setRegion(String region) {
+        this.region = region;
     }
 
     public String getCity() {
@@ -91,27 +81,19 @@ public class UserProfileResponse {
         this.city = city;
     }
 
-    public String getState() {
-        return state;
+    public String getArea() {
+        return area;
     }
 
-    public void setState(String state) {
-        this.state = state;
+    public void setArea(String area) {
+        this.area = area;
     }
 
-    public String getPostalCode() {
-        return postalCode;
+    public String getAddress() {
+        return address;
     }
 
-    public void setPostalCode(String postalCode) {
-        this.postalCode = postalCode;
-    }
-
-    public String getCountry() {
-        return country;
-    }
-
-    public void setCountry(String country) {
-        this.country = country;
+    public void setAddress(String address) {
+        this.address = address;
     }
 }

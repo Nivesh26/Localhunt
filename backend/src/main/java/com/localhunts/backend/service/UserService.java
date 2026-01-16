@@ -99,12 +99,10 @@ public class UserService {
             user.getPhone(),
             user.getRole()
         );
-        response.setAddressLine1(user.getAddressLine1());
-        response.setAddressLine2(user.getAddressLine2());
+        response.setRegion(user.getRegion());
         response.setCity(user.getCity());
-        response.setState(user.getState());
-        response.setPostalCode(user.getPostalCode());
-        response.setCountry(user.getCountry());
+        response.setArea(user.getArea());
+        response.setAddress(user.getAddress());
         return response;
     }
 
@@ -130,12 +128,10 @@ public class UserService {
             updatedUser.getPhone(),
             updatedUser.getRole()
         );
-        response.setAddressLine1(updatedUser.getAddressLine1());
-        response.setAddressLine2(updatedUser.getAddressLine2());
+        response.setRegion(updatedUser.getRegion());
         response.setCity(updatedUser.getCity());
-        response.setState(updatedUser.getState());
-        response.setPostalCode(updatedUser.getPostalCode());
-        response.setCountry(updatedUser.getCountry());
+        response.setArea(updatedUser.getArea());
+        response.setAddress(updatedUser.getAddress());
         return response;
     }
 
@@ -144,12 +140,10 @@ public class UserService {
         User user = userRepository.findById(userId)
             .orElseThrow(() -> new RuntimeException("User not found"));
 
-        user.setAddressLine1(request.getAddressLine1());
-        user.setAddressLine2(request.getAddressLine2());
+        user.setRegion(request.getRegion());
         user.setCity(request.getCity());
-        user.setState(request.getState());
-        user.setPostalCode(request.getPostalCode());
-        user.setCountry(request.getCountry());
+        user.setArea(request.getArea());
+        user.setAddress(request.getAddress());
 
         User updatedUser = userRepository.save(user);
         UserProfileResponse response = new UserProfileResponse(
@@ -159,12 +153,10 @@ public class UserService {
             updatedUser.getPhone(),
             updatedUser.getRole()
         );
-        response.setAddressLine1(updatedUser.getAddressLine1());
-        response.setAddressLine2(updatedUser.getAddressLine2());
+        response.setRegion(updatedUser.getRegion());
         response.setCity(updatedUser.getCity());
-        response.setState(updatedUser.getState());
-        response.setPostalCode(updatedUser.getPostalCode());
-        response.setCountry(updatedUser.getCountry());
+        response.setArea(updatedUser.getArea());
+        response.setAddress(updatedUser.getAddress());
         return response;
     }
 
