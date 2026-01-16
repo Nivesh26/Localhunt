@@ -31,12 +31,14 @@
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/dto/UserListResponse.java
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/dto/UserProfileResponse.java
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/model/Cart.java
+/Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/model/Delivered.java
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/model/Payment.java
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/model/Product.java
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/model/Role.java
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/model/Seller.java
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/model/User.java
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/repository/CartRepository.java
+/Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/repository/DeliveredRepository.java
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/repository/PaymentRepository.java
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/repository/ProductRepository.java
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/repository/SellerRepository.java

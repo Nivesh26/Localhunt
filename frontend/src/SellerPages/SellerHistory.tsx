@@ -42,14 +42,12 @@ const SellerHistory = () => {
       }
 
       const sellerId = seller.userId
-      const response = await fetch(`http://localhost:8080/api/payment/seller-orders/${sellerId}`)
+      const response = await fetch(`http://localhost:8080/api/payment/seller-delivered-orders/${sellerId}`)
 
       if (response.ok) {
         const data = await response.json()
-        // Convert imageUrl paths to full URLs and filter only delivered orders
-        const formattedOrders: Order[] = data
-          .filter((order: any) => order.status === 'Delivered')
-          .map((order: any) => {
+        // Convert imageUrl paths to full URLs
+        const formattedOrders: Order[] = data.map((order: any) => {
             let imageUrl = order.productImageUrl || ''
             if (imageUrl && !imageUrl.startsWith('http://') && !imageUrl.startsWith('https://')) {
               imageUrl = `http://localhost:8080${imageUrl.startsWith('/') ? imageUrl : '/' + imageUrl}`

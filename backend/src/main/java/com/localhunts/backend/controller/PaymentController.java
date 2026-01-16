@@ -61,6 +61,16 @@ public class PaymentController {
         }
     }
 
+    @GetMapping("/seller-delivered-orders/{sellerId}")
+    public ResponseEntity<?> getSellerDeliveredOrders(@PathVariable Long sellerId) {
+        try {
+            List<OrderTrackingResponse> orders = paymentService.getSellerDeliveredOrders(sellerId);
+            return ResponseEntity.ok(orders);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+    }
+
     @PutMapping("/orders/{orderId}/status/{sellerId}")
     public ResponseEntity<?> updateOrderStatus(
             @PathVariable Long orderId,

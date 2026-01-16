@@ -4,10 +4,12 @@ import com.localhunts.backend.dto.CreateOrderRequest;
 import com.localhunts.backend.dto.OrderResponse;
 import com.localhunts.backend.dto.OrderTrackingResponse;
 import com.localhunts.backend.dto.UpdateOrderStatusRequest;
+import com.localhunts.backend.model.Delivered;
 import com.localhunts.backend.model.Payment;
 import com.localhunts.backend.model.Product;
 import com.localhunts.backend.model.Seller;
 import com.localhunts.backend.model.User;
+import com.localhunts.backend.repository.DeliveredRepository;
 import com.localhunts.backend.repository.PaymentRepository;
 import com.localhunts.backend.repository.ProductRepository;
 import com.localhunts.backend.repository.SellerRepository;
@@ -16,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -34,6 +37,9 @@ public class PaymentService {
 
     @Autowired
     private SellerRepository sellerRepository;
+
+    @Autowired
+    private DeliveredRepository deliveredRepository;
 
     @Transactional
     public List<OrderResponse> createOrder(Long userId, CreateOrderRequest request) {
@@ -88,12 +94,23 @@ public class PaymentService {
         User user = userRepository.findById(userId)
             .orElseThrow(() -> new RuntimeException("User not found"));
 
+        List<OrderTrackingResponse> orders = new java.util.ArrayList<>();
+        
+        // Get non-delivered orders from Payment table
         List<Payment> payments = paymentRepository.findByUser(user);
-        // Filter out orders hidden from user
-        return payments.stream()
+        orders.addAll(payments.stream()
             .filter(payment -> !Boolean.TRUE.equals(payment.getHiddenFromUser()))
             .map(this::convertToTrackingResponse)
-            .collect(Collectors.toList());
+            .collect(Collectors.toList()));
+        
+        // Get delivered orders from Delivered table
+        List<Delivered> deliveredOrders = deliveredRepository.findByUser(user);
+        orders.addAll(deliveredOrders.stream()
+            .filter(delivered -> !Boolean.TRUE.equals(delivered.getHiddenFromUser()))
+            .map(this::convertDeliveredToResponse)
+            .collect(Collectors.toList()));
+        
+        return orders;
     }
 
     private OrderTrackingResponse convertToTrackingResponse(Payment payment) {
@@ -141,9 +158,10 @@ public class PaymentService {
             .orElseThrow(() -> new RuntimeException("Seller not found"));
 
         List<Payment> payments = paymentRepository.findBySeller(seller);
-        // Filter out orders hidden from seller
+        // Filter out orders hidden from seller and exclude delivered orders (they're in Delivered table)
         return payments.stream()
             .filter(payment -> !Boolean.TRUE.equals(payment.getHiddenFromSeller()))
+            .filter(payment -> !"Delivered".equals(payment.getStatus()))
             .map(this::convertToTrackingResponse)
             .collect(Collectors.toList());
     }
@@ -164,15 +182,56 @@ public class PaymentService {
             throw new RuntimeException("Invalid status. Only 'Ready to ship' and 'Delivered' are allowed");
         }
 
-        // Update status
-        payment.setStatus(newStatus);
-        Payment updatedPayment = paymentRepository.save(payment);
-
-        return convertToTrackingResponse(updatedPayment);
+        if ("Delivered".equals(newStatus)) {
+            // Move order to Delivered table
+            Delivered delivered = new Delivered();
+            delivered.setUser(payment.getUser());
+            delivered.setProduct(payment.getProduct());
+            delivered.setQuantity(payment.getQuantity());
+            delivered.setUnitPrice(payment.getUnitPrice());
+            delivered.setSubtotal(payment.getSubtotal());
+            delivered.setPaymentMethod(payment.getPaymentMethod());
+            delivered.setRegion(payment.getRegion());
+            delivered.setCity(payment.getCity());
+            delivered.setArea(payment.getArea());
+            delivered.setAddress(payment.getAddress());
+            delivered.setHiddenFromUser(payment.getHiddenFromUser());
+            delivered.setHiddenFromSeller(payment.getHiddenFromSeller());
+            delivered.setDeliveredAt(LocalDateTime.now());
+            
+            deliveredRepository.save(delivered);
+            
+            // Delete from Payment table
+            paymentRepository.delete(payment);
+            
+            // Return response from delivered order
+            return convertDeliveredToResponse(delivered);
+        } else {
+            // Update status for non-delivered orders
+            payment.setStatus(newStatus);
+            Payment updatedPayment = paymentRepository.save(payment);
+            return convertToTrackingResponse(updatedPayment);
+        }
     }
 
     @Transactional
     public void deleteOrder(Long orderId, Long userId) {
+        // Try to find in Delivered table first (delivered orders)
+        Delivered delivered = deliveredRepository.findById(orderId).orElse(null);
+        
+        if (delivered != null) {
+            // Verify that the order belongs to the user
+            if (!delivered.getUser().getId().equals(userId)) {
+                throw new RuntimeException("Order does not belong to this user");
+            }
+
+            // Mark as hidden from user instead of deleting
+            delivered.setHiddenFromUser(true);
+            deliveredRepository.save(delivered);
+            return;
+        }
+        
+        // If not found in Delivered, try Payment table (non-delivered orders)
         Payment payment = paymentRepository.findById(orderId)
             .orElseThrow(() -> new RuntimeException("Order not found"));
 
@@ -181,33 +240,76 @@ public class PaymentService {
             throw new RuntimeException("Order does not belong to this user");
         }
 
-        // Only allow hiding of delivered orders
-        if (!"Delivered".equals(payment.getStatus())) {
-            throw new RuntimeException("Only delivered orders can be removed from history");
-        }
-
-        // Mark as hidden from user instead of deleting
+        // Only allow hiding of delivered orders (but if it's in Payment, it's not delivered yet)
+        // Actually, users can hide any order from their view
         payment.setHiddenFromUser(true);
         paymentRepository.save(payment);
     }
 
     @Transactional
     public void deleteSellerOrder(Long orderId, Long sellerId) {
-        Payment payment = paymentRepository.findById(orderId)
+        Delivered delivered = deliveredRepository.findById(orderId)
             .orElseThrow(() -> new RuntimeException("Order not found"));
 
         // Verify that the order belongs to the seller (product belongs to seller)
-        if (!payment.getProduct().getSeller().getId().equals(sellerId)) {
+        if (!delivered.getProduct().getSeller().getId().equals(sellerId)) {
             throw new RuntimeException("Order does not belong to this seller");
         }
 
-        // Only allow hiding of delivered orders
-        if (!"Delivered".equals(payment.getStatus())) {
-            throw new RuntimeException("Only delivered orders can be removed from history");
-        }
-
         // Mark as hidden from seller instead of deleting
-        payment.setHiddenFromSeller(true);
-        paymentRepository.save(payment);
+        delivered.setHiddenFromSeller(true);
+        deliveredRepository.save(delivered);
+    }
+
+    public List<OrderTrackingResponse> getSellerDeliveredOrders(Long sellerId) {
+        Seller seller = sellerRepository.findById(sellerId)
+            .orElseThrow(() -> new RuntimeException("Seller not found"));
+
+        List<Delivered> deliveredOrders = deliveredRepository.findBySeller(seller);
+        // Filter out orders hidden from seller
+        return deliveredOrders.stream()
+            .filter(delivered -> !Boolean.TRUE.equals(delivered.getHiddenFromSeller()))
+            .map(this::convertDeliveredToResponse)
+            .collect(Collectors.toList());
+    }
+
+    private OrderTrackingResponse convertDeliveredToResponse(Delivered delivered) {
+        Product product = delivered.getProduct();
+        
+        // Get first image from comma-separated imageUrl
+        String imageUrl = product.getImageUrl() != null ? product.getImageUrl().split(",")[0].trim() : "";
+        
+        OrderTrackingResponse response = new OrderTrackingResponse();
+        response.setOrderId(delivered.getId());
+        response.setProductId(product.getId());
+        response.setProductName(product.getName());
+        response.setProductImageUrl(imageUrl);
+        response.setQuantity(delivered.getQuantity());
+        response.setUnitPrice(delivered.getUnitPrice());
+        response.setSubtotal(delivered.getSubtotal());
+        response.setPaymentMethod(delivered.getPaymentMethod());
+        response.setStatus("Delivered");
+        response.setRegion(delivered.getRegion());
+        response.setCity(delivered.getCity());
+        response.setArea(delivered.getArea());
+        response.setAddress(delivered.getAddress());
+        
+        // Add seller name (business name)
+        if (product.getSeller() != null) {
+            response.setSellerName(product.getSeller().getBusinessName());
+        }
+        
+        // Add customer information
+        if (delivered.getUser() != null) {
+            response.setCustomerName(delivered.getUser().getFullName());
+            response.setCustomerEmail(delivered.getUser().getEmail());
+            response.setCustomerPhone(delivered.getUser().getPhone());
+        }
+        
+        if (delivered.getCreatedAt() != null) {
+            response.setCreatedAt(delivered.getCreatedAt().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+        }
+        
+        return response;
     }
 }

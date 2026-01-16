@@ -1,0 +1,20 @@
+package com.localhunts.backend.repository;
+
+import com.localhunts.backend.model.Delivered;
+import com.localhunts.backend.model.Seller;
+import com.localhunts.backend.model.User;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+
+@Repository
+public interface DeliveredRepository extends JpaRepository<Delivered, Long> {
+    List<Delivered> findByUser(User user);
+    List<Delivered> findByUserId(Long userId);
+    
+    @Query("SELECT d FROM Delivered d WHERE d.product.seller = :seller")
+    List<Delivered> findBySeller(@Param("seller") Seller seller);
+}
