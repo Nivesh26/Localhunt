@@ -210,13 +210,16 @@ const Checkout = () => {
 
       if (response.ok) {
         // Address saved, proceed to payment
-        toast.success('Proceeding to payment...')
-        // TODO: Implement payment integration
-        // For now, just show success message
-        setTimeout(() => {
-          toast.success('Order placed successfully! (Payment integration pending)')
-          navigate('/cart')
-        }, 1000)
+        // Navigate to payment page with order details
+        navigate('/payment', {
+          state: {
+            selectedItems: selectedItems,
+            locationData: locationData,
+            subtotal: getSubtotal(),
+            tax: getTax(),
+            total: getTotal()
+          }
+        })
       } else if (response.status === 404) {
         sessionUtils.clearSession()
         toast.error('Your account has been deleted. Please contact support.')

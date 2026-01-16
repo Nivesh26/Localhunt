@@ -29,6 +29,7 @@ import Changepassword from './Pages/Changepassord'
 import SellerChangepassword from './SellerPages/SellerChangepassword'
 import ProtectedRoute from './Components/ProtectedRoute'
 import Checkout from './Pages/Checkout'
+import Payment from './Pages/Payment'
 
 
 const App = () => {
@@ -62,7 +63,11 @@ const App = () => {
           <Checkout/>
         </ProtectedRoute>
       }/>
-
+      <Route path="/payment" element={
+        <ProtectedRoute allowedRoles={['USER']} redirectTo="/login">
+          <Payment/>
+        </ProtectedRoute>
+      }/>
       {/* Login and Signup */}
       <Route path="/login" element={<Login/>}/>
       <Route path="/signup" element={<Signup/>}/>
