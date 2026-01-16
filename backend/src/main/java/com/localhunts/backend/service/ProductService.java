@@ -59,7 +59,11 @@ public class ProductService {
 
     public List<ProductResponse> getAllProducts() {
         List<Product> products = productRepository.findAll();
-        return products.stream().map(this::convertToResponse).collect(Collectors.toList());
+        // Filter products to only show from active stores
+        return products.stream()
+            .filter(product -> product.getSeller().getStoreStatus() != null && product.getSeller().getStoreStatus())
+            .map(this::convertToResponse)
+            .collect(Collectors.toList());
     }
 
     public List<ProductResponse> getProductsBySeller(Long sellerId) {
@@ -71,7 +75,11 @@ public class ProductService {
 
     public List<ProductResponse> getLiveProducts() {
         List<Product> products = productRepository.findByStatus("Live");
-        return products.stream().map(this::convertToResponse).collect(Collectors.toList());
+        // Filter products to only show from active stores
+        return products.stream()
+            .filter(product -> product.getSeller().getStoreStatus() != null && product.getSeller().getStoreStatus())
+            .map(this::convertToResponse)
+            .collect(Collectors.toList());
     }
 
     public ProductResponse getProductById(Long productId) {

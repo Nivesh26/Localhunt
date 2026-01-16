@@ -13,6 +13,7 @@ public class SellerListResponse {
     private String businessPanVat;
     private String businessLocation;
     private Boolean approved;
+    private Boolean storeStatus;
     private Role role;
     private String createdAt;
     private String businessRegistrationCertificate;
@@ -100,6 +101,14 @@ public class SellerListResponse {
 
     public void setApproved(Boolean approved) {
         this.approved = approved;
+    }
+
+    public Boolean getStoreStatus() {
+        return storeStatus;
+    }
+
+    public void setStoreStatus(Boolean storeStatus) {
+        this.storeStatus = storeStatus;
     }
 
     public Role getRole() {

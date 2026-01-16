@@ -16,6 +16,7 @@ interface CartItem {
   quantity: number
   subtotal: number
   sellerName?: string
+  isStoreActive?: boolean
 }
 
 const cart = () => {
@@ -57,6 +58,7 @@ const cart = () => {
             quantity: item.quantity,
             subtotal: item.subtotal,
             sellerName: item.sellerName,
+            isStoreActive: item.isStoreActive !== false, // Default to true if not provided
           }
         })
         setCartItems(formattedItems)
@@ -162,6 +164,11 @@ const cart = () => {
   }
 
   const handleSelectItem = (itemId: number) => {
+    const item = cartItems.find(i => i.id === itemId)
+    // Don't allow selection of items from paused stores
+    if (item && item.isStoreActive === false) {
+      return
+    }
     setSelectedItems(prev => {
       const newSet = new Set(prev)
       if (newSet.has(itemId)) {
@@ -178,13 +185,14 @@ const cart = () => {
       // Deselect all
       setSelectedItems(new Set())
     } else {
-      // Select all
-      setSelectedItems(new Set(cartItems.map(item => item.id)))
+      // Select only items from active stores
+      setSelectedItems(new Set(cartItems.filter(item => item.isStoreActive !== false).map(item => item.id)))
     }
   }
 
   const getSelectedItems = () => {
-    return cartItems.filter(item => selectedItems.has(item.id))
+    // Only return selected items that are from active stores
+    return cartItems.filter(item => selectedItems.has(item.id) && item.isStoreActive !== false)
   }
 
   const getTotalPrice = () => {
@@ -259,20 +267,23 @@ const cart = () => {
                 </div>
 
                 {/* Cart Item List */}
-                {cartItems.map((item) => (
+                {cartItems.map((item) => {
+                  const isOutOfStock = item.isStoreActive === false
+                  return (
                   <div
                     key={item.id}
                     className={`bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow ${
-                      !selectedItems.has(item.id) ? 'opacity-60' : ''
-                    }`}
+                      !selectedItems.has(item.id) || isOutOfStock ? 'opacity-60' : ''
+                    } ${isOutOfStock ? 'border-2 border-red-200' : ''}`}
                   >
                     <div className="flex gap-4">
                       {/* Checkbox */}
                       <input
                         type="checkbox"
-                        checked={selectedItems.has(item.id)}
+                        checked={selectedItems.has(item.id) && !isOutOfStock}
                         onChange={() => handleSelectItem(item.id)}
-                        className="w-5 h-5 text-red-600 border-gray-300 rounded focus:ring-red-500 cursor-pointer mt-1"
+                        disabled={isOutOfStock}
+                        className="w-5 h-5 text-red-600 border-gray-300 rounded focus:ring-red-500 cursor-pointer mt-1 disabled:cursor-not-allowed disabled:opacity-50"
                       />
                       
                       {/* Product Image */}
@@ -287,7 +298,24 @@ const cart = () => {
 
                       {/* Product Details */}
                       <div className="flex-1">
-                        <h3 className="text-xl font-semibold text-gray-900 mb-1">{item.productName}</h3>
+                        <div className="flex items-center gap-2 mb-1">
+                          <h3 className="text-xl font-semibold text-gray-900">{item.productName}</h3>
+                          {isOutOfStock && (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-semibold text-red-700">
+                              Out of Stock
+                            </span>
+                          )}
+                        </div>
+                        {item.sellerName && (
+                          <p className="text-sm text-gray-500 mb-1">
+                            Sold by: <span className="font-medium">{item.sellerName}</span>
+                          </p>
+                        )}
+                        {isOutOfStock && (
+                          <p className="text-sm text-red-600 mb-2 font-medium">
+                            This item is currently unavailable. The seller has paused their store.
+                          </p>
+                        )}
                         <p className="text-red-600 font-bold text-lg">NRP {item.productPrice.toFixed(2)}</p>
 
                         {/* Quantity Controls */}
@@ -296,17 +324,21 @@ const cart = () => {
                           <div className="flex items-center gap-2 border rounded-lg">
                             <button
                               onClick={() => updateQuantity(item.id, -1)}
-                              className="p-2 hover:bg-gray-100 transition-colors"
+                              disabled={isOutOfStock}
+                              className="p-2 hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                               aria-label="Decrease quantity"
                             >
                               <FaMinus className="w-5 h-5" />
                             </button>
-                            <span className="px-4 py-2 font-semibold text-gray-900 min-w-12 text-center">
+                            <span className={`px-4 py-2 font-semibold min-w-12 text-center ${
+                              isOutOfStock ? 'text-gray-400' : 'text-gray-900'
+                            }`}>
                               {item.quantity}
                             </span>
                             <button
                               onClick={() => updateQuantity(item.id, 1)}
-                              className="p-2 hover:bg-gray-100 transition-colors"
+                              disabled={isOutOfStock}
+                              className="p-2 hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                               aria-label="Increase quantity"
                             >
                               <FaPlus className="w-5 h-5" />
@@ -326,14 +358,17 @@ const cart = () => {
                     </div>
 
                     {/* Item Total */}
-                    <div className="mt-4 pt-4 border-t flex justify-between items-center">
+                    <div className={`mt-4 pt-4 border-t flex justify-between items-center ${
+                      isOutOfStock ? 'opacity-50' : ''
+                    }`}>
                       <span className="text-gray-700 font-medium">Item Total:</span>
                       <span className="text-xl font-bold text-red-600">
                         NRP {(item.productPrice * item.quantity).toFixed(2)}
                       </span>
                     </div>
                   </div>
-                ))}
+                  )
+                })}
               </div>
 
               {/* Order Summary */}

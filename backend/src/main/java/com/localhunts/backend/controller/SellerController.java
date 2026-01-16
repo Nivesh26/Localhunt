@@ -131,6 +131,16 @@ public class SellerController {
         }
     }
 
+    @PutMapping("/toggle-store-status/{sellerId}")
+    public ResponseEntity<?> toggleStoreStatus(@PathVariable Long sellerId) {
+        try {
+            SellerProfileResponse profile = sellerService.toggleStoreStatus(sellerId);
+            return ResponseEntity.ok(profile);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+    }
+
     @DeleteMapping("/{sellerId}")
     public ResponseEntity<Map<String, Object>> deleteSeller(@PathVariable Long sellerId) {
         try {

@@ -13,6 +13,7 @@ public class SellerProfileResponse {
     private String businessPanVat;
     private String businessLocation;
     private String storeDescription;
+    private Boolean storeStatus;
     private Role role;
 
     public SellerProfileResponse() {
@@ -113,6 +114,14 @@ public class SellerProfileResponse {
 
     public void setStoreDescription(String storeDescription) {
         this.storeDescription = storeDescription;
+    }
+
+    public Boolean getStoreStatus() {
+        return storeStatus;
+    }
+
+    public void setStoreStatus(Boolean storeStatus) {
+        this.storeStatus = storeStatus;
     }
 
     public Role getRole() {

@@ -19,6 +19,7 @@ interface Vendor {
   businessLocation: string
   createdAt: string
   approved: boolean
+  storeStatus: boolean
 }
 
 const AdminVender = () => {
@@ -139,6 +140,7 @@ const AdminVender = () => {
                       <th className="py-2 pr-6 font-medium">Location</th>
                       <th className="py-2 pr-6 font-medium">Email</th>
                       <th className="py-2 pr-6 font-medium">Phone</th>
+                      <th className="py-2 pr-6 font-medium">Store Status</th>
                       <th className="py-2 pr-6 text-right font-medium">Actions</th>
                     </tr>
                   </thead>
@@ -151,6 +153,18 @@ const AdminVender = () => {
                         <td className="py-3 pr-6">{vendor.businessLocation}</td>
                         <td className="py-3 pr-6 text-sm text-gray-600">{vendor.contactEmail}</td>
                         <td className="py-3 pr-6 text-sm text-gray-600">{vendor.phoneNumber}</td>
+                        <td className="py-3 pr-6">
+                          <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ${
+                            vendor.storeStatus 
+                              ? 'bg-emerald-100 text-emerald-700' 
+                              : 'bg-red-100 text-red-700'
+                          }`}>
+                            <div className={`h-1.5 w-1.5 rounded-full ${
+                              vendor.storeStatus ? 'bg-emerald-500' : 'bg-red-500'
+                            }`}></div>
+                            {vendor.storeStatus ? 'Open' : 'Closed'}
+                          </span>
+                        </td>
                         <td className="py-3 pr-6 text-right">
                           <button
                             onClick={() => handleDelete(vendor.id)}

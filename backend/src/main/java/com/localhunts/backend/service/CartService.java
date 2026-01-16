@@ -135,9 +135,13 @@ public class CartService {
         response.setProductImageUrl(imageUrl);
         response.setQuantity(cart.getQuantity());
         response.setSubtotal(subtotal);
-        // Add seller name (business name)
+        // Add seller name (business name) and store status
         if (product.getSeller() != null) {
             response.setSellerName(product.getSeller().getBusinessName());
+            // Check if seller's store is active (true = active, false = paused)
+            response.setIsStoreActive(product.getSeller().getStoreStatus() != null && product.getSeller().getStoreStatus());
+        } else {
+            response.setIsStoreActive(true); // Default to active if no seller info
         }
         
         if (cart.getCreatedAt() != null) {

@@ -27,6 +27,8 @@ const SellerSetting = () => {
   const navigate = useNavigate()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [storeStatus, setStoreStatus] = useState<boolean>(true)
+  const [togglingStatus, setTogglingStatus] = useState(false)
   const [notifications, setNotifications] = useState<Record<string, boolean>>({
     newOrders: true,
     messages: true,
@@ -88,6 +90,7 @@ const SellerSetting = () => {
           processingTime: '1-2 business days',
           returnPolicy: 'We accept returns within 7 days of delivery. Items must be unused and in original packaging.'
         })
+        setStoreStatus(data.storeStatus !== false) // Default to true if null/undefined
       } else if (response.status === 404) {
         // Seller was deleted from database
         sessionUtils.clearSession()
@@ -111,6 +114,44 @@ const SellerSetting = () => {
 
   const toggleNotification = (id: string) => {
     setNotifications(prev => ({ ...prev, [id]: !prev[id] }))
+  }
+
+  const handleToggleStoreStatus = async () => {
+    try {
+      const user = sessionUtils.getUser()
+      if (!user) {
+        toast.error('Please login to toggle store status')
+        navigate('/sellerlogin')
+        return
+      }
+
+      const sellerId = user.userId
+      setTogglingStatus(true)
+
+      const response = await fetch(`http://localhost:8080/api/seller/toggle-store-status/${sellerId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setStoreStatus(data.storeStatus !== false)
+        toast.success(data.storeStatus ? 'Store is now live!' : 'Store has been paused')
+      } else if (response.status === 404) {
+        sessionUtils.clearSession()
+        toast.error('Your account has been deleted. Please contact support.')
+        navigate('/sellerlogin')
+      } else {
+        toast.error('Failed to toggle store status')
+      }
+    } catch (error) {
+      console.error('Error toggling store status:', error)
+      toast.error('An error occurred while toggling store status')
+    } finally {
+      setTogglingStatus(false)
+    }
   }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -585,14 +626,38 @@ const SellerSetting = () => {
               <div className="rounded-2xl bg-white p-6 shadow-sm sm:p-8">
                 <h2 className="text-lg font-semibold text-gray-900">Store status</h2>
                 <p className="mt-2 text-sm text-gray-500">
-                  Your store is currently active and visible to customers.
+                  {storeStatus 
+                    ? 'Your store is currently active and visible to customers.'
+                    : 'Your store is currently paused. Products will not be visible to customers.'}
                 </p>
-                <div className="mt-6 flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3">
-                  <div className="h-2 w-2 rounded-full bg-emerald-500"></div>
-                  <span className="text-sm font-semibold text-emerald-700">Store is live</span>
+                <div className={`mt-6 flex items-center gap-3 rounded-xl border px-4 py-3 ${
+                  storeStatus 
+                    ? 'border-emerald-200 bg-emerald-50' 
+                    : 'border-red-200 bg-red-50'
+                }`}>
+                  <div className={`h-2 w-2 rounded-full ${
+                    storeStatus ? 'bg-emerald-500' : 'bg-red-500'
+                  }`}></div>
+                  <span className={`text-sm font-semibold ${
+                    storeStatus ? 'text-emerald-700' : 'text-red-700'
+                  }`}>
+                    {storeStatus ? 'Store is live' : 'Store is off'}
+                  </span>
                 </div>
-                <button className="mt-4 w-full rounded-xl border border-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50">
-                  Temporarily pause store
+                <button 
+                  onClick={handleToggleStoreStatus}
+                  disabled={togglingStatus}
+                  className={`mt-4 w-full rounded-xl border px-4 py-2 text-sm font-semibold transition ${
+                    storeStatus
+                      ? 'border-gray-200 text-gray-700 hover:bg-gray-50'
+                      : 'border-red-200 text-red-700 hover:bg-red-50'
+                  } disabled:opacity-50 disabled:cursor-not-allowed`}
+                >
+                  {togglingStatus 
+                    ? 'Processing...' 
+                    : storeStatus 
+                      ? 'Temporarily pause store' 
+                      : 'Resume store'}
                 </button>
               </div>
             </aside>

@@ -9,6 +9,7 @@ public class CartItemResponse {
     private Integer quantity;
     private Double subtotal;
     private String sellerName;
+    private Boolean isStoreActive;
     private String createdAt;
     private String updatedAt;
 
@@ -90,6 +91,14 @@ public class CartItemResponse {
 
     public void setSellerName(String sellerName) {
         this.sellerName = sellerName;
+    }
+
+    public Boolean getIsStoreActive() {
+        return isStoreActive;
+    }
+
+    public void setIsStoreActive(Boolean isStoreActive) {
+        this.isStoreActive = isStoreActive;
     }
 
     public String getCreatedAt() {

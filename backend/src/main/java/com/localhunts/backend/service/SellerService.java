@@ -136,7 +136,7 @@ public class SellerService {
         Seller seller = sellerRepository.findById(sellerId)
             .orElseThrow(() -> new RuntimeException("Seller not found"));
         
-        return new SellerProfileResponse(
+        SellerProfileResponse response = new SellerProfileResponse(
             seller.getId(),
             seller.getUserName(),
             seller.getPhoneNumber(),
@@ -149,6 +149,8 @@ public class SellerService {
             seller.getStoreDescription() != null ? seller.getStoreDescription() : "",
             seller.getRole()
         );
+        response.setStoreStatus(seller.getStoreStatus());
+        return response;
     }
 
     public SellerProfileResponse updateSellerSettings(Long sellerId, UpdateSellerSettingsRequest request) {
@@ -174,7 +176,7 @@ public class SellerService {
 
         Seller updatedSeller = sellerRepository.save(seller);
         
-        return new SellerProfileResponse(
+        SellerProfileResponse response = new SellerProfileResponse(
             updatedSeller.getId(),
             updatedSeller.getUserName(),
             updatedSeller.getPhoneNumber(),
@@ -187,6 +189,34 @@ public class SellerService {
             updatedSeller.getStoreDescription() != null ? updatedSeller.getStoreDescription() : "",
             updatedSeller.getRole()
         );
+        response.setStoreStatus(updatedSeller.getStoreStatus());
+        return response;
+    }
+
+    @Transactional
+    public SellerProfileResponse toggleStoreStatus(Long sellerId) {
+        Seller seller = sellerRepository.findById(sellerId)
+            .orElseThrow(() -> new RuntimeException("Seller not found"));
+        
+        // Toggle store status
+        seller.setStoreStatus(!seller.getStoreStatus());
+        Seller updatedSeller = sellerRepository.save(seller);
+        
+        SellerProfileResponse response = new SellerProfileResponse(
+            updatedSeller.getId(),
+            updatedSeller.getUserName(),
+            updatedSeller.getPhoneNumber(),
+            updatedSeller.getContactEmail(),
+            updatedSeller.getLocation(),
+            updatedSeller.getBusinessName(),
+            updatedSeller.getBusinessCategory(),
+            updatedSeller.getBusinessPanVat(),
+            updatedSeller.getBusinessLocation(),
+            updatedSeller.getStoreDescription() != null ? updatedSeller.getStoreDescription() : "",
+            updatedSeller.getRole()
+        );
+        response.setStoreStatus(updatedSeller.getStoreStatus());
+        return response;
     }
 
     public AuthResponse changePassword(Long sellerId, ChangePasswordRequest request) {
@@ -248,6 +278,7 @@ public class SellerService {
         response.setBusinessPanVat(seller.getBusinessPanVat());
         response.setBusinessLocation(seller.getBusinessLocation());
         response.setApproved(seller.getApproved());
+        response.setStoreStatus(seller.getStoreStatus());
         response.setRole(seller.getRole());
         response.setBusinessRegistrationCertificate(seller.getBusinessRegistrationCertificate());
         response.setPanVatCertificate(seller.getPanVatCertificate());

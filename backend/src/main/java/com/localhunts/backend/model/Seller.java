@@ -71,6 +71,9 @@ public class Seller {
     @Column(nullable = false)
     private Boolean approved = false;
 
+    @Column(nullable = false)
+    private Boolean storeStatus = true; // true = ACTIVE, false = PAUSED
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Role role = Role.VENDOR;
@@ -206,6 +209,14 @@ public class Seller {
 
     public void setApproved(Boolean approved) {
         this.approved = approved;
+    }
+
+    public Boolean getStoreStatus() {
+        return storeStatus;
+    }
+
+    public void setStoreStatus(Boolean storeStatus) {
+        this.storeStatus = storeStatus;
     }
 
     public Role getRole() {
