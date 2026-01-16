@@ -252,8 +252,11 @@ public class PaymentService {
             .orElseThrow(() -> new RuntimeException("Order not found"));
 
         // Verify that the order belongs to the seller (product belongs to seller)
-        if (!delivered.getProduct().getSeller().getId().equals(sellerId)) {
-            throw new RuntimeException("Order does not belong to this seller");
+        // If product is null (product was deleted), we can't verify ownership
+        if (delivered.getProduct() != null) {
+            if (!delivered.getProduct().getSeller().getId().equals(sellerId)) {
+                throw new RuntimeException("Order does not belong to this seller");
+            }
         }
 
         // Mark as hidden from seller instead of deleting
@@ -276,13 +279,21 @@ public class PaymentService {
     private OrderTrackingResponse convertDeliveredToResponse(Delivered delivered) {
         Product product = delivered.getProduct();
         
-        // Get first image from comma-separated imageUrl
-        String imageUrl = product.getImageUrl() != null ? product.getImageUrl().split(",")[0].trim() : "";
+        // Get first image from comma-separated imageUrl (if product exists)
+        String imageUrl = "";
+        String productName = "Product Deleted";
+        Long productId = null;
+        
+        if (product != null) {
+            imageUrl = product.getImageUrl() != null ? product.getImageUrl().split(",")[0].trim() : "";
+            productName = product.getName();
+            productId = product.getId();
+        }
         
         OrderTrackingResponse response = new OrderTrackingResponse();
         response.setOrderId(delivered.getId());
-        response.setProductId(product.getId());
-        response.setProductName(product.getName());
+        response.setProductId(productId);
+        response.setProductName(productName);
         response.setProductImageUrl(imageUrl);
         response.setQuantity(delivered.getQuantity());
         response.setUnitPrice(delivered.getUnitPrice());
@@ -294,8 +305,8 @@ public class PaymentService {
         response.setArea(delivered.getArea());
         response.setAddress(delivered.getAddress());
         
-        // Add seller name (business name)
-        if (product.getSeller() != null) {
+        // Add seller name (business name) - only if product and seller exist
+        if (product != null && product.getSeller() != null) {
             response.setSellerName(product.getSeller().getBusinessName());
         }
         

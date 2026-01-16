@@ -11,6 +11,8 @@ import com.localhunts.backend.model.Product;
 import com.localhunts.backend.model.Role;
 import com.localhunts.backend.model.Seller;
 import com.localhunts.backend.repository.CartRepository;
+import com.localhunts.backend.repository.DeliveredRepository;
+import com.localhunts.backend.repository.PaymentRepository;
 import com.localhunts.backend.repository.ProductRepository;
 import com.localhunts.backend.repository.SellerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +38,12 @@ public class SellerService {
 
     @Autowired
     private CartRepository cartRepository;
+
+    @Autowired
+    private PaymentRepository paymentRepository;
+
+    @Autowired
+    private DeliveredRepository deliveredRepository;
 
     public AuthResponse signup(SellerSignupRequest signupRequest) {
         // Check if passwords match
@@ -257,6 +265,18 @@ public class SellerService {
         // Delete all cart items that reference these products
         for (Product product : products) {
             cartRepository.deleteByProduct(product);
+        }
+        
+        // Delete all Payment orders (non-delivered orders) for products of this seller
+        List<com.localhunts.backend.model.Payment> payments = paymentRepository.findBySeller(seller);
+        paymentRepository.deleteAll(payments);
+        
+        // For Delivered orders, set product_id to NULL to preserve order data
+        // but allow product deletion (foreign key constraint)
+        List<com.localhunts.backend.model.Delivered> deliveredOrders = deliveredRepository.findBySeller(seller);
+        for (com.localhunts.backend.model.Delivered delivered : deliveredOrders) {
+            delivered.setProduct(null);
+            deliveredRepository.save(delivered);
         }
         
         // Delete all products

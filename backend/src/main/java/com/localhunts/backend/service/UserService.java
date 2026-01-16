@@ -11,6 +11,8 @@ import com.localhunts.backend.dto.UserProfileResponse;
 import com.localhunts.backend.model.Role;
 import com.localhunts.backend.model.User;
 import com.localhunts.backend.repository.CartRepository;
+import com.localhunts.backend.repository.DeliveredRepository;
+import com.localhunts.backend.repository.PaymentRepository;
 import com.localhunts.backend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -31,6 +33,12 @@ public class UserService {
 
     @Autowired
     private CartRepository cartRepository;
+
+    @Autowired
+    private PaymentRepository paymentRepository;
+
+    @Autowired
+    private DeliveredRepository deliveredRepository;
 
     public AuthResponse signup(SignupRequest signupRequest) {
         // Check if passwords match
@@ -207,6 +215,18 @@ public class UserService {
 
         // Delete all cart items associated with this user
         cartRepository.deleteByUser(user);
+
+        // Delete all Payment orders (non-delivered orders) associated with this user
+        List<com.localhunts.backend.model.Payment> payments = paymentRepository.findByUser(user);
+        paymentRepository.deleteAll(payments);
+
+        // For Delivered orders, set user_id to NULL to preserve order data
+        // but allow user deletion (foreign key constraint)
+        List<com.localhunts.backend.model.Delivered> deliveredOrders = deliveredRepository.findByUser(user);
+        for (com.localhunts.backend.model.Delivered delivered : deliveredOrders) {
+            delivered.setUser(null);
+            deliveredRepository.save(delivered);
+        }
 
         // Delete the user
         userRepository.delete(user);
