@@ -63,6 +63,12 @@ public class Payment {
     @Column(nullable = false)
     private String status = "Pending"; // Pending, Processing, Shipped, Delivered, Cancelled
 
+    @Column(nullable = false, name = "hidden_from_user")
+    private Boolean hiddenFromUser = false;
+
+    @Column(nullable = false, name = "hidden_from_seller")
+    private Boolean hiddenFromSeller = false;
+
     @Column(nullable = false, updatable = false, name = "created_at")
     private LocalDateTime createdAt;
 
@@ -194,5 +200,21 @@ public class Payment {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public Boolean getHiddenFromUser() {
+        return hiddenFromUser;
+    }
+
+    public void setHiddenFromUser(Boolean hiddenFromUser) {
+        this.hiddenFromUser = hiddenFromUser;
+    }
+
+    public Boolean getHiddenFromSeller() {
+        return hiddenFromSeller;
+    }
+
+    public void setHiddenFromSeller(Boolean hiddenFromSeller) {
+        this.hiddenFromSeller = hiddenFromSeller;
     }
 }

@@ -21,6 +21,7 @@ import AdminSetting from './AdminPages/AdminSetting'
 import SellerDashboard from './SellerPages/SellerDashboard'
 import SellerProduct from './SellerPages/SellerProduct'
 import SellerOrder from './SellerPages/SellerOrder'
+import SellerHistory from './SellerPages/SellerHistory'
 import SellerPayout from './SellerPages/SellerPayout'
 import SellerMessage from './SellerPages/SellerMessage'
 import SellerSetting from './SellerPages/SellerSetting'
@@ -104,6 +105,11 @@ const App = () => {
       <Route path="/sellerorder" element={
         <ProtectedRoute allowedRoles={['VENDOR']}>
           <SellerOrder/>
+        </ProtectedRoute>
+      }/>
+      <Route path="/sellerhistory" element={
+        <ProtectedRoute allowedRoles={['VENDOR']}>
+          <SellerHistory/>
         </ProtectedRoute>
       }/>
       <Route path="/sellerpayout" element={

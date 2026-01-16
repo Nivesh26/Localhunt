@@ -15,6 +15,9 @@ public class OrderTrackingResponse {
     private String area;
     private String address;
     private String sellerName;
+    private String customerName;
+    private String customerEmail;
+    private String customerPhone;
     private String createdAt;
 
     public OrderTrackingResponse() {
@@ -139,5 +142,29 @@ public class OrderTrackingResponse {
 
     public void setCreatedAt(String createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public String getCustomerName() {
+        return customerName;
+    }
+
+    public void setCustomerName(String customerName) {
+        this.customerName = customerName;
+    }
+
+    public String getCustomerEmail() {
+        return customerEmail;
+    }
+
+    public void setCustomerEmail(String customerEmail) {
+        this.customerEmail = customerEmail;
+    }
+
+    public String getCustomerPhone() {
+        return customerPhone;
+    }
+
+    public void setCustomerPhone(String customerPhone) {
+        this.customerPhone = customerPhone;
     }
 }

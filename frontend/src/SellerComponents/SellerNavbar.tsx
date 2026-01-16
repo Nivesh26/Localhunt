@@ -6,6 +6,7 @@ import {
   FaComments,
   FaCog,
   FaSignOutAlt,
+  FaHistory,
 } from 'react-icons/fa'
 import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
@@ -18,6 +19,7 @@ const navLinks = [
   { label: 'Overview', icon: FaHome, to: '/sellerdashboard' },
   { label: 'Products', icon: FaCube, to: '/sellerproduct' },
   { label: 'Orders', icon: FaShoppingBag, to: '/sellerorder' },
+  { label: 'History', icon: FaHistory, to: '/sellerhistory' },
   { label: 'Payouts', icon: FaMoneyBillWave, to: '/sellerpayout' },
   { label: 'Messages', icon: FaComments, to: '/sellermessage' },
   { label: 'Settings', icon: FaCog, to: '/sellersetting' },

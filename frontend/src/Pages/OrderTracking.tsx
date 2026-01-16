@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
+import { FaTimes } from 'react-icons/fa'
 import Topbar from '../Components/Topbar'
 import Header from '../Components/Header'
 import Footer from '../Components/Footer'
@@ -85,6 +86,42 @@ const OrderTracking = () => {
     return statusColors[status] || 'bg-gray-100 text-gray-700'
   }
 
+  const handleRemoveOrder = async (orderId: number) => {
+    if (!window.confirm('Are you sure you want to remove this order from your history?')) {
+      return
+    }
+
+    try {
+      const user = sessionUtils.getUser()
+      if (!user) {
+        toast.error('Please login to remove orders')
+        navigate('/login')
+        return
+      }
+
+      const userId = user.userId
+      const response = await fetch(`http://localhost:8080/api/payment/orders/${orderId}/${userId}`, {
+        method: 'DELETE',
+      })
+
+      if (response.ok) {
+        toast.success('Order removed from history')
+        // Remove from local state
+        setOrders(orders.filter(order => order.orderId !== orderId))
+      } else if (response.status === 404) {
+        sessionUtils.clearSession()
+        toast.error('Your account has been deleted. Please contact support.')
+        navigate('/login')
+      } else {
+        const errorData = await response.json().catch(() => ({ message: 'Failed to remove order' }))
+        toast.error(errorData.message || 'Failed to remove order')
+      }
+    } catch (error) {
+      console.error('Error removing order:', error)
+      toast.error('An error occurred while removing order')
+    }
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -134,7 +171,7 @@ const OrderTracking = () => {
                     {/* Order Details */}
                     <div className="flex-1">
                       <div className="flex items-start justify-between mb-3">
-                        <div>
+                        <div className="flex-1">
                           <h3 className="text-xl font-semibold text-gray-900 mb-1">{order.productName}</h3>
                           {order.sellerName && (
                             <p className="text-sm text-gray-500 mb-2">
@@ -146,11 +183,23 @@ const OrderTracking = () => {
                             NRP {order.subtotal.toFixed(2)}
                           </p>
                         </div>
-                        <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-semibold ${getStatusBadge(order.status)}`}>
-                          {order.status === 'Pending' || order.status === 'Processing' 
-                            ? 'Your product is preparing' 
-                            : order.status}
-                        </span>
+                        <div className="flex items-center gap-3">
+                          <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-semibold ${getStatusBadge(order.status)}`}>
+                            {order.status === 'Pending' || order.status === 'Processing' 
+                              ? 'Your product is preparing' 
+                              : order.status}
+                          </span>
+                          {order.status === 'Delivered' && (
+                            <button
+                              onClick={() => handleRemoveOrder(order.orderId)}
+                              className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors"
+                              title="Remove from history"
+                              aria-label="Remove order from history"
+                            >
+                              <FaTimes className="w-5 h-5" />
+                            </button>
+                          )}
+                        </div>
                       </div>
 
                       {/* Delivery Address */}
