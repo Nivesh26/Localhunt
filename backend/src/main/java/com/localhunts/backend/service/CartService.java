@@ -135,6 +135,10 @@ public class CartService {
         response.setProductImageUrl(imageUrl);
         response.setQuantity(cart.getQuantity());
         response.setSubtotal(subtotal);
+        // Add seller name (business name)
+        if (product.getSeller() != null) {
+            response.setSellerName(product.getSeller().getBusinessName());
+        }
         
         if (cart.getCreatedAt() != null) {
             response.setCreatedAt(cart.getCreatedAt().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));

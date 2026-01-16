@@ -1,5 +1,6 @@
 package com.localhunts.backend.controller;
 
+import com.localhunts.backend.dto.AddressRequest;
 import com.localhunts.backend.dto.AuthResponse;
 import com.localhunts.backend.dto.ChangePasswordRequest;
 import com.localhunts.backend.dto.LoginRequest;
@@ -79,6 +80,18 @@ public class AuthController {
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(new AuthResponse("User not found", false));
+        }
+    }
+
+    @PutMapping("/location/{userId}")
+    public ResponseEntity<?> updateUserLocation(
+            @PathVariable Long userId,
+            @Valid @RequestBody AddressRequest request) {
+        try {
+            UserProfileResponse profile = userService.updateUserLocation(userId, request);
+            return ResponseEntity.ok(profile);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
     }
 }

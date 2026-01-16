@@ -15,6 +15,7 @@ interface CartItem {
   productImageUrl: string
   quantity: number
   subtotal: number
+  sellerName?: string
 }
 
 const cart = () => {
@@ -55,6 +56,7 @@ const cart = () => {
             productImageUrl: imageUrl,
             quantity: item.quantity,
             subtotal: item.subtotal,
+            sellerName: item.sellerName,
           }
         })
         setCartItems(formattedItems)
@@ -199,9 +201,8 @@ const cart = () => {
       toast.error('Please select at least one item to checkout')
       return
     }
-    // TODO: Implement checkout functionality
-    toast.success(`Proceeding to checkout with ${selected.length} item(s)`)
-    navigate('/checkout')
+    // Pass selected items to checkout page
+    navigate('/checkout', { state: { selectedItems: selected } })
   }
 
   if (loading) {

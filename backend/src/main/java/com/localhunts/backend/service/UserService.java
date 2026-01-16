@@ -1,5 +1,6 @@
 package com.localhunts.backend.service;
 
+import com.localhunts.backend.dto.AddressRequest;
 import com.localhunts.backend.dto.AuthResponse;
 import com.localhunts.backend.dto.ChangePasswordRequest;
 import com.localhunts.backend.dto.LoginRequest;
@@ -91,13 +92,20 @@ public class UserService {
         if (user == null) {
             return null;
         }
-        return new UserProfileResponse(
+        UserProfileResponse response = new UserProfileResponse(
             user.getId(),
             user.getFullName(),
             user.getEmail(),
             user.getPhone(),
             user.getRole()
         );
+        response.setAddressLine1(user.getAddressLine1());
+        response.setAddressLine2(user.getAddressLine2());
+        response.setCity(user.getCity());
+        response.setState(user.getState());
+        response.setPostalCode(user.getPostalCode());
+        response.setCountry(user.getCountry());
+        return response;
     }
 
     public UserProfileResponse updateUserProfile(Long userId, UpdateProfileRequest request) {
@@ -115,13 +123,49 @@ public class UserService {
         user.setPhone(request.getPhone());
 
         User updatedUser = userRepository.save(user);
-        return new UserProfileResponse(
+        UserProfileResponse response = new UserProfileResponse(
             updatedUser.getId(),
             updatedUser.getFullName(),
             updatedUser.getEmail(),
             updatedUser.getPhone(),
             updatedUser.getRole()
         );
+        response.setAddressLine1(updatedUser.getAddressLine1());
+        response.setAddressLine2(updatedUser.getAddressLine2());
+        response.setCity(updatedUser.getCity());
+        response.setState(updatedUser.getState());
+        response.setPostalCode(updatedUser.getPostalCode());
+        response.setCountry(updatedUser.getCountry());
+        return response;
+    }
+
+    @Transactional
+    public UserProfileResponse updateUserLocation(Long userId, AddressRequest request) {
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new RuntimeException("User not found"));
+
+        user.setAddressLine1(request.getAddressLine1());
+        user.setAddressLine2(request.getAddressLine2());
+        user.setCity(request.getCity());
+        user.setState(request.getState());
+        user.setPostalCode(request.getPostalCode());
+        user.setCountry(request.getCountry());
+
+        User updatedUser = userRepository.save(user);
+        UserProfileResponse response = new UserProfileResponse(
+            updatedUser.getId(),
+            updatedUser.getFullName(),
+            updatedUser.getEmail(),
+            updatedUser.getPhone(),
+            updatedUser.getRole()
+        );
+        response.setAddressLine1(updatedUser.getAddressLine1());
+        response.setAddressLine2(updatedUser.getAddressLine2());
+        response.setCity(updatedUser.getCity());
+        response.setState(updatedUser.getState());
+        response.setPostalCode(updatedUser.getPostalCode());
+        response.setCountry(updatedUser.getCountry());
+        return response;
     }
 
     public List<UserListResponse> getAllUsers() {

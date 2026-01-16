@@ -8,6 +8,7 @@ public class CartItemResponse {
     private String productImageUrl;
     private Integer quantity;
     private Double subtotal;
+    private String sellerName;
     private String createdAt;
     private String updatedAt;
 
@@ -81,6 +82,14 @@ public class CartItemResponse {
 
     public void setSubtotal(Double subtotal) {
         this.subtotal = subtotal;
+    }
+
+    public String getSellerName() {
+        return sellerName;
+    }
+
+    public void setSellerName(String sellerName) {
+        this.sellerName = sellerName;
     }
 
     public String getCreatedAt() {

@@ -6,6 +6,8 @@
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/controller/CartController.java
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/controller/ProductController.java
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/controller/SellerController.java
+/Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/dto/AddressRequest.java
+/Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/dto/AddressResponse.java
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/dto/AuthResponse.java
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/dto/CartItemRequest.java
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/dto/CartItemResponse.java

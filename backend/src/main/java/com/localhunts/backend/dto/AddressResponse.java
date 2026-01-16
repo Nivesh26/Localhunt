@@ -1,70 +1,28 @@
 package com.localhunts.backend.dto;
 
-import com.localhunts.backend.model.Role;
+import java.time.LocalDateTime;
 
-public class UserProfileResponse {
-    private Long userId;
-    private String fullName;
-    private String email;
-    private String phone;
-    private Role role;
+public class AddressResponse {
+    private Long id;
     private String addressLine1;
     private String addressLine2;
     private String city;
     private String state;
     private String postalCode;
     private String country;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
-    public UserProfileResponse() {
-    }
-
-    public UserProfileResponse(Long userId, String fullName, String email, String phone, Role role) {
-        this.userId = userId;
-        this.fullName = fullName;
-        this.email = email;
-        this.phone = phone;
-        this.role = role;
+    public AddressResponse() {
     }
 
     // Getters and Setters
-    public Long getUserId() {
-        return userId;
+    public Long getId() {
+        return id;
     }
 
-    public void setUserId(Long userId) {
-        this.userId = userId;
-    }
-
-    public String getFullName() {
-        return fullName;
-    }
-
-    public void setFullName(String fullName) {
-        this.fullName = fullName;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getPhone() {
-        return phone;
-    }
-
-    public void setPhone(String phone) {
-        this.phone = phone;
-    }
-
-    public Role getRole() {
-        return role;
-    }
-
-    public void setRole(Role role) {
-        this.role = role;
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getAddressLine1() {
@@ -113,5 +71,21 @@ public class UserProfileResponse {
 
     public void setCountry(String country) {
         this.country = country;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
     }
 }
