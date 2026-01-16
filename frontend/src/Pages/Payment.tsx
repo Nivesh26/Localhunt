@@ -73,21 +73,59 @@ const Payment = () => {
         return
       }
 
-      if (paymentMethod === 'cod') {
-        // Cash on Delivery - Place order directly
-        // TODO: Implement order creation in backend
-        toast.success('Order placed successfully! You will pay on delivery.')
-        setTimeout(() => {
-          navigate('/')
-        }, 2000)
-      } else if (paymentMethod === 'esewa') {
-        // Esewa Payment - TODO: Integrate Esewa payment gateway
-        toast.info('Esewa payment integration coming soon!')
-        // For now, just place order
-        setTimeout(() => {
-          navigate('/')
-        }, 2000)
+      const userId = user.userId
+
+      // Prepare order items
+      const orderItems = orderData.selectedItems.map(item => ({
+        productId: item.productId,
+        quantity: item.quantity,
+        unitPrice: item.productPrice
+      }))
+
+      // Create order request
+      const orderRequest = {
+        items: orderItems,
+        paymentMethod: paymentMethod,
+        region: orderData.locationData.region,
+        city: orderData.locationData.city,
+        area: orderData.locationData.area,
+        address: orderData.locationData.address
       }
+
+      // Create order in backend
+      const orderResponse = await fetch(`http://localhost:8080/api/payment/create-order/${userId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(orderRequest),
+      })
+
+      if (!orderResponse.ok) {
+        const errorData = await orderResponse.json().catch(() => ({ message: 'Failed to create order' }))
+        toast.error(errorData.message || 'Failed to create order')
+        return
+      }
+
+      // Remove items from cart after successful order
+      const cartItemIds = orderData.selectedItems.map(item => item.id)
+      for (const cartId of cartItemIds) {
+        try {
+          await fetch(`http://localhost:8080/api/cart/${userId}/${cartId}`, {
+            method: 'DELETE',
+          })
+        } catch (error) {
+          console.error('Error removing item from cart:', error)
+        }
+      }
+
+      // Navigate to COD confirmation page
+      navigate('/cod', {
+        state: {
+          orderData: orderData,
+          paymentMethod: paymentMethod
+        }
+      })
     } catch (error) {
       console.error('Error processing payment:', error)
       toast.error('An error occurred while processing your payment')
