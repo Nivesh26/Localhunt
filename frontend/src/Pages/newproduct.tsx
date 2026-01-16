@@ -245,7 +245,7 @@ const newproduct = () => {
                     </div>
                   )}
                   <div className="p-4">
-                    <h3 className="text-lg font-medium">{product.name}</h3>
+                    <h3 className="text-lg font-medium truncate">{product.name}</h3>
                     <p className="text-gray-500 text-sm">{product.category}</p>
                     <p className="text-red-600 font-semibold mt-2">NRP {product.price}</p>
                     <button 
