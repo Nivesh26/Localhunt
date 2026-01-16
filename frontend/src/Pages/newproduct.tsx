@@ -238,7 +238,9 @@ const newproduct = () => {
                   className="bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden cursor-pointer"
                 >
                   {product.imageUrl ? (
-                    <img src={product.imageUrl} alt={product.name} className="w-full h-48 object-cover" />
+                    <div className="w-full h-48 bg-gray-100 flex items-center justify-center overflow-hidden">
+                      <img src={product.imageUrl} alt={product.name} className="w-full h-full object-contain" />
+                    </div>
                   ) : (
                     <div className="w-full h-48 bg-gray-200 flex items-center justify-center">
                       <p className="text-gray-400">No Image</p>

@@ -253,7 +253,9 @@ const Productdetail = () => {
           <div>
             <div className="mb-4 bg-white rounded-xl overflow-hidden shadow-md">
               {mainImage ? (
-                <img src={mainImage} alt={product.name} className="w-full h-96 object-cover" />
+                <div className="w-full h-96 bg-gray-100 flex items-center justify-center">
+                  <img src={mainImage} alt={product.name} className="w-full h-full object-contain" />
+                </div>
               ) : (
                 <div className="w-full h-96 bg-gray-200 flex items-center justify-center">
                   <p className="text-gray-400">No Image</p>
@@ -442,11 +444,13 @@ const Productdetail = () => {
                   className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow"
                 >
                   {relatedProduct.imageUrl ? (
-                    <img
-                      src={relatedProduct.imageUrl}
-                      alt={relatedProduct.name}
-                      className="w-full h-48 object-cover"
-                    />
+                    <div className="w-full h-48 bg-gray-100 flex items-center justify-center overflow-hidden">
+                      <img
+                        src={relatedProduct.imageUrl}
+                        alt={relatedProduct.name}
+                        className="w-full h-full object-contain"
+                      />
+                    </div>
                   ) : (
                     <div className="w-full h-48 bg-gray-200 flex items-center justify-center">
                       <p className="text-gray-400">No Image</p>

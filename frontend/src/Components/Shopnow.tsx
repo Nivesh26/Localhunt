@@ -74,13 +74,15 @@ const Shopnow = () => {
               to={`/productdetail/${item.id}`}
               className="group relative w-[220px] md:w-[260px] bg-white shadow-sm hover:shadow-md rounded-md overflow-hidden transition-all duration-300"
             >
-              <div className="overflow-hidden">
+              <div className="overflow-hidden bg-gray-100">
                 {item.imageUrl ? (
-                  <img
-                    src={item.imageUrl}
-                    alt={item.name}
-                    className="w-full h-[250px] object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
+                  <div className="w-full h-[250px] flex items-center justify-center">
+                    <img
+                      src={item.imageUrl}
+                      alt={item.name}
+                      className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
+                    />
+                  </div>
                 ) : (
                   <div className="w-full h-[250px] bg-gray-200 flex items-center justify-center">
                     <p className="text-gray-400">No Image</p>
