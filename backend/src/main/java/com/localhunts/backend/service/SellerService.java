@@ -198,9 +198,8 @@ public class SellerService {
             return new AuthResponse("Your account is pending approval. Please wait for admin approval.", false);
         }
 
-        // Mark OTP as used
-        otp.setUsed(true);
-        otpRepository.save(otp);
+        // Delete OTP after successful verification
+        otpRepository.delete(otp);
 
         return new AuthResponse(
             "Login successful",

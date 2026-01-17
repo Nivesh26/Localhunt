@@ -176,9 +176,8 @@ public class UserService {
             return new AuthResponse("User not found", false);
         }
 
-        // Mark OTP as used
-        otp.setUsed(true);
-        otpRepository.save(otp);
+        // Delete OTP after successful verification
+        otpRepository.delete(otp);
 
         return new AuthResponse(
             "Login successful",
