@@ -752,4 +752,206 @@ public class EmailService {
         
         sendHtmlEmail(to, subject, htmlContent);
     }
+
+    /**
+     * Send "Ready to ship" notification email to user
+     */
+    public void sendReadyToShipEmail(String to, String customerName, Long orderId, 
+                                     String productName, String address, String area, String city) {
+        String subject = "Your Order is Ready to Ship! 📦 - Local Hunt";
+        
+        String htmlContent = String.format(
+            "<!DOCTYPE html>" +
+            "<html>" +
+            "<head>" +
+            "<meta charset='UTF-8'>" +
+            "<meta name='viewport' content='width=device-width, initial-scale=1.0'>" +
+            "<style>" +
+            "  body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f5; }" +
+            "  .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }" +
+            "  .header { background: linear-gradient(135deg, #ff9800 0%%, #ff6f00 100%%); padding: 50px 20px; text-align: center; }" +
+            "  .header h1 { color: #ffffff; margin: 0; font-size: 32px; font-weight: 600; }" +
+            "  .header-icon { font-size: 64px; margin-bottom: 15px; }" +
+            "  .content { padding: 40px 30px; }" +
+            "  .success-banner { background: linear-gradient(135deg, #fff3e0 0%%, #ffe0b2 100%%); border-left: 4px solid #ff9800; padding: 25px; margin: 25px 0; border-radius: 8px; }" +
+            "  .success-banner p { margin: 0; color: #e65100; font-weight: 600; font-size: 18px; }" +
+            "  .info-box { background-color: #f9f9f9; border-radius: 12px; padding: 25px; margin: 25px 0; border: 1px solid #e0e0e0; }" +
+            "  .info-item { padding: 12px 0; border-bottom: 1px solid #e0e0e0; display: flex; align-items: flex-start; }" +
+            "  .info-item:last-child { border-bottom: none; }" +
+            "  .info-icon { font-size: 24px; margin-right: 15px; flex-shrink: 0; }" +
+            "  .info-text { flex: 1; }" +
+            "  .info-title { color: #333333; font-size: 16px; font-weight: 600; margin: 0 0 5px 0; }" +
+            "  .info-desc { color: #666666; font-size: 14px; margin: 0; line-height: 1.5; }" +
+            "  .address-box { background-color: #f5f5f5; border-left: 3px solid #ff9800; padding: 15px; margin: 20px 0; border-radius: 4px; }" +
+            "  .address-box p { margin: 5px 0; color: #555555; font-size: 14px; line-height: 1.6; }" +
+            "  .footer { background-color: #f9f9f9; padding: 30px; text-align: center; color: #666666; font-size: 12px; border-top: 1px solid #e0e0e0; }" +
+            "  .footer a { color: #ff9800; text-decoration: none; }" +
+            "  .text-primary { color: #ff9800; font-weight: 600; }" +
+            "  h3 { color: #333333; font-size: 20px; margin: 25px 0 15px 0; }" +
+            "</style>" +
+            "</head>" +
+            "<body>" +
+            "<div class='container'>" +
+            "  <div class='header'>" +
+            "    <div class='header-icon'>📦</div>" +
+            "    <h1>Ready to Ship!</h1>" +
+            "  </div>" +
+            "  <div class='content'>" +
+            "    <p style='font-size: 18px; color: #333333; margin: 0 0 20px 0;'>Hello <span class='text-primary'>%s</span>,</p>" +
+            "    <div class='success-banner'>" +
+            "      <p>🚀 Great news! Your order is ready to ship!</p>" +
+            "    </div>" +
+            "    <p style='font-size: 15px; color: #555555; line-height: 1.7; margin: 20px 0;'>We're excited to let you know that your order <strong>#%d</strong> for <strong>%s</strong> is now ready to ship! Our team has prepared your order and it will be dispatched soon.</p>" +
+            "    <div class='info-box'>" +
+            "      <h3 style='margin-top: 0; color: #ff9800; border-bottom: 2px solid #ff9800; padding-bottom: 10px;'>📋 What's Next:</h3>" +
+            "      <div class='info-item'>" +
+            "        <span class='info-icon'>🚚</span>" +
+            "        <div class='info-text'>" +
+            "          <div class='info-title'>Shipping Soon</div>" +
+            "          <div class='info-desc'>Your order will be shipped within 24 hours</div>" +
+            "        </div>" +
+            "      </div>" +
+            "      <div class='info-item'>" +
+            "        <span class='info-icon'>📧</span>" +
+            "        <div class='info-text'>" +
+            "          <div class='info-title'>Tracking Information</div>" +
+            "          <div class='info-desc'>You'll receive another email with tracking details once your order is shipped</div>" +
+            "        </div>" +
+            "      </div>" +
+            "      <div class='info-item'>" +
+            "        <span class='info-icon'>📍</span>" +
+            "        <div class='info-text'>" +
+            "          <div class='info-title'>Delivery Address</div>" +
+            "          <div class='info-desc'>Your order will be delivered to the address provided</div>" +
+            "        </div>" +
+            "      </div>" +
+            "    </div>" +
+            "    <div class='address-box'>" +
+            "      <h3 style='margin-top: 0; font-size: 16px; color: #333333;'>📍 Delivery Address</h3>" +
+            "      <p><strong>%s</strong></p>" +
+            "      <p>%s, %s</p>" +
+            "    </div>" +
+            "    <p style='font-size: 14px; color: #777777; line-height: 1.6; margin: 25px 0 10px 0;'>If you have any questions about your order, feel free to contact our customer support team. We're here to help!</p>" +
+            "    <p style='font-size: 14px; color: #999999; margin: 20px 0 0 0;'>Thank you for shopping with us!<br><strong>The Local Hunt Team</strong></p>" +
+            "  </div>" +
+            "  <div class='footer'>" +
+            "    <p style='margin: 0 0 10px 0;'><strong style='font-size: 16px; color: #ff9800;'>Local Hunt</strong></p>" +
+            "    <p style='margin: 0 0 10px 0;'>Your trusted marketplace for authentic Nepali products</p>" +
+            "    <p style='margin: 15px 0 0 0; font-size: 11px;'>© 2024 Local Hunt. All rights reserved.</p>" +
+            "    <p style='margin: 10px 0 0 0; font-size: 11px;'>This is an automated email. Please do not reply.</p>" +
+            "  </div>" +
+            "</div>" +
+            "</body>" +
+            "</html>",
+            customerName != null ? customerName : "Customer",
+            orderId,
+            productName != null ? productName : "your product",
+            address != null ? address : "",
+            area != null ? area : "",
+            city != null ? city : ""
+        );
+        
+        sendHtmlEmail(to, subject, htmlContent);
+    }
+
+    /**
+     * Send "Delivered" notification email to user
+     */
+    public void sendDeliveredEmail(String to, String customerName, Long orderId, 
+                                   String productName, String address, String area, String city) {
+        String subject = "Your Order Has Been Delivered! ✅ - Local Hunt";
+        
+        String htmlContent = String.format(
+            "<!DOCTYPE html>" +
+            "<html>" +
+            "<head>" +
+            "<meta charset='UTF-8'>" +
+            "<meta name='viewport' content='width=device-width, initial-scale=1.0'>" +
+            "<style>" +
+            "  body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f5; }" +
+            "  .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }" +
+            "  .header { background: linear-gradient(135deg, #4caf50 0%%, #66bb6a 100%%); padding: 50px 20px; text-align: center; }" +
+            "  .header h1 { color: #ffffff; margin: 0; font-size: 32px; font-weight: 600; }" +
+            "  .header-icon { font-size: 64px; margin-bottom: 15px; }" +
+            "  .content { padding: 40px 30px; }" +
+            "  .success-banner { background: linear-gradient(135deg, #e8f5e9 0%%, #c8e6c9 100%%); border-left: 4px solid #4caf50; padding: 25px; margin: 25px 0; border-radius: 8px; }" +
+            "  .success-banner p { margin: 0; color: #2e7d32; font-weight: 600; font-size: 18px; }" +
+            "  .info-box { background-color: #f9f9f9; border-radius: 12px; padding: 25px; margin: 25px 0; border: 1px solid #e0e0e0; }" +
+            "  .info-item { padding: 12px 0; border-bottom: 1px solid #e0e0e0; display: flex; align-items: flex-start; }" +
+            "  .info-item:last-child { border-bottom: none; }" +
+            "  .info-icon { font-size: 24px; margin-right: 15px; flex-shrink: 0; }" +
+            "  .info-text { flex: 1; }" +
+            "  .info-title { color: #333333; font-size: 16px; font-weight: 600; margin: 0 0 5px 0; }" +
+            "  .info-desc { color: #666666; font-size: 14px; margin: 0; line-height: 1.5; }" +
+            "  .address-box { background-color: #f5f5f5; border-left: 3px solid #4caf50; padding: 15px; margin: 20px 0; border-radius: 4px; }" +
+            "  .address-box p { margin: 5px 0; color: #555555; font-size: 14px; line-height: 1.6; }" +
+            "  .footer { background-color: #f9f9f9; padding: 30px; text-align: center; color: #666666; font-size: 12px; border-top: 1px solid #e0e0e0; }" +
+            "  .footer a { color: #4caf50; text-decoration: none; }" +
+            "  .text-primary { color: #4caf50; font-weight: 600; }" +
+            "  h3 { color: #333333; font-size: 20px; margin: 25px 0 15px 0; }" +
+            "</style>" +
+            "</head>" +
+            "<body>" +
+            "<div class='container'>" +
+            "  <div class='header'>" +
+            "    <div class='header-icon'>✅</div>" +
+            "    <h1>Order Delivered!</h1>" +
+            "  </div>" +
+            "  <div class='content'>" +
+            "    <p style='font-size: 18px; color: #333333; margin: 0 0 20px 0;'>Hello <span class='text-primary'>%s</span>,</p>" +
+            "    <div class='success-banner'>" +
+            "      <p>🎉 Congratulations! Your order has been delivered!</p>" +
+            "    </div>" +
+            "    <p style='font-size: 15px; color: #555555; line-height: 1.7; margin: 20px 0;'>We're thrilled to inform you that your order <strong>#%d</strong> for <strong>%s</strong> has been successfully delivered to your address. We hope you love your purchase!</p>" +
+            "    <div class='info-box'>" +
+            "      <h3 style='margin-top: 0; color: #4caf50; border-bottom: 2px solid #4caf50; padding-bottom: 10px;'>📋 What's Next:</h3>" +
+            "      <div class='info-item'>" +
+            "        <span class='info-icon'>📦</span>" +
+            "        <div class='info-text'>" +
+            "          <div class='info-title'>Check Your Order</div>" +
+            "          <div class='info-desc'>Please inspect your package to ensure everything arrived in good condition</div>" +
+            "        </div>" +
+            "      </div>" +
+            "      <div class='info-item'>" +
+            "        <span class='info-icon'>⭐</span>" +
+            "        <div class='info-text'>" +
+            "          <div class='info-title'>Leave a Review</div>" +
+            "          <div class='info-desc'>We'd love to hear about your experience! Share your feedback with other customers</div>" +
+            "        </div>" +
+            "      </div>" +
+            "      <div class='info-item'>" +
+            "        <span class='info-icon'>🔄</span>" +
+            "        <div class='info-text'>" +
+            "          <div class='info-title'>Need Help?</div>" +
+            "          <div class='info-desc'>If you have any issues or concerns, our customer support team is ready to assist you</div>" +
+            "        </div>" +
+            "      </div>" +
+            "    </div>" +
+            "    <div class='address-box'>" +
+            "      <h3 style='margin-top: 0; font-size: 16px; color: #333333;'>📍 Delivery Address</h3>" +
+            "      <p><strong>%s</strong></p>" +
+            "      <p>%s, %s</p>" +
+            "    </div>" +
+            "    <p style='font-size: 14px; color: #777777; line-height: 1.6; margin: 25px 0 10px 0;'>Thank you for choosing Local Hunt! We appreciate your business and hope you enjoy your authentic Nepali products.</p>" +
+            "    <p style='font-size: 14px; color: #999999; margin: 20px 0 0 0;'>Happy shopping!<br><strong>The Local Hunt Team</strong></p>" +
+            "  </div>" +
+            "  <div class='footer'>" +
+            "    <p style='margin: 0 0 10px 0;'><strong style='font-size: 16px; color: #4caf50;'>Local Hunt</strong></p>" +
+            "    <p style='margin: 0 0 10px 0;'>Your trusted marketplace for authentic Nepali products</p>" +
+            "    <p style='margin: 15px 0 0 0; font-size: 11px;'>© 2024 Local Hunt. All rights reserved.</p>" +
+            "    <p style='margin: 10px 0 0 0; font-size: 11px;'>This is an automated email. Please do not reply.</p>" +
+            "  </div>" +
+            "</div>" +
+            "</body>" +
+            "</html>",
+            customerName != null ? customerName : "Customer",
+            orderId,
+            productName != null ? productName : "your product",
+            address != null ? address : "",
+            area != null ? area : "",
+            city != null ? city : ""
+        );
+        
+        sendHtmlEmail(to, subject, htmlContent);
+    }
 }

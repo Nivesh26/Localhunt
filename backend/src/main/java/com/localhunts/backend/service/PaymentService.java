@@ -21,6 +21,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 @Service
@@ -43,6 +46,9 @@ public class PaymentService {
 
     @Autowired
     private EmailService emailService;
+
+    // Executor service for asynchronous email sending
+    private final ExecutorService emailExecutor = Executors.newFixedThreadPool(5);
 
     @Transactional
     public List<OrderResponse> createOrder(Long userId, CreateOrderRequest request) {
@@ -260,13 +266,53 @@ public class PaymentService {
             
             deliveredRepository.save(delivered);
             
+            // Send delivery notification email asynchronously (don't block response)
+            String userEmail = payment.getUser().getEmail();
+            String userName = payment.getUser().getFullName();
+            Long deliveredOrderId = payment.getId();
+            String productName = payment.getProduct() != null ? payment.getProduct().getName() : "Product";
+            String address = payment.getAddress();
+            String area = payment.getArea();
+            String city = payment.getCity();
+            
+            CompletableFuture.runAsync(() -> {
+                try {
+                    emailService.sendDeliveredEmail(userEmail, userName, deliveredOrderId, productName, address, area, city);
+                } catch (Exception e) {
+                    System.err.println("Failed to send delivery email: " + e.getMessage());
+                }
+            }, emailExecutor);
+            
             // Delete from Payment table
             paymentRepository.delete(payment);
             
             // Return response from delivered order
             return convertDeliveredToResponse(delivered);
+        } else if ("Ready to ship".equals(newStatus)) {
+            // Update status for "Ready to ship" orders
+            payment.setStatus(newStatus);
+            Payment updatedPayment = paymentRepository.save(payment);
+            
+            // Send "Ready to ship" notification email asynchronously (don't block response)
+            String userEmail = payment.getUser().getEmail();
+            String userName = payment.getUser().getFullName();
+            Long readyToShipOrderId = payment.getId();
+            String productName = payment.getProduct() != null ? payment.getProduct().getName() : "Product";
+            String address = payment.getAddress();
+            String area = payment.getArea();
+            String city = payment.getCity();
+            
+            CompletableFuture.runAsync(() -> {
+                try {
+                    emailService.sendReadyToShipEmail(userEmail, userName, readyToShipOrderId, productName, address, area, city);
+                } catch (Exception e) {
+                    System.err.println("Failed to send ready to ship email: " + e.getMessage());
+                }
+            }, emailExecutor);
+            
+            return convertToTrackingResponse(updatedPayment);
         } else {
-            // Update status for non-delivered orders
+            // Update status for other non-delivered orders
             payment.setStatus(newStatus);
             Payment updatedPayment = paymentRepository.save(payment);
             return convertToTrackingResponse(updatedPayment);

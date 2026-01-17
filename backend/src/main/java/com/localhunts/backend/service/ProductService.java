@@ -154,14 +154,13 @@ public class ProductService {
             paymentRepository.save(payment);
         }
 
-        // For Delivered orders, set product_id to NULL to preserve order records
+        // For Delivered orders, delete them from database when product is deleted
         List<Delivered> deliveredOrders = deliveredRepository.findAll().stream()
             .filter(delivered -> delivered.getProduct() != null && delivered.getProduct().getId().equals(productId))
             .collect(Collectors.toList());
         
         for (Delivered delivered : deliveredOrders) {
-            delivered.setProduct(null);
-            deliveredRepository.save(delivered);
+            deliveredRepository.delete(delivered);
         }
 
         // Now delete the product
