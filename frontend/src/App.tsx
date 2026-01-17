@@ -33,6 +33,7 @@ import Checkout from './Pages/Checkout'
 import Payment from './Pages/Payment'
 import COD from './Pages/COD'
 import OrderTracking from './Pages/OrderTracking'
+import { UserOTP } from './Pages/UserOTP'
 
 
 const App = () => {
@@ -85,7 +86,9 @@ const App = () => {
       {/* Login and Signup */}
       <Route path="/login" element={<Login/>}/>
       <Route path="/signup" element={<Signup/>}/>
+      <Route path="/userotp" element={<UserOTP/>}/>
 
+      
       {/* Seller Login and Signup */}
       <Route path="/sellersignup" element={<Sellersignup/>}/>
       <Route path="/sellerlogin" element={<SellerLogin/>}/>

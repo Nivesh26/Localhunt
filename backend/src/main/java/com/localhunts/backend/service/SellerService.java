@@ -2,19 +2,25 @@ package com.localhunts.backend.service;
 
 import com.localhunts.backend.dto.AuthResponse;
 import com.localhunts.backend.dto.ChangePasswordRequest;
+import com.localhunts.backend.dto.OtpRequest;
+import com.localhunts.backend.dto.OtpVerifyRequest;
 import com.localhunts.backend.dto.SellerListResponse;
 import com.localhunts.backend.dto.SellerLoginRequest;
 import com.localhunts.backend.dto.SellerProfileResponse;
 import com.localhunts.backend.dto.SellerSignupRequest;
 import com.localhunts.backend.dto.UpdateSellerSettingsRequest;
+import com.localhunts.backend.model.Otp;
 import com.localhunts.backend.model.Product;
 import com.localhunts.backend.model.Role;
 import com.localhunts.backend.model.Seller;
 import com.localhunts.backend.repository.CartRepository;
 import com.localhunts.backend.repository.DeliveredRepository;
+import com.localhunts.backend.repository.OtpRepository;
 import com.localhunts.backend.repository.PaymentRepository;
 import com.localhunts.backend.repository.ProductRepository;
 import com.localhunts.backend.repository.SellerRepository;
+import java.time.LocalDateTime;
+import java.util.Random;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -44,6 +50,12 @@ public class SellerService {
 
     @Autowired
     private DeliveredRepository deliveredRepository;
+
+    @Autowired
+    private OtpRepository otpRepository;
+
+    @Autowired
+    private EmailService emailService;
 
     public AuthResponse signup(SellerSignupRequest signupRequest) {
         // Check if passwords match
@@ -102,6 +114,93 @@ public class SellerService {
         if (!seller.getApproved()) {
             return new AuthResponse("Your account is pending approval. Please wait for admin approval.", false);
         }
+
+        return new AuthResponse(
+            "Login successful",
+            seller.getId(),
+            seller.getContactEmail(),
+            seller.getUserName(),
+            seller.getRole(),
+            true
+        );
+    }
+
+    /**
+     * Generate and send OTP for seller/vendor login
+     */
+    public AuthResponse requestOTP(OtpRequest otpRequest) {
+        // Check if seller exists
+        Seller seller = sellerRepository.findByContactEmail(otpRequest.getEmail())
+            .orElse(null);
+
+        if (seller == null) {
+            // Don't reveal if seller exists or not for security
+            return new AuthResponse("If this email exists, an OTP has been sent", true);
+        }
+
+        // Check if seller is approved
+        if (!seller.getApproved()) {
+            return new AuthResponse("Your account is pending approval. Please wait for admin approval.", false);
+        }
+
+        // Generate 6-digit OTP
+        String otpCode = String.format("%06d", new Random().nextInt(1000000));
+
+        // Mark all previous OTPs for this email as used
+        otpRepository.markAllAsUsedByEmail(otpRequest.getEmail());
+
+        // Create new OTP
+        Otp otp = new Otp();
+        otp.setEmail(otpRequest.getEmail());
+        otp.setOtpCode(otpCode);
+        otpRepository.save(otp);
+
+        // Send OTP via email
+        try {
+            emailService.sendOTPEmail(otpRequest.getEmail(), otpCode, seller.getUserName());
+        } catch (Exception e) {
+            System.err.println("Failed to send OTP email: " + e.getMessage());
+            return new AuthResponse("Failed to send OTP. Please try again.", false);
+        }
+
+        return new AuthResponse("OTP sent to your email. Please check your inbox.", true);
+    }
+
+    /**
+     * Verify OTP and login for seller/vendor
+     */
+    public AuthResponse verifyOTP(OtpVerifyRequest verifyRequest) {
+        // Find valid OTP
+        Otp otp = otpRepository.findByEmailAndOtpCodeAndUsedFalse(
+            verifyRequest.getEmail(), 
+            verifyRequest.getOtp()
+        ).orElse(null);
+
+        if (otp == null) {
+            return new AuthResponse("Invalid or expired OTP", false);
+        }
+
+        // Check if OTP is expired
+        if (otp.getExpiresAt().isBefore(LocalDateTime.now())) {
+            return new AuthResponse("OTP has expired. Please request a new one.", false);
+        }
+
+        // Find seller
+        Seller seller = sellerRepository.findByContactEmail(verifyRequest.getEmail())
+            .orElse(null);
+
+        if (seller == null) {
+            return new AuthResponse("Seller not found", false);
+        }
+
+        // Check if seller is approved
+        if (!seller.getApproved()) {
+            return new AuthResponse("Your account is pending approval. Please wait for admin approval.", false);
+        }
+
+        // Mark OTP as used
+        otp.setUsed(true);
+        otpRepository.save(otp);
 
         return new AuthResponse(
             "Login successful",

@@ -4,6 +4,8 @@ import com.localhunts.backend.dto.AddressRequest;
 import com.localhunts.backend.dto.AuthResponse;
 import com.localhunts.backend.dto.ChangePasswordRequest;
 import com.localhunts.backend.dto.LoginRequest;
+import com.localhunts.backend.dto.OtpRequest;
+import com.localhunts.backend.dto.OtpVerifyRequest;
 import com.localhunts.backend.dto.SignupRequest;
 import com.localhunts.backend.dto.UpdateProfileRequest;
 import com.localhunts.backend.dto.UserProfileResponse;
@@ -92,6 +94,28 @@ public class AuthController {
             return ResponseEntity.ok(profile);
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/request-otp")
+    public ResponseEntity<AuthResponse> requestOTP(@Valid @RequestBody OtpRequest otpRequest) {
+        AuthResponse response = userService.requestOTP(otpRequest);
+        
+        if (response.isSuccess()) {
+            return ResponseEntity.ok(response);
+        } else {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+    }
+
+    @PostMapping("/verify-otp")
+    public ResponseEntity<AuthResponse> verifyOTP(@Valid @RequestBody OtpVerifyRequest verifyRequest) {
+        AuthResponse response = userService.verifyOTP(verifyRequest);
+        
+        if (response.isSuccess()) {
+            return ResponseEntity.ok(response);
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
         }
     }
 }

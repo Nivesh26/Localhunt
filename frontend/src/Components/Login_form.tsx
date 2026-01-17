@@ -50,7 +50,7 @@ const Login_form = () => {
     setErrors(newErrors);
 
     if (Object.keys(newErrors).length === 0) {
-      // Form is valid, proceed with login
+      // Form is valid, verify credentials first, then request OTP
       handleLogin();
     }
   };
@@ -58,7 +58,8 @@ const Login_form = () => {
   const handleLogin = async () => {
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:8080/api/auth/login', {
+      // First verify email and password
+      const verifyResponse = await fetch('http://localhost:8080/api/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -69,34 +70,38 @@ const Login_form = () => {
         }),
       });
 
-      const data = await response.json();
+      const verifyData = await verifyResponse.json();
 
-      if (data.success) {
-        toast.success(data.message || 'Login successful!');
-        // Store user data in sessionStorage (tab-specific)
-        sessionUtils.setUser({
-          userId: data.userId,
-          email: data.email,
-          fullName: data.fullName,
-          role: data.role
-        });
-        // Redirect based on role
+      if (!verifyData.success) {
+        toast.error(verifyData.message || 'Invalid email or password');
+        setLoading(false);
+        return;
+      }
+
+      // If credentials are correct, request OTP
+      const otpResponse = await fetch('http://localhost:8080/api/auth/request-otp', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email
+        }),
+      });
+
+      const otpData = await otpResponse.json();
+
+      if (otpData.success) {
+        toast.success('OTP sent to your email. Please check your inbox.');
+        // Navigate to OTP verification page with email
         setTimeout(() => {
-          const role = data.role;
-          if (role === 'SUPERADMIN') {
-            navigate('/admindashboard');
-          } else if (role === 'VENDOR') {
-            navigate('/sellerdashboard');
-          } else {
-            // USER role or default
-            navigate('/');
-          }
+          navigate('/userotp', { state: { email, loginType: 'user' } });
         }, 1000);
       } else {
-        toast.error(data.message || 'Login failed');
+        toast.error(otpData.message || 'Failed to send OTP');
       }
     } catch (error) {
-      console.error('Login error:', error);
+      console.error('Login/OTP error:', error);
       toast.error('An error occurred. Please try again.');
     } finally {
       setLoading(false);
@@ -136,7 +141,7 @@ const Login_form = () => {
           </div>
 
           {/* Password */}
-          <div className="mb-2">
+          <div className="mb-6">
             <div className="relative">
               <input
                 type={showPassword ? "text" : "password"}
@@ -161,20 +166,13 @@ const Login_form = () => {
             {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
           </div>
 
-          {/* Forgot Password */}
-          <div className="text-right mb-6">
-            <a href="#" className="text-sm text-red-500 hover:underline">
-              Forget Password?
-            </a>
-          </div>
-
           {/* Login Button */}
           <button 
             type="submit" 
             disabled={loading}
             className="w-full bg-red-400 text-white py-2 rounded-full font-semibold hover:bg-red-500 transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? 'Logging in...' : 'Login'}
+            {loading ? 'Verifying...' : 'Continue'}
           </button>
         </form>
 

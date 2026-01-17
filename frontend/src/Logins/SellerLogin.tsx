@@ -54,7 +54,7 @@ const SellerLogin = () => {
     setErrors(newErrors)
 
     if (Object.keys(newErrors).length === 0) {
-      // Form is valid, proceed with login
+      // Form is valid, verify credentials first, then request OTP
       handleLogin()
     }
   }
@@ -62,7 +62,8 @@ const SellerLogin = () => {
   const handleLogin = async () => {
     setLoading(true)
     try {
-      const response = await fetch('http://localhost:8080/api/seller/login', {
+      // First verify email and password
+      const verifyResponse = await fetch('http://localhost:8080/api/seller/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -73,26 +74,38 @@ const SellerLogin = () => {
         }),
       })
 
-      const data = await response.json()
+      const verifyData = await verifyResponse.json()
 
-      if (data.success) {
-        toast.success(data.message || 'Login successful!')
-        // Store seller data in sessionStorage (tab-specific)
-        sessionUtils.setUser({
-          userId: data.userId,
-          email: data.email,
-          fullName: data.fullName,
-          role: data.role
-        })
-        // Redirect to seller dashboard
+      if (!verifyData.success) {
+        toast.error(verifyData.message || 'Invalid email or password')
+        setLoading(false)
+        return
+      }
+
+      // If credentials are correct, request OTP
+      const otpResponse = await fetch('http://localhost:8080/api/seller/request-otp', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email
+        }),
+      })
+
+      const otpData = await otpResponse.json()
+
+      if (otpData.success) {
+        toast.success('OTP sent to your email. Please check your inbox.')
+        // Navigate to OTP verification page with email
         setTimeout(() => {
-          navigate('/sellerdashboard')
+          navigate('/userotp', { state: { email, loginType: 'seller' } })
         }, 1000)
       } else {
-        toast.error(data.message || 'Login failed')
+        toast.error(otpData.message || 'Failed to send OTP')
       }
     } catch (error) {
-      console.error('Login error:', error)
+      console.error('Login/OTP error:', error)
       toast.error('An error occurred. Please try again.')
     } finally {
       setLoading(false)
@@ -144,7 +157,7 @@ const SellerLogin = () => {
                     {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
                   </div>
 
-                  <div>
+                  <div className="mb-6">
                     <label className="text-sm font-medium text-gray-700 mt-1">
                       Password
                       <div className="relative">
@@ -171,23 +184,13 @@ const SellerLogin = () => {
                     </label>
                     {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
                   </div>
-                  
-                  <div className="flex items-center justify-between text-xs text-gray-600 mt-1">
-                    <label className="inline-flex items-center gap-2">
-                      <input type="checkbox" className="h-3.5 w-3.5 rounded border-gray-300 text-red-600 focus:ring-red-500" />
-                      Remember me
-                    </label>
-                    <a href="#" className="font-semibold text-red-600 hover:underline">
-                      Forgot password?
-                    </a>
-                  </div>
 
                   <button 
                     type="submit" 
                     disabled={loading}
                     className="w-full rounded-xl bg-red-400 py-3 text-sm font-semibold text-white transition hover:bg-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {loading ? 'Logging in...' : 'Log In'}
+                    {loading ? 'Verifying...' : 'Continue'}
                   </button>
                 </form>
 

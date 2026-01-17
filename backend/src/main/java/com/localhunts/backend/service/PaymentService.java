@@ -41,6 +41,9 @@ public class PaymentService {
     @Autowired
     private DeliveredRepository deliveredRepository;
 
+    @Autowired
+    private EmailService emailService;
+
     @Transactional
     public List<OrderResponse> createOrder(Long userId, CreateOrderRequest request) {
         // Find user
@@ -78,6 +81,27 @@ public class PaymentService {
 
             return paymentRepository.save(payment);
         }).collect(Collectors.toList());
+
+        // Send order confirmation emails
+        for (Payment payment : payments) {
+            try {
+                emailService.sendOrderConfirmationEmail(
+                    user.getEmail(),
+                    user.getFullName(),
+                    payment.getId(),
+                    payment.getProduct().getName(),
+                    payment.getQuantity(),
+                    payment.getSubtotal(),
+                    payment.getPaymentMethod(),
+                    payment.getAddress(),
+                    payment.getArea(),
+                    payment.getCity()
+                );
+            } catch (Exception e) {
+                // Log error but don't fail the order creation
+                System.err.println("Failed to send order confirmation email: " + e.getMessage());
+            }
+        }
 
         // Convert to response DTOs
         return payments.stream().map(this::convertToResponse).collect(Collectors.toList());

@@ -4,19 +4,25 @@ import com.localhunts.backend.dto.AddressRequest;
 import com.localhunts.backend.dto.AuthResponse;
 import com.localhunts.backend.dto.ChangePasswordRequest;
 import com.localhunts.backend.dto.LoginRequest;
+import com.localhunts.backend.dto.OtpRequest;
+import com.localhunts.backend.dto.OtpVerifyRequest;
 import com.localhunts.backend.dto.SignupRequest;
 import com.localhunts.backend.dto.UpdateProfileRequest;
 import com.localhunts.backend.dto.UserListResponse;
 import com.localhunts.backend.dto.UserProfileResponse;
+import com.localhunts.backend.model.Otp;
 import com.localhunts.backend.model.Payment;
 import com.localhunts.backend.model.Product;
 import com.localhunts.backend.model.Role;
 import com.localhunts.backend.model.User;
 import com.localhunts.backend.repository.CartRepository;
 import com.localhunts.backend.repository.DeliveredRepository;
+import com.localhunts.backend.repository.OtpRepository;
 import com.localhunts.backend.repository.PaymentRepository;
 import com.localhunts.backend.repository.ProductRepository;
 import com.localhunts.backend.repository.UserRepository;
+import java.time.LocalDateTime;
+import java.util.Random;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -45,6 +51,12 @@ public class UserService {
 
     @Autowired
     private ProductRepository productRepository;
+
+    @Autowired
+    private OtpRepository otpRepository;
+
+    @Autowired
+    private EmailService emailService;
 
     public AuthResponse signup(SignupRequest signupRequest) {
         // Check if passwords match
@@ -90,6 +102,83 @@ public class UserService {
         if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
             return new AuthResponse("Invalid email or password", false);
         }
+
+        return new AuthResponse(
+            "Login successful",
+            user.getId(),
+            user.getEmail(),
+            user.getFullName(),
+            user.getRole(),
+            true
+        );
+    }
+
+    /**
+     * Generate and send OTP for login
+     */
+    public AuthResponse requestOTP(OtpRequest otpRequest) {
+        // Check if user exists
+        User user = userRepository.findByEmail(otpRequest.getEmail())
+            .orElse(null);
+
+        if (user == null) {
+            // Don't reveal if user exists or not for security
+            return new AuthResponse("If this email exists, an OTP has been sent", true);
+        }
+
+        // Generate 6-digit OTP
+        String otpCode = String.format("%06d", new Random().nextInt(1000000));
+
+        // Mark all previous OTPs for this email as used
+        otpRepository.markAllAsUsedByEmail(otpRequest.getEmail());
+
+        // Create new OTP
+        Otp otp = new Otp();
+        otp.setEmail(otpRequest.getEmail());
+        otp.setOtpCode(otpCode);
+        otpRepository.save(otp);
+
+        // Send OTP via email
+        try {
+            emailService.sendOTPEmail(otpRequest.getEmail(), otpCode, user.getFullName());
+        } catch (Exception e) {
+            System.err.println("Failed to send OTP email: " + e.getMessage());
+            return new AuthResponse("Failed to send OTP. Please try again.", false);
+        }
+
+        return new AuthResponse("OTP sent to your email. Please check your inbox.", true);
+    }
+
+    /**
+     * Verify OTP and login
+     */
+    public AuthResponse verifyOTP(OtpVerifyRequest verifyRequest) {
+        // Find valid OTP
+        Otp otp = otpRepository.findByEmailAndOtpCodeAndUsedFalse(
+            verifyRequest.getEmail(), 
+            verifyRequest.getOtp()
+        ).orElse(null);
+
+        if (otp == null) {
+            return new AuthResponse("Invalid or expired OTP", false);
+        }
+
+        // Check if OTP is expired
+        if (otp.getExpiresAt().isBefore(LocalDateTime.now())) {
+            return new AuthResponse("OTP has expired. Please request a new one.", false);
+        }
+
+        // Find user
+        User user = userRepository.findByEmail(verifyRequest.getEmail())
+            .orElse(null);
+
+        if (user == null) {
+            return new AuthResponse("User not found", false);
+        }
+
+        // Mark OTP as used
+        otp.setUsed(true);
+        otpRepository.save(otp);
 
         return new AuthResponse(
             "Login successful",

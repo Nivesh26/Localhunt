@@ -2,6 +2,8 @@ package com.localhunts.backend.controller;
 
 import com.localhunts.backend.dto.AuthResponse;
 import com.localhunts.backend.dto.ChangePasswordRequest;
+import com.localhunts.backend.dto.OtpRequest;
+import com.localhunts.backend.dto.OtpVerifyRequest;
 import com.localhunts.backend.dto.SellerListResponse;
 import com.localhunts.backend.dto.SellerLoginRequest;
 import com.localhunts.backend.dto.SellerProfileResponse;
@@ -39,6 +41,28 @@ public class SellerController {
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody SellerLoginRequest loginRequest) {
         AuthResponse response = sellerService.login(loginRequest);
+        
+        if (response.isSuccess()) {
+            return ResponseEntity.ok(response);
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+        }
+    }
+
+    @PostMapping("/request-otp")
+    public ResponseEntity<AuthResponse> requestOTP(@Valid @RequestBody OtpRequest otpRequest) {
+        AuthResponse response = sellerService.requestOTP(otpRequest);
+        
+        if (response.isSuccess()) {
+            return ResponseEntity.ok(response);
+        } else {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+    }
+
+    @PostMapping("/verify-otp")
+    public ResponseEntity<AuthResponse> verifyOTP(@Valid @RequestBody OtpVerifyRequest verifyRequest) {
+        AuthResponse response = sellerService.verifyOTP(verifyRequest);
         
         if (response.isSuccess()) {
             return ResponseEntity.ok(response);

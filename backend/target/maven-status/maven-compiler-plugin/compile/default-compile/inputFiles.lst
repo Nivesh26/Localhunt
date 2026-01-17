@@ -18,6 +18,8 @@
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/dto/OrderItemRequest.java
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/dto/OrderResponse.java
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/dto/OrderTrackingResponse.java
+/Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/dto/OtpRequest.java
+/Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/dto/OtpVerifyRequest.java
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/dto/ProductRequest.java
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/dto/ProductResponse.java
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/dto/SellerListResponse.java
@@ -32,6 +34,7 @@
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/dto/UserProfileResponse.java
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/model/Cart.java
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/model/Delivered.java
+/Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/model/Otp.java
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/model/Payment.java
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/model/Product.java
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/model/Role.java
@@ -39,11 +42,13 @@
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/model/User.java
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/repository/CartRepository.java
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/repository/DeliveredRepository.java
+/Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/repository/OtpRepository.java
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/repository/PaymentRepository.java
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/repository/ProductRepository.java
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/repository/SellerRepository.java
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/repository/UserRepository.java
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/service/CartService.java
+/Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/service/EmailService.java
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/service/FileStorageService.java
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/service/PaymentService.java
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/service/ProductService.java
