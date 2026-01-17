@@ -328,6 +328,16 @@ public class SellerService {
             updatedSeller.getRole()
         );
         response.setStoreStatus(updatedSeller.getStoreStatus());
+
+        try {
+            emailService.sendVendorProfileUpdateEmail(
+                updatedSeller.getContactEmail(),
+                updatedSeller.getUserName(),
+                updatedSeller.getBusinessName()
+            );
+        } catch (Exception e) {
+            System.err.println("Failed to send vendor profile update email: " + e.getMessage());
+        }
         return response;
     }
 
@@ -408,6 +418,15 @@ public class SellerService {
         seller.setPassword(passwordEncoder.encode(request.getNewPassword()));
         sellerRepository.save(seller);
 
+        try {
+            emailService.sendVendorPasswordChangeEmail(
+                seller.getContactEmail(),
+                seller.getUserName(),
+                seller.getBusinessName()
+            );
+        } catch (Exception e) {
+            System.err.println("Failed to send vendor password change email: " + e.getMessage());
+        }
         return new AuthResponse("Password changed successfully", true);
     }
 
@@ -494,6 +513,15 @@ public class SellerService {
         // Delete OTP after successful password reset
         otpRepository.delete(otp);
 
+        try {
+            emailService.sendVendorPasswordChangeEmail(
+                seller.getContactEmail(),
+                seller.getUserName(),
+                seller.getBusinessName()
+            );
+        } catch (Exception e) {
+            System.err.println("Failed to send password reset confirmation email: " + e.getMessage());
+        }
         return new AuthResponse("Password reset successfully", true);
     }
 

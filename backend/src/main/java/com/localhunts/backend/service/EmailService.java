@@ -1017,4 +1017,106 @@ public class EmailService {
         
         sendHtmlEmail(to, subject, htmlContent);
     }
+
+    /**
+     * Send profile update confirmation email to user (customer)
+     */
+    public void sendUserProfileUpdateEmail(String to, String fullName) {
+        String subject = "Profile Updated - Local Hunt";
+        String htmlContent = String.format(
+            "<!DOCTYPE html>" +
+            "<html>" +
+            "<head>" +
+            "<meta charset='UTF-8'><meta name='viewport' content='width=device-width, initial-scale=1.0'>" +
+            "<style>body{margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f5f5f5}.container{max-width:600px;margin:0 auto;background:#fff}.header{background:linear-gradient(135deg,#d32f2f 0%%,#f44336 100%%);padding:40px 20px;text-align:center}.header h1{color:#fff;margin:0;font-size:28px;font-weight:600}.content{padding:40px 30px}.success-banner{background:linear-gradient(135deg,#e8f5e9 0%%,#c8e6c9 100%%);border-left:4px solid #4caf50;padding:20px;margin:25px 0;border-radius:8px}.success-banner p{margin:0;color:#2e7d32;font-weight:600;font-size:16px}.footer{background:#f9f9f9;padding:30px;text-align:center;color:#666;font-size:12px;border-top:1px solid #e0e0e0}.text-primary{color:#d32f2f;font-weight:600}</style>" +
+            "</head><body><div class='container'>" +
+            "<div class='header'><h1>✏️ Profile Updated</h1></div>" +
+            "<div class='content'>" +
+            "<p style='font-size:16px;color:#333;margin:0 0 20px 0;'>Hello <span class='text-primary'>%s</span>,</p>" +
+            "<div class='success-banner'><p>✅ Your profile has been updated successfully.</p></div>" +
+            "<p style='font-size:15px;color:#555;line-height:1.6;'>The changes to your account have been saved. If you did not make these changes, please contact our support team immediately.</p>" +
+            "</div>" +
+            "<div class='footer'><p><strong>Local Hunt</strong></p><p>Your trusted marketplace for authentic Nepali products</p><p style='margin-top:15px;font-size:11px;'>© 2024 Local Hunt. All rights reserved.</p></div>" +
+            "</div></body></html>",
+            fullName != null ? fullName : "User"
+        );
+        sendHtmlEmail(to, subject, htmlContent);
+    }
+
+    /**
+     * Send password change confirmation email to user (customer)
+     */
+    public void sendUserPasswordChangeEmail(String to, String fullName) {
+        String subject = "Password Changed - Local Hunt";
+        String htmlContent = String.format(
+            "<!DOCTYPE html>" +
+            "<html>" +
+            "<head>" +
+            "<meta charset='UTF-8'><meta name='viewport' content='width=device-width, initial-scale=1.0'>" +
+            "<style>body{margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f5f5f5}.container{max-width:600px;margin:0 auto;background:#fff}.header{background:linear-gradient(135deg,#d32f2f 0%%,#f44336 100%%);padding:40px 20px;text-align:center}.header h1{color:#fff;margin:0;font-size:28px;font-weight:600}.content{padding:40px 30px}.success-banner{background:linear-gradient(135deg,#e8f5e9 0%%,#c8e6c9 100%%);border-left:4px solid #4caf50;padding:20px;margin:25px 0;border-radius:8px}.success-banner p{margin:0;color:#2e7d32;font-weight:600;font-size:16px}.info-box{background:#fff3e0;border-left:4px solid #ff9800;padding:15px 20px;margin:25px 0;border-radius:4px}.info-box p{margin:5px 0;color:#e65100;font-size:14px}.footer{background:#f9f9f9;padding:30px;text-align:center;color:#666;font-size:12px;border-top:1px solid #e0e0e0}.text-primary{color:#d32f2f;font-weight:600}</style>" +
+            "</head><body><div class='container'>" +
+            "<div class='header'><h1>🔐 Password Changed</h1></div>" +
+            "<div class='content'>" +
+            "<p style='font-size:16px;color:#333;margin:0 0 20px 0;'>Hello <span class='text-primary'>%s</span>,</p>" +
+            "<div class='success-banner'><p>✅ Your password has been changed successfully.</p></div>" +
+            "<div class='info-box'><p><strong>🔒 Security:</strong> If you did not make this change, please reset your password immediately or contact our support team.</p></div>" +
+            "</div>" +
+            "<div class='footer'><p><strong>Local Hunt</strong></p><p>Your trusted marketplace for authentic Nepali products</p><p style='margin-top:15px;font-size:11px;'>© 2024 Local Hunt. All rights reserved.</p></div>" +
+            "</div></body></html>",
+            fullName != null ? fullName : "User"
+        );
+        sendHtmlEmail(to, subject, htmlContent);
+    }
+
+    /**
+     * Send profile update confirmation email to vendor
+     */
+    public void sendVendorProfileUpdateEmail(String to, String userName, String businessName) {
+        String subject = "Vendor Profile Updated - Local Hunt";
+        String htmlContent = String.format(
+            "<!DOCTYPE html>" +
+            "<html>" +
+            "<head>" +
+            "<meta charset='UTF-8'><meta name='viewport' content='width=device-width, initial-scale=1.0'>" +
+            "<style>body{margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f5f5f5}.container{max-width:600px;margin:0 auto;background:#fff}.header{background:linear-gradient(135deg,#d32f2f 0%%,#f44336 100%%);padding:40px 20px;text-align:center}.header h1{color:#fff;margin:0;font-size:28px;font-weight:600}.content{padding:40px 30px}.success-banner{background:linear-gradient(135deg,#e8f5e9 0%%,#c8e6c9 100%%);border-left:4px solid #4caf50;padding:20px;margin:25px 0;border-radius:8px}.success-banner p{margin:0;color:#2e7d32;font-weight:600;font-size:16px}.footer{background:#f9f9f9;padding:30px;text-align:center;color:#666;font-size:12px;border-top:1px solid #e0e0e0}.text-primary{color:#d32f2f;font-weight:600}</style>" +
+            "</head><body><div class='container'>" +
+            "<div class='header'><h1>✏️ Vendor Profile Updated</h1></div>" +
+            "<div class='content'>" +
+            "<p style='font-size:16px;color:#333;margin:0 0 20px 0;'>Hello <span class='text-primary'>%s</span>,</p>" +
+            "<div class='success-banner'><p>✅ Your vendor profile for <strong>%s</strong> has been updated successfully.</p></div>" +
+            "<p style='font-size:15px;color:#555;line-height:1.6;'>The changes to your account have been saved. If you did not make these changes, please contact our support team immediately.</p>" +
+            "</div>" +
+            "<div class='footer'><p><strong>Local Hunt</strong></p><p>Your trusted marketplace for authentic Nepali products</p><p style='margin-top:15px;font-size:11px;'>© 2024 Local Hunt. All rights reserved.</p></div>" +
+            "</div></body></html>",
+            userName != null ? userName : "Vendor",
+            businessName != null ? businessName : "Your Business"
+        );
+        sendHtmlEmail(to, subject, htmlContent);
+    }
+
+    /**
+     * Send password change confirmation email to vendor
+     */
+    public void sendVendorPasswordChangeEmail(String to, String userName, String businessName) {
+        String subject = "Vendor Password Changed - Local Hunt";
+        String htmlContent = String.format(
+            "<!DOCTYPE html>" +
+            "<html>" +
+            "<head>" +
+            "<meta charset='UTF-8'><meta name='viewport' content='width=device-width, initial-scale=1.0'>" +
+            "<style>body{margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f5f5f5}.container{max-width:600px;margin:0 auto;background:#fff}.header{background:linear-gradient(135deg,#d32f2f 0%%,#f44336 100%%);padding:40px 20px;text-align:center}.header h1{color:#fff;margin:0;font-size:28px;font-weight:600}.content{padding:40px 30px}.success-banner{background:linear-gradient(135deg,#e8f5e9 0%%,#c8e6c9 100%%);border-left:4px solid #4caf50;padding:20px;margin:25px 0;border-radius:8px}.success-banner p{margin:0;color:#2e7d32;font-weight:600;font-size:16px}.info-box{background:#fff3e0;border-left:4px solid #ff9800;padding:15px 20px;margin:25px 0;border-radius:4px}.info-box p{margin:5px 0;color:#e65100;font-size:14px}.footer{background:#f9f9f9;padding:30px;text-align:center;color:#666;font-size:12px;border-top:1px solid #e0e0e0}.text-primary{color:#d32f2f;font-weight:600}</style>" +
+            "</head><body><div class='container'>" +
+            "<div class='header'><h1>🔐 Vendor Password Changed</h1></div>" +
+            "<div class='content'>" +
+            "<p style='font-size:16px;color:#333;margin:0 0 20px 0;'>Hello <span class='text-primary'>%s</span>,</p>" +
+            "<div class='success-banner'><p>✅ Your vendor account password for <strong>%s</strong> has been changed successfully.</p></div>" +
+            "<div class='info-box'><p><strong>🔒 Security:</strong> If you did not make this change, please reset your password immediately or contact our support team.</p></div>" +
+            "</div>" +
+            "<div class='footer'><p><strong>Local Hunt</strong></p><p>Your trusted marketplace for authentic Nepali products</p><p style='margin-top:15px;font-size:11px;'>© 2024 Local Hunt. All rights reserved.</p></div>" +
+            "</div></body></html>",
+            userName != null ? userName : "Vendor",
+            businessName != null ? businessName : "Your Business"
+        );
+        sendHtmlEmail(to, subject, htmlContent);
+    }
 }

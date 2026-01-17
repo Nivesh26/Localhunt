@@ -247,6 +247,12 @@ public class UserService {
         response.setCity(updatedUser.getCity());
         response.setArea(updatedUser.getArea());
         response.setAddress(updatedUser.getAddress());
+
+        try {
+            emailService.sendUserProfileUpdateEmail(updatedUser.getEmail(), updatedUser.getFullName());
+        } catch (Exception e) {
+            System.err.println("Failed to send profile update email: " + e.getMessage());
+        }
         return response;
     }
 
@@ -272,6 +278,12 @@ public class UserService {
         response.setCity(updatedUser.getCity());
         response.setArea(updatedUser.getArea());
         response.setAddress(updatedUser.getAddress());
+
+        try {
+            emailService.sendUserProfileUpdateEmail(updatedUser.getEmail(), updatedUser.getFullName());
+        } catch (Exception e) {
+            System.err.println("Failed to send profile update email: " + e.getMessage());
+        }
         return response;
     }
 
@@ -312,6 +324,11 @@ public class UserService {
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
         userRepository.save(user);
 
+        try {
+            emailService.sendUserPasswordChangeEmail(user.getEmail(), user.getFullName());
+        } catch (Exception e) {
+            System.err.println("Failed to send password change email: " + e.getMessage());
+        }
         return new AuthResponse("Password changed successfully", true);
     }
 
@@ -398,6 +415,11 @@ public class UserService {
         // Delete OTP after successful password reset
         otpRepository.delete(otp);
 
+        try {
+            emailService.sendUserPasswordChangeEmail(user.getEmail(), user.getFullName());
+        } catch (Exception e) {
+            System.err.println("Failed to send password reset confirmation email: " + e.getMessage());
+        }
         return new AuthResponse("Password reset successfully", true);
     }
 
