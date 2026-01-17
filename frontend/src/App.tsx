@@ -34,6 +34,7 @@ import Payment from './Pages/Payment'
 import COD from './Pages/COD'
 import OrderTracking from './Pages/OrderTracking'
 import { UserOTP } from './Pages/UserOTP'
+import { SellerOTP } from './SellerPages/SellerOTP'
 
 
 const App = () => {
@@ -92,6 +93,7 @@ const App = () => {
       {/* Seller Login and Signup */}
       <Route path="/sellersignup" element={<Sellersignup/>}/>
       <Route path="/sellerlogin" element={<SellerLogin/>}/>
+      <Route path="/sellerotp" element={<SellerOTP/>}/>
      
 
       {/* Seller Pages - Protected: VENDOR only */}

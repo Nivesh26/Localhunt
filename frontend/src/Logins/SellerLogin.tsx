@@ -99,7 +99,7 @@ const SellerLogin = () => {
         toast.success('OTP sent to your email. Please check your inbox.')
         // Navigate to OTP verification page with email
         setTimeout(() => {
-          navigate('/userotp', { state: { email, loginType: 'seller' } })
+          navigate('/sellerotp', { state: { email, loginType: 'seller' } })
         }, 1000)
       } else {
         toast.error(otpData.message || 'Failed to send OTP')
