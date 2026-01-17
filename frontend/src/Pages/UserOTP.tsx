@@ -224,26 +224,63 @@ export const UserOTP = () => {
               </div>
 
               <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 mb-4">
                   Enter OTP
                 </label>
-                <input
-                  type="text"
-                  value={otp}
-                  onChange={(e) => {
-                    // Only allow numbers and limit to 6 digits
-                    const value = e.target.value.replace(/\D/g, '').slice(0, 6)
-                    setOtp(value)
-                    if (errors.otp) setErrors({ ...errors, otp: undefined })
-                  }}
-                  placeholder="Enter 6-digit OTP"
-                  maxLength={6}
-                  className={`w-full border-b py-2 text-center text-2xl tracking-widest focus:outline-none ${
-                    errors.otp ? 'border-red-500' : 'border-gray-300 focus:border-gray-500'
-                  }`}
-                  disabled={loading}
-                />
-                {errors.otp && <p className="text-red-500 text-xs mt-1">{errors.otp}</p>}
+                <div className="flex justify-center gap-2 mb-2">
+                  {[0, 1, 2, 3, 4, 5].map((index) => (
+                    <input
+                      key={index}
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={1}
+                      value={otp[index] || ''}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/\D/g, '')
+                        if (value.length <= 1) {
+                          const newOtp = otp.split('')
+                          newOtp[index] = value
+                          const updatedOtp = newOtp.join('').slice(0, 6)
+                          setOtp(updatedOtp)
+                          
+                          // Auto-focus next input when digit is entered
+                          if (value && index < 5) {
+                            const nextInput = document.getElementById(`otp-${index + 1}`) as HTMLInputElement
+                            nextInput?.focus()
+                          }
+                          
+                          if (errors.otp) setErrors({ ...errors, otp: undefined })
+                        }
+                      }}
+                      onKeyDown={(e) => {
+                        // Handle backspace to move to previous input
+                        if (e.key === 'Backspace' && !otp[index] && index > 0) {
+                          const prevInput = document.getElementById(`otp-${index - 1}`) as HTMLInputElement
+                          prevInput?.focus()
+                        }
+                      }}
+                      onPaste={(e) => {
+                        e.preventDefault()
+                        const pastedData = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6)
+                        if (pastedData.length > 0) {
+                          setOtp(pastedData)
+                          // Focus the last input or next empty input
+                          const nextIndex = Math.min(pastedData.length, 5)
+                          const nextInput = document.getElementById(`otp-${nextIndex}`) as HTMLInputElement
+                          nextInput?.focus()
+                        }
+                      }}
+                      id={`otp-${index}`}
+                      className={`w-12 h-12 text-center text-2xl font-semibold border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-400 transition ${
+                        errors.otp 
+                          ? 'border-red-500' 
+                          : 'border-gray-300 focus:border-red-500'
+                      }`}
+                      disabled={loading}
+                    />
+                  ))}
+                </div>
+                {errors.otp && <p className="text-red-500 text-xs mt-2 text-center">{errors.otp}</p>}
               </div>
             </>
           )}
