@@ -334,7 +334,7 @@ const Sellerlogin = () => {
                             name="phoneNumber"
                             value={formData.phoneNumber}
                             onChange={handleChange}
-                            placeholder="10 digits only"
+                            placeholder="Phone Number"
                             maxLength={10}
                             inputMode="numeric"
                             className={`mt-1 w-full border-b py-2 text-sm focus:outline-none ${

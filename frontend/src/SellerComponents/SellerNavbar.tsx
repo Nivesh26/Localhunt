@@ -59,7 +59,7 @@ const SellerNavbar = () => {
   }
 
   return (
-    <aside className="hidden w-64 lg:block">
+    <aside className="hidden w-64 shrink-0 lg:block">
       <div className="sticky top-8 space-y-6">
         <div className="flex items-center gap-3 rounded-2xl bg-white p-5 shadow-sm">
           <img src={logo} alt="Local Hunt" className="h-12 w-12 rounded-xl object-contain" />
@@ -91,19 +91,19 @@ const SellerNavbar = () => {
           <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-500">Store navigation</h3>
           <ul className="mt-4 space-y-2">
             {navLinks.map(link => (
-              <li key={link.label}>
+              <li key={link.label} className="w-full">
                 {link.to ? (
                   <Link
                     to={link.to}
-                    className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-red-50 hover:text-red-600"
+                    className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-red-50 hover:text-red-600 whitespace-nowrap"
                   >
-                    <link.icon className="h-5 w-5" />
-                    {link.label}
+                    <link.icon className="h-5 w-5 shrink-0" />
+                    <span className="whitespace-nowrap">{link.label}</span>
                   </Link>
                 ) : (
-                  <button className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-red-50 hover:text-red-600">
-                    <link.icon className="h-5 w-5" />
-                    {link.label}
+                  <button className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-red-50 hover:text-red-600 whitespace-nowrap">
+                    <link.icon className="h-5 w-5 shrink-0" />
+                    <span className="whitespace-nowrap">{link.label}</span>
                   </button>
                 )}
               </li>
