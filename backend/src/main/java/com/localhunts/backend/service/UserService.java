@@ -79,6 +79,14 @@ public class UserService {
 
         User savedUser = userRepository.save(user);
 
+        // Send welcome email
+        try {
+            emailService.sendUserWelcomeEmail(savedUser.getEmail(), savedUser.getFullName());
+        } catch (Exception e) {
+            System.err.println("Failed to send welcome email: " + e.getMessage());
+            // Don't fail signup if email fails
+        }
+
         return new AuthResponse(
             "User registered successfully",
             savedUser.getId(),

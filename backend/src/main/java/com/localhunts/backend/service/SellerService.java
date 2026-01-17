@@ -86,6 +86,18 @@ public class SellerService {
 
         Seller savedSeller = sellerRepository.save(seller);
 
+        // Send welcome email
+        try {
+            emailService.sendVendorWelcomeEmail(
+                savedSeller.getContactEmail(), 
+                savedSeller.getUserName(), 
+                savedSeller.getBusinessName()
+            );
+        } catch (Exception e) {
+            System.err.println("Failed to send welcome email: " + e.getMessage());
+            // Don't fail signup if email fails
+        }
+
         return new AuthResponse(
             "Seller registration submitted successfully. Waiting for admin approval.",
             savedSeller.getId(),

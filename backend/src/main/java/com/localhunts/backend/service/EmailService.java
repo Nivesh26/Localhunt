@@ -237,4 +237,207 @@ public class EmailService {
         
         sendHtmlEmail(to, subject, htmlContent);
     }
+
+    /**
+     * Send welcome email for new user signup
+     */
+    public void sendUserWelcomeEmail(String to, String userName) {
+        String subject = "Welcome to Local Hunt! 🎉";
+        
+        String htmlContent = String.format(
+            "<!DOCTYPE html>" +
+            "<html>" +
+            "<head>" +
+            "<meta charset='UTF-8'>" +
+            "<meta name='viewport' content='width=device-width, initial-scale=1.0'>" +
+            "<style>" +
+            "  body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f5; }" +
+            "  .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }" +
+            "  .header { background: linear-gradient(135deg, #d32f2f 0%%, #f44336 100%%); padding: 50px 20px; text-align: center; }" +
+            "  .header h1 { color: #ffffff; margin: 0; font-size: 32px; font-weight: 600; }" +
+            "  .header-icon { font-size: 64px; margin-bottom: 15px; }" +
+            "  .content { padding: 40px 30px; }" +
+            "  .welcome-banner { background: linear-gradient(135deg, #e8f5e9 0%%, #c8e6c9 100%%); border-left: 4px solid #4caf50; padding: 25px; margin: 25px 0; border-radius: 8px; }" +
+            "  .welcome-banner p { margin: 0; color: #2e7d32; font-weight: 600; font-size: 18px; }" +
+            "  .features-box { background-color: #f9f9f9; border-radius: 12px; padding: 25px; margin: 25px 0; border: 1px solid #e0e0e0; }" +
+            "  .feature-item { padding: 12px 0; border-bottom: 1px solid #e0e0e0; display: flex; align-items: flex-start; }" +
+            "  .feature-item:last-child { border-bottom: none; }" +
+            "  .feature-icon { font-size: 24px; margin-right: 15px; flex-shrink: 0; }" +
+            "  .feature-text { flex: 1; }" +
+            "  .feature-title { color: #333333; font-size: 16px; font-weight: 600; margin: 0 0 5px 0; }" +
+            "  .feature-desc { color: #666666; font-size: 14px; margin: 0; line-height: 1.5; }" +
+            "  .cta-button { display: inline-block; background: linear-gradient(135deg, #d32f2f 0%%, #f44336 100%%); color: #ffffff; padding: 16px 35px; text-decoration: none; border-radius: 8px; font-weight: 600; margin: 25px 0; font-size: 16px; box-shadow: 0 4px 6px rgba(211, 47, 47, 0.3); }" +
+            "  .cta-container { text-align: center; margin: 30px 0; }" +
+            "  .footer { background-color: #f9f9f9; padding: 30px; text-align: center; color: #666666; font-size: 12px; border-top: 1px solid #e0e0e0; }" +
+            "  .footer a { color: #d32f2f; text-decoration: none; }" +
+            "  .text-primary { color: #d32f2f; font-weight: 600; }" +
+            "  h3 { color: #333333; font-size: 20px; margin: 25px 0 15px 0; }" +
+            "</style>" +
+            "</head>" +
+            "<body>" +
+            "<div class='container'>" +
+            "  <div class='header'>" +
+            "    <div class='header-icon'>🎉</div>" +
+            "    <h1>Welcome to Local Hunt!</h1>" +
+            "  </div>" +
+            "  <div class='content'>" +
+            "    <p style='font-size: 18px; color: #333333; margin: 0 0 20px 0;'>Hello <span class='text-primary'>%s</span>,</p>" +
+            "    <div class='welcome-banner'>" +
+            "      <p>✨ We're thrilled to have you join our community!</p>" +
+            "    </div>" +
+            "    <p style='font-size: 15px; color: #555555; line-height: 1.7; margin: 20px 0;'>Thank you for signing up with <strong>Local Hunt</strong>! You've just taken the first step towards discovering authentic Nepali products from trusted local vendors.</p>" +
+            "    <div class='features-box'>" +
+            "      <h3 style='margin-top: 0; color: #d32f2f; border-bottom: 2px solid #d32f2f; padding-bottom: 10px;'>🚀 What's Next?</h3>" +
+            "      <div class='feature-item'>" +
+            "        <span class='feature-icon'>🛍️</span>" +
+            "        <div class='feature-text'>" +
+            "          <div class='feature-title'>Browse Authentic Products</div>" +
+            "          <div class='feature-desc'>Explore our curated collection of genuine Nepali products from verified vendors</div>" +
+            "        </div>" +
+            "      </div>" +
+            "      <div class='feature-item'>" +
+            "        <span class='feature-icon'>🔒</span>" +
+            "        <div class='feature-text'>" +
+            "          <div class='feature-title'>Secure Shopping Experience</div>" +
+            "          <div class='feature-desc'>Shop with confidence using our secure payment methods and order tracking</div>" +
+            "        </div>" +
+            "      </div>" +
+            "      <div class='feature-item'>" +
+            "        <span class='feature-icon'>📦</span>" +
+            "        <div class='feature-text'>" +
+            "          <div class='feature-title'>Fast & Reliable Delivery</div>" +
+            "          <div class='feature-desc'>Get your orders delivered quickly and track them in real-time</div>" +
+            "        </div>" +
+            "      </div>" +
+            "      <div class='feature-item'>" +
+            "        <span class='feature-icon'>💬</span>" +
+            "        <div class='feature-text'>" +
+            "          <div class='feature-title'>Support When You Need It</div>" +
+            "          <div class='feature-desc'>Our customer support team is always ready to help you</div>" +
+            "        </div>" +
+            "      </div>" +
+            "    </div>" +
+            "    <div class='cta-container'>" +
+            "      <a href='#' class='cta-button'>Start Shopping Now →</a>" +
+            "    </div>" +
+            "    <p style='font-size: 14px; color: #777777; line-height: 1.6; margin: 25px 0 10px 0;'>If you have any questions or need assistance, feel free to reach out to our support team. We're here to help you have the best shopping experience!</p>" +
+            "    <p style='font-size: 14px; color: #999999; margin: 20px 0 0 0;'>Happy Shopping!<br><strong>The Local Hunt Team</strong></p>" +
+            "  </div>" +
+            "  <div class='footer'>" +
+            "    <p style='margin: 0 0 10px 0;'><strong style='font-size: 16px; color: #d32f2f;'>Local Hunt</strong></p>" +
+            "    <p style='margin: 0 0 10px 0;'>Your trusted marketplace for authentic Nepali products</p>" +
+            "    <p style='margin: 15px 0 0 0; font-size: 11px;'>© 2024 Local Hunt. All rights reserved.</p>" +
+            "    <p style='margin: 10px 0 0 0; font-size: 11px;'>This is an automated email. Please do not reply.</p>" +
+            "  </div>" +
+            "</div>" +
+            "</body>" +
+            "</html>",
+            userName != null ? userName : "User"
+        );
+        
+        sendHtmlEmail(to, subject, htmlContent);
+    }
+
+    /**
+     * Send welcome email for new vendor signup
+     */
+    public void sendVendorWelcomeEmail(String to, String vendorName, String businessName) {
+        String subject = "Welcome to Local Hunt Vendor Program! 🎉";
+        
+        String htmlContent = String.format(
+            "<!DOCTYPE html>" +
+            "<html>" +
+            "<head>" +
+            "<meta charset='UTF-8'>" +
+            "<meta name='viewport' content='width=device-width, initial-scale=1.0'>" +
+            "<style>" +
+            "  body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f5; }" +
+            "  .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }" +
+            "  .header { background: linear-gradient(135deg, #d32f2f 0%%, #f44336 100%%); padding: 50px 20px; text-align: center; }" +
+            "  .header h1 { color: #ffffff; margin: 0; font-size: 32px; font-weight: 600; }" +
+            "  .header-icon { font-size: 64px; margin-bottom: 15px; }" +
+            "  .content { padding: 40px 30px; }" +
+            "  .welcome-banner { background: linear-gradient(135deg, #fff3e0 0%%, #ffe0b2 100%%); border-left: 4px solid #ff9800; padding: 25px; margin: 25px 0; border-radius: 8px; }" +
+            "  .welcome-banner p { margin: 0; color: #e65100; font-weight: 600; font-size: 18px; }" +
+            "  .pending-notice { background-color: #fff3e0; border-left: 4px solid #ff9800; padding: 20px; margin: 25px 0; border-radius: 8px; }" +
+            "  .pending-notice p { margin: 5px 0; color: #e65100; font-size: 14px; line-height: 1.6; }" +
+            "  .features-box { background-color: #f9f9f9; border-radius: 12px; padding: 25px; margin: 25px 0; border: 1px solid #e0e0e0; }" +
+            "  .feature-item { padding: 12px 0; border-bottom: 1px solid #e0e0e0; display: flex; align-items: flex-start; }" +
+            "  .feature-item:last-child { border-bottom: none; }" +
+            "  .feature-icon { font-size: 24px; margin-right: 15px; flex-shrink: 0; }" +
+            "  .feature-text { flex: 1; }" +
+            "  .feature-title { color: #333333; font-size: 16px; font-weight: 600; margin: 0 0 5px 0; }" +
+            "  .feature-desc { color: #666666; font-size: 14px; margin: 0; line-height: 1.5; }" +
+            "  .footer { background-color: #f9f9f9; padding: 30px; text-align: center; color: #666666; font-size: 12px; border-top: 1px solid #e0e0e0; }" +
+            "  .footer a { color: #d32f2f; text-decoration: none; }" +
+            "  .text-primary { color: #d32f2f; font-weight: 600; }" +
+            "  h3 { color: #333333; font-size: 20px; margin: 25px 0 15px 0; }" +
+            "</style>" +
+            "</head>" +
+            "<body>" +
+            "<div class='container'>" +
+            "  <div class='header'>" +
+            "    <div class='header-icon'>🎉</div>" +
+            "    <h1>Welcome to Local Hunt!</h1>" +
+            "  </div>" +
+            "  <div class='content'>" +
+            "    <p style='font-size: 18px; color: #333333; margin: 0 0 20px 0;'>Hello <span class='text-primary'>%s</span>,</p>" +
+            "    <div class='welcome-banner'>" +
+            "      <p>✨ Thank you for joining Local Hunt as a Vendor!</p>" +
+            "    </div>" +
+            "    <p style='font-size: 15px; color: #555555; line-height: 1.7; margin: 20px 0;'>We're excited to have <strong>%s</strong> as part of our vendor community. Local Hunt is dedicated to helping Nepali businesses reach customers and grow their sales.</p>" +
+            "    <div class='pending-notice'>" +
+            "      <p><strong>📋 Account Status: Pending Approval</strong></p>" +
+            "      <p>Your vendor account is currently under review by our admin team. We'll notify you via email once your account has been approved and you can start listing your products.</p>" +
+            "      <p style='margin-top: 10px;'><strong>⏱️ Approval Time:</strong> Typically within 24-48 hours</p>" +
+            "    </div>" +
+            "    <div class='features-box'>" +
+            "      <h3 style='margin-top: 0; color: #d32f2f; border-bottom: 2px solid #d32f2f; padding-bottom: 10px;'>🚀 What You Can Do Once Approved:</h3>" +
+            "      <div class='feature-item'>" +
+            "        <span class='feature-icon'>📦</span>" +
+            "        <div class='feature-text'>" +
+            "          <div class='feature-title'>List Your Products</div>" +
+            "          <div class='feature-desc'>Add your authentic Nepali products with images, descriptions, and competitive pricing</div>" +
+            "        </div>" +
+            "      </div>" +
+            "      <div class='feature-item'>" +
+            "        <span class='feature-icon'>📊</span>" +
+            "        <div class='feature-text'>" +
+            "          <div class='feature-title'>Manage Orders & Inventory</div>" +
+            "          <div class='feature-desc'>Track orders, update inventory, and manage your products efficiently</div>" +
+            "        </div>" +
+            "      </div>" +
+            "      <div class='feature-item'>" +
+            "        <span class='feature-icon'>💰</span>" +
+            "        <div class='feature-text'>" +
+            "          <div class='feature-title'>Receive Payments</div>" +
+            "          <div class='feature-desc'>Get paid securely for your sales with transparent payout tracking</div>" +
+            "        </div>" +
+            "      </div>" +
+            "      <div class='feature-item'>" +
+            "        <span class='feature-icon'>📈</span>" +
+            "        <div class='feature-text'>" +
+            "          <div class='feature-title'>Grow Your Business</div>" +
+            "          <div class='feature-desc'>Reach more customers and expand your market with Local Hunt's platform</div>" +
+            "        </div>" +
+            "      </div>" +
+            "    </div>" +
+            "    <p style='font-size: 14px; color: #777777; line-height: 1.6; margin: 25px 0 10px 0;'>If you have any questions about the approval process or need assistance, feel free to contact our vendor support team. We're here to help you succeed!</p>" +
+            "    <p style='font-size: 14px; color: #999999; margin: 20px 0 0 0;'>Looking forward to working with you!<br><strong>The Local Hunt Team</strong></p>" +
+            "  </div>" +
+            "  <div class='footer'>" +
+            "    <p style='margin: 0 0 10px 0;'><strong style='font-size: 16px; color: #d32f2f;'>Local Hunt</strong></p>" +
+            "    <p style='margin: 0 0 10px 0;'>Your trusted marketplace for authentic Nepali products</p>" +
+            "    <p style='margin: 15px 0 0 0; font-size: 11px;'>© 2024 Local Hunt. All rights reserved.</p>" +
+            "    <p style='margin: 10px 0 0 0; font-size: 11px;'>This is an automated email. Please do not reply.</p>" +
+            "  </div>" +
+            "</div>" +
+            "</body>" +
+            "</html>",
+            vendorName != null ? vendorName : "Vendor",
+            businessName != null ? businessName : "Your Business"
+        );
+        
+        sendHtmlEmail(to, subject, htmlContent);
+    }
 }
