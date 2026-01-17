@@ -240,6 +240,21 @@ public class SellerService {
         seller.setApproved(true);
         Seller updatedSeller = sellerRepository.save(seller);
         
+        // Send approval notification email
+        try {
+            System.out.println("Sending approval email to: " + updatedSeller.getContactEmail());
+            emailService.sendVendorApprovalEmail(
+                updatedSeller.getContactEmail(), 
+                updatedSeller.getUserName(), 
+                updatedSeller.getBusinessName()
+            );
+            System.out.println("Approval email sent successfully to: " + updatedSeller.getContactEmail());
+        } catch (Exception e) {
+            System.err.println("Failed to send approval email to " + updatedSeller.getContactEmail() + ": " + e.getMessage());
+            e.printStackTrace();
+            // Don't fail approval if email fails
+        }
+        
         return convertToResponse(updatedSeller);
     }
 

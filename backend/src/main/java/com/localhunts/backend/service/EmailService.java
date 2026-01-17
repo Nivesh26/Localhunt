@@ -440,4 +440,114 @@ public class EmailService {
         
         sendHtmlEmail(to, subject, htmlContent);
     }
+
+    /**
+     * Send approval notification email to vendor
+     */
+    public void sendVendorApprovalEmail(String to, String vendorName, String businessName) {
+        String subject = "Your Vendor Account Has Been Approved! 🎉";
+        
+        String htmlContent = String.format(
+            "<!DOCTYPE html>" +
+            "<html>" +
+            "<head>" +
+            "<meta charset='UTF-8'>" +
+            "<meta name='viewport' content='width=device-width, initial-scale=1.0'>" +
+            "<style>" +
+            "  body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f5; }" +
+            "  .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }" +
+            "  .header { background: linear-gradient(135deg, #4caf50 0%%, #66bb6a 100%%); padding: 50px 20px; text-align: center; }" +
+            "  .header h1 { color: #ffffff; margin: 0; font-size: 32px; font-weight: 600; }" +
+            "  .header-icon { font-size: 64px; margin-bottom: 15px; }" +
+            "  .content { padding: 40px 30px; }" +
+            "  .success-banner { background: linear-gradient(135deg, #e8f5e9 0%%, #c8e6c9 100%%); border-left: 4px solid #4caf50; padding: 25px; margin: 25px 0; border-radius: 8px; }" +
+            "  .success-banner p { margin: 0; color: #2e7d32; font-weight: 600; font-size: 18px; }" +
+            "  .features-box { background-color: #f9f9f9; border-radius: 12px; padding: 25px; margin: 25px 0; border: 1px solid #e0e0e0; }" +
+            "  .feature-item { padding: 12px 0; border-bottom: 1px solid #e0e0e0; display: flex; align-items: flex-start; }" +
+            "  .feature-item:last-child { border-bottom: none; }" +
+            "  .feature-icon { font-size: 24px; margin-right: 15px; flex-shrink: 0; }" +
+            "  .feature-text { flex: 1; }" +
+            "  .feature-title { color: #333333; font-size: 16px; font-weight: 600; margin: 0 0 5px 0; }" +
+            "  .feature-desc { color: #666666; font-size: 14px; margin: 0; line-height: 1.5; }" +
+            "  .cta-button { display: inline-block; background: linear-gradient(135deg, #4caf50 0%%, #66bb6a 100%%); color: #ffffff; padding: 16px 35px; text-decoration: none; border-radius: 8px; font-weight: 600; margin: 25px 0; font-size: 16px; box-shadow: 0 4px 6px rgba(76, 175, 80, 0.3); }" +
+            "  .cta-container { text-align: center; margin: 30px 0; }" +
+            "  .info-box { background-color: #e3f2fd; border-left: 4px solid #2196f3; padding: 20px; margin: 25px 0; border-radius: 8px; }" +
+            "  .info-box p { margin: 5px 0; color: #1565c0; font-size: 14px; line-height: 1.6; }" +
+            "  .footer { background-color: #f9f9f9; padding: 30px; text-align: center; color: #666666; font-size: 12px; border-top: 1px solid #e0e0e0; }" +
+            "  .footer a { color: #4caf50; text-decoration: none; }" +
+            "  .text-primary { color: #4caf50; font-weight: 600; }" +
+            "  h3 { color: #333333; font-size: 20px; margin: 25px 0 15px 0; }" +
+            "</style>" +
+            "</head>" +
+            "<body>" +
+            "<div class='container'>" +
+            "  <div class='header'>" +
+            "    <div class='header-icon'>✅</div>" +
+            "    <h1>Account Approved!</h1>" +
+            "  </div>" +
+            "  <div class='content'>" +
+            "    <p style='font-size: 18px; color: #333333; margin: 0 0 20px 0;'>Hello <span class='text-primary'>%s</span>,</p>" +
+            "    <div class='success-banner'>" +
+            "      <p>🎉 Great News! Your vendor account has been approved!</p>" +
+            "    </div>" +
+            "    <p style='font-size: 15px; color: #555555; line-height: 1.7; margin: 20px 0;'>Congratulations! We're excited to inform you that your vendor account for <strong>%s</strong> has been reviewed and approved by our admin team. You can now start listing your products and reaching customers on Local Hunt!</p>" +
+            "    <div class='features-box'>" +
+            "      <h3 style='margin-top: 0; color: #4caf50; border-bottom: 2px solid #4caf50; padding-bottom: 10px;'>🚀 Get Started Today:</h3>" +
+            "      <div class='feature-item'>" +
+            "        <span class='feature-icon'>📦</span>" +
+            "        <div class='feature-text'>" +
+            "          <div class='feature-title'>Add Your Products</div>" +
+            "          <div class='feature-desc'>Start listing your authentic Nepali products with high-quality images and detailed descriptions</div>" +
+            "        </div>" +
+            "      </div>" +
+            "      <div class='feature-item'>" +
+            "        <span class='feature-icon'>💰</span>" +
+            "        <div class='feature-text'>" +
+            "          <div class='feature-title'>Set Competitive Prices</div>" +
+            "          <div class='feature-desc'>Price your products competitively to attract customers and maximize sales</div>" +
+            "        </div>" +
+            "      </div>" +
+            "      <div class='feature-item'>" +
+            "        <span class='feature-icon'>📊</span>" +
+            "        <div class='feature-text'>" +
+            "          <div class='feature-title'>Manage Inventory</div>" +
+            "          <div class='feature-desc'>Track your stock levels and update product availability in real-time</div>" +
+            "        </div>" +
+            "      </div>" +
+            "      <div class='feature-item'>" +
+            "        <span class='feature-icon'>📈</span>" +
+            "        <div class='feature-text'>" +
+            "          <div class='feature-title'>Grow Your Business</div>" +
+            "          <div class='feature-desc'>Reach thousands of customers and expand your market presence with Local Hunt</div>" +
+            "        </div>" +
+            "      </div>" +
+            "    </div>" +
+            "    <div class='cta-container'>" +
+            "      <a href='#' class='cta-button'>Access Your Dashboard →</a>" +
+            "    </div>" +
+            "    <div class='info-box'>" +
+            "      <p><strong>📝 Next Steps:</strong></p>" +
+            "      <p style='margin-top: 10px;'>1. Log in to your vendor dashboard</p>" +
+            "      <p>2. Complete your business profile</p>" +
+            "      <p>3. Start adding your products</p>" +
+            "      <p>4. Set up your payment and shipping preferences</p>" +
+            "    </div>" +
+            "    <p style='font-size: 14px; color: #777777; line-height: 1.6; margin: 25px 0 10px 0;'>If you have any questions or need assistance getting started, our vendor support team is here to help you succeed!</p>" +
+            "    <p style='font-size: 14px; color: #999999; margin: 20px 0 0 0;'>Welcome aboard!<br><strong>The Local Hunt Team</strong></p>" +
+            "  </div>" +
+            "  <div class='footer'>" +
+            "    <p style='margin: 0 0 10px 0;'><strong style='font-size: 16px; color: #4caf50;'>Local Hunt</strong></p>" +
+            "    <p style='margin: 0 0 10px 0;'>Your trusted marketplace for authentic Nepali products</p>" +
+            "    <p style='margin: 15px 0 0 0; font-size: 11px;'>© 2024 Local Hunt. All rights reserved.</p>" +
+            "    <p style='margin: 10px 0 0 0; font-size: 11px;'>This is an automated email. Please do not reply.</p>" +
+            "  </div>" +
+            "</div>" +
+            "</body>" +
+            "</html>",
+            vendorName != null ? vendorName : "Vendor",
+            businessName != null ? businessName : "Your Business"
+        );
+        
+        sendHtmlEmail(to, subject, htmlContent);
+    }
 }
