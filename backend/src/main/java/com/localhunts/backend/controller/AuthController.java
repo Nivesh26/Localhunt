@@ -6,6 +6,7 @@ import com.localhunts.backend.dto.ChangePasswordRequest;
 import com.localhunts.backend.dto.LoginRequest;
 import com.localhunts.backend.dto.OtpRequest;
 import com.localhunts.backend.dto.OtpVerifyRequest;
+import com.localhunts.backend.dto.ResetPasswordRequest;
 import com.localhunts.backend.dto.SignupRequest;
 import com.localhunts.backend.dto.UpdateProfileRequest;
 import com.localhunts.backend.dto.UserProfileResponse;
@@ -116,6 +117,28 @@ public class AuthController {
             return ResponseEntity.ok(response);
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+        }
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<AuthResponse> forgotPassword(@Valid @RequestBody OtpRequest request) {
+        AuthResponse response = userService.forgotPassword(request);
+        
+        if (response.isSuccess()) {
+            return ResponseEntity.ok(response);
+        } else {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<AuthResponse> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        AuthResponse response = userService.resetPassword(request);
+        
+        if (response.isSuccess()) {
+            return ResponseEntity.ok(response);
+        } else {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
     }
 }

@@ -6,6 +6,7 @@ import com.localhunts.backend.dto.ChangePasswordRequest;
 import com.localhunts.backend.dto.LoginRequest;
 import com.localhunts.backend.dto.OtpRequest;
 import com.localhunts.backend.dto.OtpVerifyRequest;
+import com.localhunts.backend.dto.ResetPasswordRequest;
 import com.localhunts.backend.dto.SignupRequest;
 import com.localhunts.backend.dto.UpdateProfileRequest;
 import com.localhunts.backend.dto.UserListResponse;
@@ -20,6 +21,7 @@ import com.localhunts.backend.repository.DeliveredRepository;
 import com.localhunts.backend.repository.OtpRepository;
 import com.localhunts.backend.repository.PaymentRepository;
 import com.localhunts.backend.repository.ProductRepository;
+import com.localhunts.backend.repository.SellerRepository;
 import com.localhunts.backend.repository.UserRepository;
 import java.time.LocalDateTime;
 import java.util.Random;
@@ -54,6 +56,9 @@ public class UserService {
 
     @Autowired
     private OtpRepository otpRepository;
+
+    @Autowired
+    private SellerRepository sellerRepository;
 
     @Autowired
     private EmailService emailService;
@@ -308,6 +313,92 @@ public class UserService {
         userRepository.save(user);
 
         return new AuthResponse("Password changed successfully", true);
+    }
+
+    /**
+     * Request password reset OTP. Only users (customers) registered in users table can use this.
+     */
+    public AuthResponse forgotPassword(OtpRequest request) {
+        // Check if user exists — only users can use this flow
+        User user = userRepository.findByEmail(request.getEmail())
+            .orElse(null);
+
+        if (user != null) {
+            // Proceed: email is registered as customer (even if also a vendor)
+        } else if (sellerRepository.existsByContactEmail(request.getEmail())) {
+            return new AuthResponse("This email is registered as a vendor. Please use the Vendor Forgot Password page.", false);
+        } else {
+            return new AuthResponse("This email is not registered as a customer.", false);
+        }
+
+        // Generate 6-digit OTP
+        String otpCode = String.format("%06d", new Random().nextInt(1000000));
+
+        // Mark all previous OTPs for this email as used
+        otpRepository.markAllAsUsedByEmail(request.getEmail());
+
+        // Create new OTP
+        Otp otp = new Otp();
+        otp.setEmail(request.getEmail());
+        otp.setOtpCode(otpCode);
+        otpRepository.save(otp);
+
+        // Send password reset OTP via email
+        try {
+            emailService.sendPasswordResetOTPEmail(request.getEmail(), otpCode, user.getFullName());
+        } catch (Exception e) {
+            System.err.println("Failed to send password reset OTP email: " + e.getMessage());
+            return new AuthResponse("Failed to send OTP. Please try again.", false);
+        }
+
+        return new AuthResponse("Password reset OTP sent to your email. Please check your inbox.", true);
+    }
+
+    /**
+     * Reset password using OTP
+     */
+    @Transactional
+    public AuthResponse resetPassword(ResetPasswordRequest request) {
+        // Find valid OTP
+        Otp otp = otpRepository.findByEmailAndOtpCodeAndUsedFalse(
+            request.getEmail(), 
+            request.getOtp()
+        ).orElse(null);
+
+        if (otp == null) {
+            return new AuthResponse("Invalid or expired OTP", false);
+        }
+
+        // Check if OTP is expired
+        if (otp.getExpiresAt().isBefore(LocalDateTime.now())) {
+            return new AuthResponse("OTP has expired. Please request a new one.", false);
+        }
+
+        // Check if new password and confirm password match
+        if (!request.getNewPassword().equals(request.getConfirmPassword())) {
+            return new AuthResponse("New password and confirm password do not match", false);
+        }
+
+        // Find user — only users can use this flow
+        User user = userRepository.findByEmail(request.getEmail())
+            .orElse(null);
+
+        if (user != null) {
+            // Proceed with update
+        } else if (sellerRepository.existsByContactEmail(request.getEmail())) {
+            return new AuthResponse("This email is registered as a vendor. Please use the Vendor Forgot Password page.", false);
+        } else {
+            return new AuthResponse("This email is not registered as a customer.", false);
+        }
+
+        // Update password
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
+
+        // Delete OTP after successful password reset
+        otpRepository.delete(otp);
+
+        return new AuthResponse("Password reset successfully", true);
     }
 
     @Transactional

@@ -35,6 +35,8 @@ import COD from './Pages/COD'
 import OrderTracking from './Pages/OrderTracking'
 import { UserOTP } from './Pages/UserOTP'
 import { SellerOTP } from './SellerPages/SellerOTP'
+import UserForgetPassword from './Pages/UserForgetPassword'
+import SellerForgetPassword from './SellerPages/SellerForgetPassword'
 
 
 const App = () => {
@@ -88,12 +90,14 @@ const App = () => {
       <Route path="/login" element={<Login/>}/>
       <Route path="/signup" element={<Signup/>}/>
       <Route path="/userotp" element={<UserOTP/>}/>
+      <Route path="/userforgetpassword" element={<UserForgetPassword/>}/>
 
       
       {/* Seller Login and Signup */}
       <Route path="/sellersignup" element={<Sellersignup/>}/>
       <Route path="/sellerlogin" element={<SellerLogin/>}/>
       <Route path="/sellerotp" element={<SellerOTP/>}/>
+      <Route path="/sellerforgetpassword" element={<SellerForgetPassword/>}/>
      
 
       {/* Seller Pages - Protected: VENDOR only */}

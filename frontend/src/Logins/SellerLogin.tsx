@@ -185,6 +185,14 @@ const SellerLogin = () => {
                     {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
                   </div>
 
+                  {/* Forgot Password Link */}
+                  <div className="flex justify-end mb-2">
+                    <Link to="/sellerforgetpassword" className="text-sm text-red-600 hover:underline">
+                      Forgot Password?
+                    </Link>
+                  </div>
+
+                  {/* Login Button */}
                   <button 
                     type="submit" 
                     disabled={loading}

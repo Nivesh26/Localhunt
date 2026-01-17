@@ -954,4 +954,67 @@ public class EmailService {
         
         sendHtmlEmail(to, subject, htmlContent);
     }
+
+    /**
+     * Send password reset OTP email
+     */
+    public void sendPasswordResetOTPEmail(String to, String otp, String userName) {
+        String subject = "Password Reset OTP - Local Hunt";
+        
+        String htmlContent = String.format(
+            "<!DOCTYPE html>" +
+            "<html>" +
+            "<head>" +
+            "<meta charset='UTF-8'>" +
+            "<meta name='viewport' content='width=device-width, initial-scale=1.0'>" +
+            "<style>" +
+            "  body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f5; }" +
+            "  .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }" +
+            "  .header { background: linear-gradient(135deg, #d32f2f 0%%, #f44336 100%%); padding: 40px 20px; text-align: center; }" +
+            "  .header h1 { color: #ffffff; margin: 0; font-size: 28px; font-weight: 600; }" +
+            "  .content { padding: 40px 30px; }" +
+            "  .otp-container { background: linear-gradient(135deg, #fff5f5 0%%, #ffe0e0 100%%); border: 2px dashed #d32f2f; border-radius: 12px; padding: 30px; text-align: center; margin: 30px 0; }" +
+            "  .otp-code { font-size: 42px; font-weight: 700; letter-spacing: 8px; color: #d32f2f; margin: 15px 0; font-family: 'Courier New', monospace; }" +
+            "  .otp-label { font-size: 14px; color: #666666; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }" +
+            "  .info-box { background-color: #f9f9f9; border-left: 4px solid #d32f2f; padding: 15px 20px; margin: 25px 0; border-radius: 4px; }" +
+            "  .info-box p { margin: 5px 0; color: #555555; font-size: 14px; }" +
+            "  .footer { background-color: #f9f9f9; padding: 30px; text-align: center; color: #666666; font-size: 12px; border-top: 1px solid #e0e0e0; }" +
+            "  .footer a { color: #d32f2f; text-decoration: none; }" +
+            "  .text-primary { color: #d32f2f; font-weight: 600; }" +
+            "</style>" +
+            "</head>" +
+            "<body>" +
+            "<div class='container'>" +
+            "  <div class='header'>" +
+            "    <h1>🔐 Password Reset Request</h1>" +
+            "  </div>" +
+            "  <div class='content'>" +
+            "    <p style='font-size: 16px; color: #333333; margin: 0 0 20px 0;'>Hello <span class='text-primary'>%s</span>,</p>" +
+            "    <p style='font-size: 15px; color: #555555; line-height: 1.6; margin: 0 0 20px 0;'>We've received a request to reset your password. Use the One-Time Password (OTP) below to reset your password:</p>" +
+            "    <div class='otp-container'>" +
+            "      <div class='otp-label'>Your Password Reset OTP</div>" +
+            "      <div class='otp-code'>%s</div>" +
+            "    </div>" +
+            "    <div class='info-box'>" +
+            "      <p style='margin: 0 0 8px 0;'><strong>⏱️ Valid for:</strong> 10 minutes</p>" +
+            "      <p style='margin: 0;'><strong>🔒 Security:</strong> This code will expire after use or timeout</p>" +
+            "    </div>" +
+            "    <p style='font-size: 14px; color: #777777; line-height: 1.6; margin: 25px 0 10px 0;'><strong>Important:</strong> Never share this OTP with anyone. Local Hunt will never ask for your OTP via email, phone, or any other method.</p>" +
+            "    <p style='font-size: 14px; color: #999999; margin: 20px 0 0 0;'>If you didn't request a password reset, please ignore this email or contact our support team if you have concerns.</p>" +
+            "  </div>" +
+            "  <div class='footer'>" +
+            "    <p style='margin: 0 0 10px 0;'><strong>Local Hunt</strong></p>" +
+            "    <p style='margin: 0 0 10px 0;'>Your trusted marketplace for authentic Nepali products</p>" +
+            "    <p style='margin: 15px 0 0 0; font-size: 11px;'>© 2024 Local Hunt. All rights reserved.</p>" +
+            "    <p style='margin: 10px 0 0 0; font-size: 11px;'>This is an automated email. Please do not reply.</p>" +
+            "  </div>" +
+            "</div>" +
+            "</body>" +
+            "</html>",
+            userName != null ? userName : "User",
+            otp
+        );
+        
+        sendHtmlEmail(to, subject, htmlContent);
+    }
 }

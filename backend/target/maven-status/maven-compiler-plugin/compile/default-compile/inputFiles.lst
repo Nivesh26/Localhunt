@@ -22,6 +22,7 @@
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/dto/OtpVerifyRequest.java
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/dto/ProductRequest.java
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/dto/ProductResponse.java
+/Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/dto/ResetPasswordRequest.java
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/dto/SellerListResponse.java
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/dto/SellerLoginRequest.java
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/dto/SellerProfileResponse.java
