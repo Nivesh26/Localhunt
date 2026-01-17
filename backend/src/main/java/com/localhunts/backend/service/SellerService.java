@@ -335,6 +335,33 @@ public class SellerService {
         seller.setStoreStatus(!seller.getStoreStatus());
         Seller updatedSeller = sellerRepository.save(seller);
         
+        // Send email notification based on store status
+        try {
+            if (updatedSeller.getStoreStatus()) {
+                // Store is now active/resumed
+                System.out.println("Sending store resumed email to: " + updatedSeller.getContactEmail());
+                emailService.sendStoreResumedEmail(
+                    updatedSeller.getContactEmail(),
+                    updatedSeller.getUserName(),
+                    updatedSeller.getBusinessName()
+                );
+                System.out.println("Store resumed email sent successfully to: " + updatedSeller.getContactEmail());
+            } else {
+                // Store is now paused
+                System.out.println("Sending store paused email to: " + updatedSeller.getContactEmail());
+                emailService.sendStorePausedEmail(
+                    updatedSeller.getContactEmail(),
+                    updatedSeller.getUserName(),
+                    updatedSeller.getBusinessName()
+                );
+                System.out.println("Store paused email sent successfully to: " + updatedSeller.getContactEmail());
+            }
+        } catch (Exception e) {
+            System.err.println("Failed to send store status email to " + updatedSeller.getContactEmail() + ": " + e.getMessage());
+            e.printStackTrace();
+            // Don't fail status toggle if email fails
+        }
+        
         SellerProfileResponse response = new SellerProfileResponse(
             updatedSeller.getId(),
             updatedSeller.getUserName(),

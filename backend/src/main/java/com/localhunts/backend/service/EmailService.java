@@ -550,4 +550,206 @@ public class EmailService {
         
         sendHtmlEmail(to, subject, htmlContent);
     }
+
+    /**
+     * Send store paused notification email to vendor
+     */
+    public void sendStorePausedEmail(String to, String vendorName, String businessName) {
+        String subject = "Store Temporarily Paused - Local Hunt";
+        
+        String htmlContent = String.format(
+            "<!DOCTYPE html>" +
+            "<html>" +
+            "<head>" +
+            "<meta charset='UTF-8'>" +
+            "<meta name='viewport' content='width=device-width, initial-scale=1.0'>" +
+            "<style>" +
+            "  body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f5; }" +
+            "  .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }" +
+            "  .header { background: linear-gradient(135deg, #ff9800 0%%, #ff6f00 100%%); padding: 50px 20px; text-align: center; }" +
+            "  .header h1 { color: #ffffff; margin: 0; font-size: 32px; font-weight: 600; }" +
+            "  .header-icon { font-size: 64px; margin-bottom: 15px; }" +
+            "  .content { padding: 40px 30px; }" +
+            "  .notice-banner { background: linear-gradient(135deg, #fff3e0 0%%, #ffe0b2 100%%); border-left: 4px solid #ff9800; padding: 25px; margin: 25px 0; border-radius: 8px; }" +
+            "  .notice-banner p { margin: 0; color: #e65100; font-weight: 600; font-size: 18px; }" +
+            "  .info-box { background-color: #f9f9f9; border-radius: 12px; padding: 25px; margin: 25px 0; border: 1px solid #e0e0e0; }" +
+            "  .info-item { padding: 12px 0; border-bottom: 1px solid #e0e0e0; display: flex; align-items: flex-start; }" +
+            "  .info-item:last-child { border-bottom: none; }" +
+            "  .info-icon { font-size: 24px; margin-right: 15px; flex-shrink: 0; }" +
+            "  .info-text { flex: 1; }" +
+            "  .info-title { color: #333333; font-size: 16px; font-weight: 600; margin: 0 0 5px 0; }" +
+            "  .info-desc { color: #666666; font-size: 14px; margin: 0; line-height: 1.5; }" +
+            "  .cta-button { display: inline-block; background: linear-gradient(135deg, #ff9800 0%%, #ff6f00 100%%); color: #ffffff; padding: 16px 35px; text-decoration: none; border-radius: 8px; font-weight: 600; margin: 25px 0; font-size: 16px; box-shadow: 0 4px 6px rgba(255, 152, 0, 0.3); }" +
+            "  .cta-container { text-align: center; margin: 30px 0; }" +
+            "  .footer { background-color: #f9f9f9; padding: 30px; text-align: center; color: #666666; font-size: 12px; border-top: 1px solid #e0e0e0; }" +
+            "  .footer a { color: #ff9800; text-decoration: none; }" +
+            "  .text-primary { color: #ff9800; font-weight: 600; }" +
+            "  h3 { color: #333333; font-size: 20px; margin: 25px 0 15px 0; }" +
+            "</style>" +
+            "</head>" +
+            "<body>" +
+            "<div class='container'>" +
+            "  <div class='header'>" +
+            "    <div class='header-icon'>⏸️</div>" +
+            "    <h1>Store Paused</h1>" +
+            "  </div>" +
+            "  <div class='content'>" +
+            "    <p style='font-size: 18px; color: #333333; margin: 0 0 20px 0;'>Hello <span class='text-primary'>%s</span>,</p>" +
+            "    <div class='notice-banner'>" +
+            "      <p>⚠️ Your store has been temporarily paused</p>" +
+            "    </div>" +
+            "    <p style='font-size: 15px; color: #555555; line-height: 1.7; margin: 20px 0;'>This is to inform you that your store <strong>%s</strong> on Local Hunt has been temporarily paused. While your store is paused, customers will not be able to view or purchase your products.</p>" +
+            "    <div class='info-box'>" +
+            "      <h3 style='margin-top: 0; color: #ff9800; border-bottom: 2px solid #ff9800; padding-bottom: 10px;'>📋 What This Means:</h3>" +
+            "      <div class='info-item'>" +
+            "        <span class='info-icon'>🚫</span>" +
+            "        <div class='info-text'>" +
+            "          <div class='info-title'>Products Hidden</div>" +
+            "          <div class='info-desc'>Your products will not be visible to customers in the marketplace</div>" +
+            "        </div>" +
+            "      </div>" +
+            "      <div class='info-item'>" +
+            "        <span class='info-icon'>💰</span>" +
+            "        <div class='info-text'>" +
+            "          <div class='info-title'>No New Orders</div>" +
+            "          <div class='info-desc'>Customers cannot place new orders while your store is paused</div>" +
+            "        </div>" +
+            "      </div>" +
+            "      <div class='info-item'>" +
+            "        <span class='info-icon'>📊</span>" +
+            "        <div class='info-text'>" +
+            "          <div class='info-title'>Existing Orders</div>" +
+            "          <div class='info-desc'>Existing orders will still be processed and tracked normally</div>" +
+            "        </div>" +
+            "      </div>" +
+            "      <div class='info-item'>" +
+            "        <span class='info-icon'>✅</span>" +
+            "        <div class='info-text'>" +
+            "          <div class='info-title'>Easy to Resume</div>" +
+            "          <div class='info-desc'>You can resume your store anytime from your vendor dashboard</div>" +
+            "        </div>" +
+            "      </div>" +
+            "    </div>" +
+            "    <div class='cta-container'>" +
+            "      <a href='#' class='cta-button'>Resume Your Store →</a>" +
+            "    </div>" +
+            "    <p style='font-size: 14px; color: #777777; line-height: 1.6; margin: 25px 0 10px 0;'>If you have any questions or need assistance, our vendor support team is here to help!</p>" +
+            "    <p style='font-size: 14px; color: #999999; margin: 20px 0 0 0;'>Best regards,<br><strong>The Local Hunt Team</strong></p>" +
+            "  </div>" +
+            "  <div class='footer'>" +
+            "    <p style='margin: 0 0 10px 0;'><strong style='font-size: 16px; color: #ff9800;'>Local Hunt</strong></p>" +
+            "    <p style='margin: 0 0 10px 0;'>Your trusted marketplace for authentic Nepali products</p>" +
+            "    <p style='margin: 15px 0 0 0; font-size: 11px;'>© 2024 Local Hunt. All rights reserved.</p>" +
+            "    <p style='margin: 10px 0 0 0; font-size: 11px;'>This is an automated email. Please do not reply.</p>" +
+            "  </div>" +
+            "</div>" +
+            "</body>" +
+            "</html>",
+            vendorName != null ? vendorName : "Vendor",
+            businessName != null ? businessName : "Your Store"
+        );
+        
+        sendHtmlEmail(to, subject, htmlContent);
+    }
+
+    /**
+     * Send store resumed notification email to vendor
+     */
+    public void sendStoreResumedEmail(String to, String vendorName, String businessName) {
+        String subject = "Store is Now Live! 🎉 - Local Hunt";
+        
+        String htmlContent = String.format(
+            "<!DOCTYPE html>" +
+            "<html>" +
+            "<head>" +
+            "<meta charset='UTF-8'>" +
+            "<meta name='viewport' content='width=device-width, initial-scale=1.0'>" +
+            "<style>" +
+            "  body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f5; }" +
+            "  .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }" +
+            "  .header { background: linear-gradient(135deg, #4caf50 0%%, #66bb6a 100%%); padding: 50px 20px; text-align: center; }" +
+            "  .header h1 { color: #ffffff; margin: 0; font-size: 32px; font-weight: 600; }" +
+            "  .header-icon { font-size: 64px; margin-bottom: 15px; }" +
+            "  .content { padding: 40px 30px; }" +
+            "  .success-banner { background: linear-gradient(135deg, #e8f5e9 0%%, #c8e6c9 100%%); border-left: 4px solid #4caf50; padding: 25px; margin: 25px 0; border-radius: 8px; }" +
+            "  .success-banner p { margin: 0; color: #2e7d32; font-weight: 600; font-size: 18px; }" +
+            "  .info-box { background-color: #f9f9f9; border-radius: 12px; padding: 25px; margin: 25px 0; border: 1px solid #e0e0e0; }" +
+            "  .info-item { padding: 12px 0; border-bottom: 1px solid #e0e0e0; display: flex; align-items: flex-start; }" +
+            "  .info-item:last-child { border-bottom: none; }" +
+            "  .info-icon { font-size: 24px; margin-right: 15px; flex-shrink: 0; }" +
+            "  .info-text { flex: 1; }" +
+            "  .info-title { color: #333333; font-size: 16px; font-weight: 600; margin: 0 0 5px 0; }" +
+            "  .info-desc { color: #666666; font-size: 14px; margin: 0; line-height: 1.5; }" +
+            "  .cta-button { display: inline-block; background: linear-gradient(135deg, #4caf50 0%%, #66bb6a 100%%); color: #ffffff; padding: 16px 35px; text-decoration: none; border-radius: 8px; font-weight: 600; margin: 25px 0; font-size: 16px; box-shadow: 0 4px 6px rgba(76, 175, 80, 0.3); }" +
+            "  .cta-container { text-align: center; margin: 30px 0; }" +
+            "  .footer { background-color: #f9f9f9; padding: 30px; text-align: center; color: #666666; font-size: 12px; border-top: 1px solid #e0e0e0; }" +
+            "  .footer a { color: #4caf50; text-decoration: none; }" +
+            "  .text-primary { color: #4caf50; font-weight: 600; }" +
+            "  h3 { color: #333333; font-size: 20px; margin: 25px 0 15px 0; }" +
+            "</style>" +
+            "</head>" +
+            "<body>" +
+            "<div class='container'>" +
+            "  <div class='header'>" +
+            "    <div class='header-icon'>✅</div>" +
+            "    <h1>Store is Live!</h1>" +
+            "  </div>" +
+            "  <div class='content'>" +
+            "    <p style='font-size: 18px; color: #333333; margin: 0 0 20px 0;'>Hello <span class='text-primary'>%s</span>,</p>" +
+            "    <div class='success-banner'>" +
+            "      <p>🎉 Great news! Your store is now live and open for business!</p>" +
+            "    </div>" +
+            "    <p style='font-size: 15px; color: #555555; line-height: 1.7; margin: 20px 0;'>We're excited to let you know that your store <strong>%s</strong> on Local Hunt has been resumed and is now live. Your products are visible to customers and they can now place orders!</p>" +
+            "    <div class='info-box'>" +
+            "      <h3 style='margin-top: 0; color: #4caf50; border-bottom: 2px solid #4caf50; padding-bottom: 10px;'>🚀 What's Active Now:</h3>" +
+            "      <div class='info-item'>" +
+            "        <span class='info-icon'>🛍️</span>" +
+            "        <div class='info-text'>" +
+            "          <div class='info-title'>Products Visible</div>" +
+            "          <div class='info-desc'>All your products are now visible to customers in the marketplace</div>" +
+            "        </div>" +
+            "      </div>" +
+            "      <div class='info-item'>" +
+            "        <span class='info-icon'>💰</span>" +
+            "        <div class='info-text'>" +
+            "          <div class='info-title'>Orders Enabled</div>" +
+            "          <div class='info-desc'>Customers can now browse and place orders for your products</div>" +
+            "        </div>" +
+            "      </div>" +
+            "      <div class='info-item'>" +
+            "        <span class='info-icon'>📊</span>" +
+            "        <div class='info-text'>" +
+            "          <div class='info-title'>Full Dashboard Access</div>" +
+            "          <div class='info-desc'>Manage orders, inventory, and track your sales performance</div>" +
+            "        </div>" +
+            "      </div>" +
+            "      <div class='info-item'>" +
+            "        <span class='info-icon'>📈</span>" +
+            "        <div class='info-text'>" +
+            "          <div class='info-title'>Business Growth</div>" +
+            "          <div class='info-desc'>Start receiving orders and growing your business on Local Hunt</div>" +
+            "        </div>" +
+            "      </div>" +
+            "    </div>" +
+            "    <div class='cta-container'>" +
+            "      <a href='#' class='cta-button'>View Your Dashboard →</a>" +
+            "    </div>" +
+            "    <p style='font-size: 14px; color: #777777; line-height: 1.6; margin: 25px 0 10px 0;'>If you have any questions or need assistance, our vendor support team is here to help you succeed!</p>" +
+            "    <p style='font-size: 14px; color: #999999; margin: 20px 0 0 0;'>Happy selling!<br><strong>The Local Hunt Team</strong></p>" +
+            "  </div>" +
+            "  <div class='footer'>" +
+            "    <p style='margin: 0 0 10px 0;'><strong style='font-size: 16px; color: #4caf50;'>Local Hunt</strong></p>" +
+            "    <p style='margin: 0 0 10px 0;'>Your trusted marketplace for authentic Nepali products</p>" +
+            "    <p style='margin: 15px 0 0 0; font-size: 11px;'>© 2024 Local Hunt. All rights reserved.</p>" +
+            "    <p style='margin: 10px 0 0 0; font-size: 11px;'>This is an automated email. Please do not reply.</p>" +
+            "  </div>" +
+            "</div>" +
+            "</body>" +
+            "</html>",
+            vendorName != null ? vendorName : "Vendor",
+            businessName != null ? businessName : "Your Store"
+        );
+        
+        sendHtmlEmail(to, subject, htmlContent);
+    }
 }
