@@ -135,7 +135,10 @@ const newproduct = () => {
       case "nameZA":
         sorted.sort((a, b) => b.name.localeCompare(a.name));
         break;
+      case "featured":
       default:
+        // Sort by ID descending (newest products first - highest ID = newest)
+        sorted.sort((a, b) => b.id - a.id);
         break;
     }
 

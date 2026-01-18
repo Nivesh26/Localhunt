@@ -17,10 +17,21 @@ interface Product {
 const Shop = () => {
   const navigate = useNavigate();
   const [products, setProducts] = useState<Product[]>([]);
+  const [shuffledProducts, setShuffledProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [category, setCategory] = useState("All");
   const [priceRange, setPriceRange] = useState([0, 100000]);
   const [sortOption, setSortOption] = useState("featured");
+
+  // Shuffle function using Fisher-Yates algorithm
+  const shuffleArray = <T,>(array: T[]): T[] => {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+  };
 
   const handleAddToCart = async (e: React.MouseEvent, productId: number) => {
     e.preventDefault();
@@ -63,6 +74,21 @@ const Shop = () => {
   useEffect(() => {
     fetchProducts();
   }, []);
+
+  // Shuffle products every 5 minutes
+  useEffect(() => {
+    if (products.length > 0) {
+      // Initial shuffle
+      setShuffledProducts(shuffleArray(products));
+
+      // Set up interval to shuffle every 5 minutes (300000 ms)
+      const interval = setInterval(() => {
+        setShuffledProducts(shuffleArray(products));
+      }, 300000); // 5 minutes
+
+      return () => clearInterval(interval);
+    }
+  }, [products]);
 
   const fetchProducts = async () => {
     setLoading(true);
@@ -115,7 +141,10 @@ const Shop = () => {
   }, [products]);
 
   const filteredProducts = useMemo(() => {
-    const filtered = products.filter((product) => {
+    // Use shuffled products for filtering when sortOption is "featured", otherwise use original products
+    const sourceProducts = sortOption === "featured" ? shuffledProducts : products;
+    
+    const filtered = sourceProducts.filter((product) => {
       const matchCategory = category === "All" || product.category === category;
       const matchPrice = product.price >= priceRange[0] && product.price <= priceRange[1];
       return matchCategory && matchPrice;
@@ -136,10 +165,11 @@ const Shop = () => {
         sorted.sort((a, b) => b.name.localeCompare(a.name));
         break;
       default:
+        // For "featured", keep shuffled order (no additional sorting)
         break;
     }
     return sorted;
-  }, [products, category, priceRange, sortOption]);
+  }, [products, shuffledProducts, category, priceRange, sortOption]);
 
   const resetFilters = () => {
     setCategory("All");

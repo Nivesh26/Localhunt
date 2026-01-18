@@ -9,12 +9,44 @@ interface Product {
 }
 
 const Shopnow = () => {
+  const [allProducts, setAllProducts] = useState<Product[]>([])
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
+
+  // Shuffle function using Fisher-Yates algorithm
+  const shuffleArray = <T,>(array: T[]): T[] => {
+    const shuffled = [...array]
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1))
+      ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+    }
+    return shuffled
+  }
+
+  // Update displayed products (first 4 from shuffled array)
+  const updateDisplayedProducts = (productList: Product[]) => {
+    const shuffled = shuffleArray(productList)
+    setProducts(shuffled.slice(0, 4))
+  }
 
   useEffect(() => {
     fetchProducts()
   }, [])
+
+  // Shuffle products every 5 minutes
+  useEffect(() => {
+    if (allProducts.length > 0) {
+      // Initial shuffle
+      updateDisplayedProducts(allProducts)
+
+      // Set up interval to shuffle every 5 minutes (300000 ms)
+      const interval = setInterval(() => {
+        updateDisplayedProducts(allProducts)
+      }, 300000) // 5 minutes
+
+      return () => clearInterval(interval)
+    }
+  }, [allProducts])
 
   const fetchProducts = async () => {
     setLoading(true)
@@ -22,8 +54,8 @@ const Shopnow = () => {
       const response = await fetch('http://localhost:8080/api/products/live')
       if (response.ok) {
         const data = await response.json()
-        // Get first 4 products
-        const limitedProducts = data.slice(0, 4).map((p: any) => {
+        // Map all products
+        const formattedProducts: Product[] = data.map((p: any) => {
           // Parse comma-separated image URLs and convert first one to full URL
           let imageUrl = p.imageUrl || ''
           if (imageUrl) {
@@ -43,7 +75,8 @@ const Shopnow = () => {
             imageUrl: imageUrl,
           }
         })
-        setProducts(limitedProducts)
+        setAllProducts(formattedProducts)
+        // Initial shuffle will be handled by the useEffect
       } else {
         console.error('Failed to fetch products')
       }
