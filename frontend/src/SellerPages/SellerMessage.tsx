@@ -1,173 +1,383 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import {
   FaSearch,
   FaPaperPlane,
   FaCheckCircle,
   FaComments,
+  FaTrash,
+  FaSync,
 } from 'react-icons/fa'
 import SellerNavbar from '../SellerComponents/SellerNavbar'
+import { sessionUtils } from '../utils/sessionUtils'
+import { useNavigate } from 'react-router-dom'
+import { toast } from 'react-toastify'
+import { Client } from '@stomp/stompjs'
+import SockJS from 'sockjs-client'
 
 type Message = {
   id: number
-  text: string
-  sender: 'customer' | 'seller'
-  timestamp: string
-  read: boolean
+  message: string
+  senderType: 'USER' | 'SELLER'
+  createdAt: string
+  userName?: string
+  sellerName?: string
+  productId?: number
+  productName?: string
 }
 
 type Conversation = {
-  id: number
-  customerName: string
-  customerAvatar: string
+  productId: number
+  productName: string
+  userId: number
+  userName: string
+  sellerId: number
+  sellerName: string
   lastMessage: string
-  timestamp: string
+  lastMessageTime: string | null
   unreadCount: number
-  orderId?: string
-  messages: Message[]
 }
 
-const conversations: Conversation[] = [
-  {
-    id: 1,
-    customerName: 'Sanjay Gurung',
-    customerAvatar: 'SG',
-    lastMessage: 'When will my order #S-9827 be delivered?',
-    timestamp: '2m ago',
-    unreadCount: 2,
-    orderId: '#S-9827',
-    messages: [
-      {
-        id: 1,
-        text: 'Hello, I placed an order yesterday. Can you tell me when it will be shipped?',
-        sender: 'customer',
-        timestamp: 'Yesterday 3:45 PM',
-        read: true,
-      },
-      {
-        id: 2,
-        text: 'Hi Sanjay! Thanks for your order. We\'ll ship it today and you should receive it within 2-3 business days.',
-        sender: 'seller',
-        timestamp: 'Yesterday 4:12 PM',
-        read: true,
-      },
-      {
-        id: 3,
-        text: 'Great! Can you provide a tracking number once it ships?',
-        sender: 'customer',
-        timestamp: 'Yesterday 4:30 PM',
-        read: true,
-      },
-      {
-        id: 4,
-        text: 'When will my order #S-9827 be delivered?',
-        sender: 'customer',
-        timestamp: '2m ago',
-        read: false,
-      },
-    ],
-  },
-  {
-    id: 2,
-    customerName: 'Meena KC',
-    customerAvatar: 'MK',
-    lastMessage: 'Thank you so much! The product is perfect.',
-    timestamp: '1h ago',
-    unreadCount: 0,
-    orderId: '#S-9822',
-    messages: [
-      {
-        id: 1,
-        text: 'I received my order today. The quality is amazing!',
-        sender: 'customer',
-        timestamp: '1h ago',
-        read: true,
-      },
-      {
-        id: 2,
-        text: 'Thank you so much! The product is perfect.',
-        sender: 'customer',
-        timestamp: '1h ago',
-        read: true,
-      },
-    ],
-  },
-  {
-    id: 3,
-    customerName: 'Global Crafts UK',
-    customerAvatar: 'GC',
-    lastMessage: 'We need to discuss bulk pricing for our next order.',
-    timestamp: '3h ago',
-    unreadCount: 1,
-    messages: [
-      {
-        id: 1,
-        text: 'Hi, we\'re interested in placing a bulk order for 50 units. Can you provide a quote?',
-        sender: 'customer',
-        timestamp: '3h ago',
-        read: true,
-      },
-      {
-        id: 2,
-        text: 'We need to discuss bulk pricing for our next order.',
-        sender: 'customer',
-        timestamp: '3h ago',
-        read: false,
-      },
-    ],
-  },
-  {
-    id: 4,
-    customerName: 'Anil Shrestha',
-    customerAvatar: 'AS',
-    lastMessage: 'Is this product available in different colors?',
-    timestamp: '5h ago',
-    unreadCount: 0,
-    messages: [
-      {
-        id: 1,
-        text: 'Is this product available in different colors?',
-        sender: 'customer',
-        timestamp: '5h ago',
-        read: true,
-      },
-    ],
-  },
-]
-
 const SellerMessage = () => {
-  const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(conversations[0])
+  const navigate = useNavigate()
+  const [conversations, setConversations] = useState<Conversation[]>([])
+  const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null)
+  const [messages, setMessages] = useState<Message[]>([])
   const [searchQuery, setSearchQuery] = useState('')
   const [replyText, setReplyText] = useState('')
+  const [loading, setLoading] = useState(true)
+  const [stompClient, setStompClient] = useState<Client | null>(null)
+  const [connected, setConnected] = useState(false)
+  const [loadingMore, setLoadingMore] = useState(false)
+  const [hasMore, setHasMore] = useState(true)
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const isInitialLoadRef = useRef<boolean>(true)
+  const shouldScrollToBottomRef = useRef<boolean>(false)
+  const messagesContainerRef = useRef<HTMLDivElement>(null)
 
-  const filteredConversations = conversations.filter(conv =>
-    conv.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    conv.lastMessage.toLowerCase().includes(searchQuery.toLowerCase())
-  )
-
-  const handleSendReply = () => {
-    if (!replyText.trim() || !selectedConversation) return
-
-    const newMessage: Message = {
-      id: selectedConversation.messages.length + 1,
-      text: replyText.trim(),
-      sender: 'seller',
-      timestamp: 'Just now',
-      read: true,
+  useEffect(() => {
+    const seller = sessionUtils.getUser()
+    if (!seller) {
+      toast.error('Please login to view messages')
+      navigate('/sellerlogin')
+      return
     }
 
-    const updatedConversation = {
-      ...selectedConversation,
-      messages: [...selectedConversation.messages, newMessage],
-      lastMessage: replyText.trim(),
-      timestamp: 'Just now',
-      unreadCount: 0,
-    }
+    fetchConversations()
+    connectWebSocket()
 
-    setSelectedConversation(updatedConversation)
-    setReplyText('')
+    return () => {
+      if (stompClient) {
+        stompClient.deactivate()
+      }
+    }
+  }, [])
+
+  useEffect(() => {
+    if (selectedConversation) {
+      fetchMessages()
+      markAsRead()
+    }
+    // Reset initial load flag when conversation changes
+    isInitialLoadRef.current = true
+  }, [selectedConversation])
+
+  useEffect(() => {
+    // Only scroll to bottom if:
+    // 1. It's the initial load (initial load SHOULD scroll to bottom to show newest messages first)
+    // 2. A new message was sent/received (shouldScrollToBottomRef is true)
+    if (isInitialLoadRef.current && messages.length > 0) {
+      // Scroll to bottom on initial load to show newest messages first
+      setTimeout(() => {
+        scrollToBottom(true) // Scroll to last/newest message (instant scroll on initial load)
+        isInitialLoadRef.current = false
+      }, 150)
+    } else if (!isInitialLoadRef.current && shouldScrollToBottomRef.current) {
+      // Scroll to bottom when new message is sent/received
+      setTimeout(() => {
+        scrollToBottom(false) // Scroll to last/newest message (smooth scroll for new messages)
+        shouldScrollToBottomRef.current = false
+      }, 100)
+    }
+  }, [messages])
+
+  const connectWebSocket = () => {
+    const client = new Client({
+      webSocketFactory: () => new SockJS('http://localhost:8080/ws/chat') as any,
+      onConnect: () => {
+        setConnected(true)
+        client.subscribe('/topic/chat', (message: any) => {
+          const chatMessage = JSON.parse(message.body)
+          if (selectedConversation &&
+            chatMessage.userId === selectedConversation.userId &&
+            chatMessage.sellerId === selectedConversation.sellerId
+          ) {
+            setMessages((prev) => {
+              // Check if message already exists (avoid duplicates)
+              const exists = prev.some(msg => 
+                msg.id === chatMessage.id || 
+                (msg.message === chatMessage.message && 
+                 msg.senderType === chatMessage.senderType &&
+                 Math.abs(new Date(msg.createdAt).getTime() - new Date(chatMessage.createdAt).getTime()) < 2000)
+              )
+              if (exists) return prev
+              
+              // Replace temp message (timestamp-based) with real one if exists
+              const tempMessageIndex = prev.findIndex(msg => 
+                msg.id > 1000000000000 && // Temp IDs are timestamps
+                msg.message === chatMessage.message &&
+                msg.senderType === chatMessage.senderType
+              )
+              
+              if (tempMessageIndex !== -1) {
+                const newMessages = [...prev]
+                newMessages[tempMessageIndex] = chatMessage
+                return newMessages
+              }
+              
+              // Trigger scroll to bottom when receiving a new message
+              shouldScrollToBottomRef.current = true
+              return [...prev, chatMessage]
+            })
+          }
+          // Refresh conversations to update last message
+          fetchConversations()
+        })
+      },
+      onStompError: (frame: any) => {
+        console.error('Broker reported error: ' + frame.headers['message'])
+        setConnected(false)
+      },
+      onDisconnect: () => {
+        setConnected(false)
+      },
+    })
+
+    client.activate()
+    setStompClient(client)
   }
 
+  const fetchConversations = async () => {
+    const seller = sessionUtils.getUser()
+    if (!seller) return
+
+    try {
+      const response = await fetch(`http://localhost:8080/api/chat/conversations/seller/${seller.userId}`)
+      if (response.ok) {
+        const data = await response.json()
+        setConversations(data)
+        setLoading(false)
+      }
+    } catch (error) {
+      console.error('Error fetching conversations:', error)
+      setLoading(false)
+    }
+  }
+
+  const fetchMessages = async (beforeId?: number) => {
+    if (!selectedConversation) return
+
+    try {
+      const url = beforeId
+        ? `http://localhost:8080/api/chat/history?userId=${selectedConversation.userId}&sellerId=${selectedConversation.sellerId}&userType=SELLER&beforeId=${beforeId}&limit=20`
+        : `http://localhost:8080/api/chat/history?userId=${selectedConversation.userId}&sellerId=${selectedConversation.sellerId}&userType=SELLER`
+      
+      const response = await fetch(url)
+      if (response.ok) {
+        const data = await response.json()
+        
+        if (beforeId) {
+          // Loading older messages - prepend to existing messages
+          if (data.length === 0) {
+            setHasMore(false)
+            setLoadingMore(false)
+          } else {
+            setMessages((prev) => [...data, ...prev])
+            // Don't setLoadingMore(false) here - let loadMoreMessages handle it after scroll restore
+          }
+        } else {
+          // Initial load - replace all messages
+          setMessages(data)
+          setHasMore(data.length >= 20)
+          // Mark as initial load
+          isInitialLoadRef.current = true
+          setLoadingMore(false)
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching messages:', error)
+      setLoadingMore(false)
+    }
+  }
+
+  const loadMoreMessages = async () => {
+    if (loadingMore || !hasMore || !selectedConversation || messages.length === 0) return
+    
+    const oldestMessage = messages[0]
+    if (oldestMessage && oldestMessage.id) {
+      // Save current scroll position
+      const container = messagesContainerRef.current
+      const scrollHeight = container?.scrollHeight || 0
+      const scrollTop = container?.scrollTop || 0
+      
+      setLoadingMore(true)
+      await fetchMessages(oldestMessage.id)
+      
+      // Restore scroll position after new messages are loaded
+      // Wait a bit for DOM to update
+      setTimeout(() => {
+        if (container) {
+          const newScrollHeight = container.scrollHeight
+          const heightDifference = newScrollHeight - scrollHeight
+          container.scrollTop = scrollTop + heightDifference
+        }
+        setLoadingMore(false)
+      }, 100)
+    }
+  }
+
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const container = e.currentTarget
+    // Check if scrolled to top (within 100px) to load older messages
+    if (container.scrollTop < 100 && hasMore && !loadingMore) {
+      loadMoreMessages()
+    }
+  }
+
+  const markAsRead = async () => {
+    if (!selectedConversation) return
+
+    try {
+      await fetch(
+        `http://localhost:8080/api/chat/mark-read?userId=${selectedConversation.userId}&sellerId=${selectedConversation.sellerId}&userType=SELLER`,
+        { method: 'POST' }
+      )
+      fetchConversations()
+    } catch (error) {
+      console.error('Error marking as read:', error)
+    }
+  }
+
+  const handleSendReply = () => {
+    if (!replyText.trim() || !selectedConversation || !stompClient || !connected) return
+
+    const seller = sessionUtils.getUser()
+    if (!seller) return
+
+    // Get the most recent product from messages or use the conversation's product
+    const recentProductId = messages.length > 0 && messages[messages.length - 1].productId 
+      ? messages[messages.length - 1].productId 
+      : (selectedConversation.productId || null)
+
+    const messageToSend = replyText.trim()
+    
+    // Optimistically add message to UI immediately
+    const tempMessage: Message = {
+      id: Date.now(), // Temporary ID until real one comes from server
+      message: messageToSend,
+      senderType: 'SELLER',
+      createdAt: new Date().toISOString(),
+      userName: seller.fullName || seller.email,
+      sellerName: seller.fullName || seller.email,
+      productId: recentProductId || undefined,
+    }
+    setMessages((prev) => [...prev, tempMessage])
+
+    const chatMessage = {
+      productId: recentProductId || 1, // Fallback if no product found
+      userId: selectedConversation.userId,
+      sellerId: seller.userId,
+      message: messageToSend,
+      senderType: 'SELLER',
+    }
+
+    stompClient.publish({
+      destination: '/app/chat.send',
+      body: JSON.stringify(chatMessage),
+    })
+
+    setReplyText('')
+    // Trigger scroll to bottom when sending a message
+    shouldScrollToBottomRef.current = true
+  }
+
+  const deleteMessage = async (messageId: number) => {
+    try {
+      const response = await fetch(`http://localhost:8080/api/chat/message/${messageId}?userType=SELLER`, {
+        method: 'DELETE',
+      })
+      if (response.ok) {
+        setMessages((prev) => prev.filter((msg) => msg.id !== messageId))
+      }
+    } catch (error) {
+      console.error('Error deleting message:', error)
+    }
+  }
+
+  const scrollToBottom = (instant: boolean = false) => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: instant ? 'auto' : 'smooth' })
+    } else if (messagesContainerRef.current) {
+      // Fallback: directly set scrollTop to bottom
+      const container = messagesContainerRef.current
+      container.scrollTop = container.scrollHeight
+    }
+  }
+
+  const formatTime = (dateString: string | null) => {
+    if (!dateString) return ''
+    const date = new Date(dateString)
+    const now = new Date()
+    const diffMs = now.getTime() - date.getTime()
+    const diffMins = Math.floor(diffMs / 60000)
+
+    if (diffMins < 1) return 'Just now'
+    if (diffMins < 60) return `${diffMins}m ago`
+    if (diffMins < 1440) return `${Math.floor(diffMins / 60)}h ago`
+    return date.toLocaleDateString()
+  }
+
+  const getCustomerAvatar = (name: string) => {
+    return name
+      .split(' ')
+      .map((n) => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2)
+  }
+
+  const filteredConversations = conversations.filter(conv =>
+    conv.userName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    conv.lastMessage.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    conv.productName.toLowerCase().includes(searchQuery.toLowerCase())
+  )
+
   const totalUnread = conversations.reduce((sum, conv) => sum + conv.unreadCount, 0)
+
+  const handleRefresh = async () => {
+    setLoading(true)
+    await fetchConversations()
+    if (selectedConversation) {
+      await fetchMessages()
+      await markAsRead()
+    }
+    setLoading(false)
+    toast.success('Chat refreshed')
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-100">
+        <div className="mx-auto flex max-w-7xl gap-6 px-6 py-8">
+          <SellerNavbar />
+          <main className="flex-1 space-y-8">
+            <div className="flex items-center justify-center py-12">
+              <p className="text-gray-500">Loading conversations...</p>
+            </div>
+          </main>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -190,6 +400,14 @@ const SellerMessage = () => {
               </div>
 
               <div className="flex items-center gap-3">
+                <button
+                  onClick={handleRefresh}
+                  className="flex items-center gap-2 rounded-xl bg-gray-100 hover:bg-gray-200 px-4 py-2 transition-colors"
+                  title="Refresh conversations"
+                >
+                  <FaSync className="h-5 w-5 text-gray-700" />
+                  <span className="text-sm font-medium text-gray-700">Refresh</span>
+                </button>
                 {totalUnread > 0 && (
                   <div className="flex items-center gap-2 rounded-xl bg-red-50 px-4 py-2">
                     <FaComments className="h-5 w-5 text-red-600" />
@@ -217,24 +435,25 @@ const SellerMessage = () => {
               </div>
 
               <div className="space-y-2 max-h-[600px] overflow-y-auto">
-                {filteredConversations.map(conversation => (
+                {filteredConversations.map((conversation) => (
                   <button
-                    key={conversation.id}
+                    key={`${conversation.productId}-${conversation.userId}`}
                     onClick={() => setSelectedConversation(conversation)}
                     className={`w-full rounded-xl p-3 text-left transition ${
-                      selectedConversation?.id === conversation.id
+                      selectedConversation?.productId === conversation.productId &&
+                      selectedConversation?.userId === conversation.userId
                         ? 'bg-red-50 border-2 border-red-200'
                         : 'border-2 border-transparent hover:bg-gray-50'
                     }`}
                   >
                     <div className="flex items-start gap-3">
                       <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-100 text-sm font-semibold text-red-700">
-                        {conversation.customerAvatar}
+                        {getCustomerAvatar(conversation.userName)}
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between">
                           <p className="text-sm font-semibold text-gray-900 truncate">
-                            {conversation.customerName}
+                            {conversation.userName}
                           </p>
                           {conversation.unreadCount > 0 && (
                             <span className="ml-2 flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-xs font-semibold text-white">
@@ -242,11 +461,9 @@ const SellerMessage = () => {
                             </span>
                           )}
                         </div>
-                        {conversation.orderId && (
-                          <p className="text-xs text-gray-500 mt-0.5">Order {conversation.orderId}</p>
-                        )}
+                        <p className="text-xs text-gray-500 mt-0.5">{conversation.productName}</p>
                         <p className="text-xs text-gray-500 mt-1 truncate">{conversation.lastMessage}</p>
-                        <p className="text-[11px] text-gray-400 mt-1">{conversation.timestamp}</p>
+                        <p className="text-[11px] text-gray-400 mt-1">{formatTime(conversation.lastMessageTime)}</p>
                       </div>
                     </div>
                   </button>
@@ -268,15 +485,13 @@ const SellerMessage = () => {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-100 text-sm font-semibold text-red-700">
-                          {selectedConversation.customerAvatar}
+                          {getCustomerAvatar(selectedConversation.userName)}
                         </div>
                         <div>
                           <p className="text-sm font-semibold text-gray-900">
-                            {selectedConversation.customerName}
+                            {selectedConversation.userName}
                           </p>
-                          {selectedConversation.orderId && (
-                            <p className="text-xs text-gray-500">Order {selectedConversation.orderId}</p>
-                          )}
+                          <p className="text-xs text-gray-500">{selectedConversation.productName}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-2 text-xs text-gray-500">
@@ -287,30 +502,77 @@ const SellerMessage = () => {
                   </div>
 
                   {/* Messages */}
-                  <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
-                    {selectedConversation.messages.map(message => (
+                  <div 
+                    ref={messagesContainerRef}
+                    className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50"
+                    onScroll={handleScroll}
+                  >
+                    {loadingMore && (
+                      <div className="text-center text-gray-500 py-2 text-sm">Loading older messages...</div>
+                    )}
+                    {messages.length === 0 ? (
+                      <div className="text-center text-gray-500 py-8">No messages yet. Start a conversation!</div>
+                    ) : (
+                      messages.map((message) => {
+                        // Parse message to extract image URL if present
+                        const imageUrlMatch = message.message.match(/\[Image:\s*(.+?)\]/)
+                        const imageUrl = imageUrlMatch ? imageUrlMatch[1].trim() : null
+                        const textWithoutImage = imageUrl 
+                          ? message.message.replace(/\[Image:\s*.+?\]/g, '').trim()
+                          : message.message
+                        
+                        return (
                       <div
                         key={message.id}
-                        className={`flex ${message.sender === 'seller' ? 'justify-end' : 'justify-start'}`}
+                            className={`flex ${message.senderType === 'SELLER' ? 'justify-end' : 'justify-start'}`}
                       >
                         <div
                           className={`max-w-[75%] rounded-2xl px-4 py-2 ${
-                            message.sender === 'seller'
+                                message.senderType === 'SELLER'
                               ? 'bg-red-600 text-white'
                               : 'bg-white text-gray-900 border border-gray-200'
                           }`}
                         >
-                          <p className="text-sm">{message.text}</p>
-                          <p
-                            className={`text-[11px] mt-1 ${
-                              message.sender === 'seller' ? 'text-red-100' : 'text-gray-400'
-                            }`}
-                          >
-                            {message.timestamp}
-                          </p>
+                              {textWithoutImage && (
+                                <p className="text-sm whitespace-pre-wrap">{textWithoutImage}</p>
+                              )}
+                              {imageUrl && (
+                                <div className="mt-2">
+                                  <img 
+                                    src={imageUrl} 
+                                    alt="Product" 
+                                    className="max-w-full max-h-48 rounded-lg object-cover"
+                                    onError={(e) => {
+                                      // Hide image if it fails to load
+                                      e.currentTarget.style.display = 'none'
+                                    }}
+                                  />
+                                </div>
+                              )}
+                              <div className="flex items-center justify-between mt-1">
+                                <p
+                                  className={`text-[11px] ${
+                                    message.senderType === 'SELLER' ? 'text-red-100' : 'text-gray-400'
+                                  }`}
+                                >
+                                  {formatTime(message.createdAt)}
+                                </p>
+                                {message.senderType === 'SELLER' && (
+                                  <button
+                                    onClick={() => deleteMessage(message.id)}
+                                    className="ml-2 hover:text-red-200"
+                                    title="Delete message"
+                                  >
+                                    <FaTrash className="w-3 h-3" />
+                                  </button>
+                                )}
+                              </div>
                         </div>
                       </div>
-                    ))}
+                        )
+                      })
+                    )}
+                    <div ref={messagesEndRef} />
                   </div>
 
                   {/* Reply Input */}
@@ -328,15 +590,17 @@ const SellerMessage = () => {
                         placeholder="Type your message..."
                         rows={2}
                         className="flex-1 rounded-xl border border-gray-200 px-4 py-2 text-sm focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-200 resize-none"
+                        disabled={!connected}
                       />
                       <button
                         onClick={handleSendReply}
-                        disabled={!replyText.trim()}
+                        disabled={!replyText.trim() || !connected}
                         className="rounded-xl bg-red-600 p-3 text-white transition hover:bg-red-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
                       >
                         <FaPaperPlane className="h-5 w-5" />
                       </button>
                     </div>
+                    {!connected && <p className="text-[11px] text-gray-400 mt-2">Connecting...</p>}
                     <p className="text-[11px] text-gray-400 mt-2">
                       Press Enter to send, Shift+Enter for new line
                     </p>

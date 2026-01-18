@@ -37,6 +37,7 @@ import { UserOTP } from './Pages/UserOTP'
 import { SellerOTP } from './SellerPages/SellerOTP'
 import UserForgetPassword from './Pages/UserForgetPassword'
 import SellerForgetPassword from './SellerPages/SellerForgetPassword'
+import GlobalChatWidget from './Components/GlobalChatWidget'
 
 
 const App = () => {
@@ -175,6 +176,7 @@ const App = () => {
       }/>
    </Routes> 
    <ToastContainer position="top-right" autoClose={3000} />
+   <GlobalChatWidget />
    </BrowserRouter>
 
   )

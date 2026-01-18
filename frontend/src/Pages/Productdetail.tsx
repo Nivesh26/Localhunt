@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
+import { FaPaperPlane } from 'react-icons/fa'
 import Topbar from '../Components/Topbar'
 import Header from '../Components/Header'
 import Footer from '../Components/Footer'
@@ -19,6 +20,7 @@ interface Product {
   sizeEu?: string
   sizeClothing?: string
   sellerName?: string
+  sellerId?: number
 }
 
 interface RelatedProduct {
@@ -360,6 +362,42 @@ const Productdetail = () => {
                   </button>
                 </div>
                 <span className="text-sm text-gray-600">({product.stock} available)</span>
+                {product.sellerId && sessionUtils.isLoggedIn() && (() => {
+                  const user = sessionUtils.getUser()
+                  // Only show for logged-in users with role USER
+                  if (user && user.role === 'USER') {
+                    return (
+                      <button
+                        onClick={() => {
+                          // Trigger GlobalChatWidget to open and select this vendor
+                          console.log('Message Vendor button clicked:', {
+                            sellerId: product.sellerId,
+                            sellerName: product.sellerName,
+                            productId: product.id,
+                            productName: product.name
+                          }) // Debug log
+                          const event = new CustomEvent('openChatWidget', {
+                            detail: { 
+                              sellerId: product.sellerId,
+                              sellerName: product.sellerName || 'Vendor',
+                              productId: product.id,
+                              productName: product.name,
+                              productDescription: product.description,
+                              productImage: mainImage || (product.imageUrl ? product.imageUrl.split(',')[0].trim() : '')
+                            }
+                          })
+                          window.dispatchEvent(event)
+                          console.log('openChatWidget event dispatched') // Debug log
+                        }}
+                        className="ml-auto flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+                      >
+                        <FaPaperPlane />
+                        Message Vendor
+                      </button>
+                    )
+                  }
+                  return null
+                })()}
               </div>
             </div>
 
