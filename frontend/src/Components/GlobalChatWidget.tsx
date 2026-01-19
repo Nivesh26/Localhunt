@@ -73,6 +73,11 @@ const GlobalChatWidget = () => {
   const userId = user?.userId
   const isLoggedIn = loginStatus
 
+  // Hide chatbot for VENDOR and SUPERADMIN users
+  if (user && (user.role === 'VENDOR' || user.role === 'SUPERADMIN')) {
+    return null
+  }
+
   // Define fetchConversations before useEffects that use it
   const fetchConversations = useCallback(async () => {
     // Always get fresh userId from session to avoid stale closures
