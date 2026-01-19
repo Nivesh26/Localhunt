@@ -1,7 +1,5 @@
 import { useState } from 'react'
 import {
-  FaBell,
-  FaEnvelope,
   FaKey,
   FaShieldAlt,
   FaMobileAlt,
@@ -9,25 +7,8 @@ import {
 } from 'react-icons/fa'
 import AdminNavbar from '../AdminComponents/AdminNavbar'
 
-const notificationSettings = [
-  { id: 'newOrders', label: 'New vendor signup requests', description: 'Get notified when a seller submits an onboarding form.' },
-  { id: 'disputes', label: 'Dispute updates', description: 'Receive alerts for escalations that need admin attention.' },
-  { id: 'payouts', label: 'Payout issues', description: 'Email me whenever payouts fail or are delayed.' },
-  { id: 'system', label: 'System announcements', description: 'Security updates, scheduled maintenance and new releases.' },
-]
-
 const AdminSetting = () => {
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(true)
-  const [notifications, setNotifications] = useState<Record<string, boolean>>({
-    newOrders: true,
-    disputes: true,
-    payouts: false,
-    system: true,
-  })
-
-  const toggleNotification = (id: string) => {
-    setNotifications(prev => ({ ...prev, [id]: !prev[id] }))
-  }
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -159,45 +140,6 @@ const AdminSetting = () => {
             </div>
 
             <aside className="space-y-6">
-              <div className="rounded-2xl bg-white p-6 shadow-sm sm:p-8">
-                <div className="flex items-start gap-4">
-                  <div className="rounded-xl bg-yellow-50 p-3">
-                    <FaBell className="h-6 w-6 text-yellow-500" />
-                  </div>
-                  <div className="flex-1">
-                    <h2 className="text-lg font-semibold text-gray-900">Notification channels</h2>
-                    <p className="mt-1 text-sm text-gray-500">Choose how you get alerted about marketplace activity.</p>
-
-                    <div className="mt-6 space-y-4">
-                      {notificationSettings.map(option => (
-                        <div
-                          key={option.id}
-                          className="flex gap-3 rounded-2xl border border-gray-200 p-4 transition hover:border-red-200"
-                        >
-                          <div className="h-10 w-10 shrink-0 rounded-xl bg-red-50 p-2">
-                            <FaEnvelope className="h-6 w-6 text-red-500" />
-                          </div>
-                          <div className="flex-1">
-                            <p className="text-sm font-semibold text-gray-900">{option.label}</p>
-                            <p className="text-xs text-gray-500">{option.description}</p>
-                          </div>
-                          <button
-                            onClick={() => toggleNotification(option.id)}
-                            className={`h-7 rounded-full px-3 text-xs font-semibold transition ${
-                              notifications[option.id]
-                                ? 'bg-red-100 text-red-600'
-                                : 'bg-gray-100 text-gray-500 hover:text-gray-700'
-                            }`}
-                          >
-                            {notifications[option.id] ? 'On' : 'Off'}
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
               <div className="rounded-2xl bg-white p-6 shadow-sm sm:p-8">
                 <h2 className="text-lg font-semibold text-gray-900">Access and roles</h2>
                 <p className="mt-2 text-sm text-gray-500">
