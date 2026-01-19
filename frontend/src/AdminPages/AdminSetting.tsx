@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import {
-  FaKey,
   FaShieldAlt,
-  FaMobileAlt,
   FaUserCircle,
+  FaLock,
 } from 'react-icons/fa'
 import AdminNavbar from '../AdminComponents/AdminNavbar'
 import { sessionUtils } from '../utils/sessionUtils'
@@ -17,7 +17,7 @@ interface ProfileData {
 }
 
 const AdminSetting = () => {
-  const [twoFactorEnabled, setTwoFactorEnabled] = useState(true)
+  const navigate = useNavigate()
   const [profile, setProfile] = useState<ProfileData>({
     fullName: '',
     email: '',
@@ -285,36 +285,19 @@ const AdminSetting = () => {
                     <div className="mt-6 space-y-5">
                       <div className="flex flex-col gap-3 rounded-2xl border border-gray-200 p-4 sm:flex-row sm:items-center sm:justify-between">
                         <div className="flex items-start gap-3">
-                          <FaKey className="mt-0.5 h-5 w-5 text-gray-500" />
+                          <FaLock className="mt-0.5 h-5 w-5 text-gray-500" />
                           <div>
-                            <p className="text-sm font-semibold text-gray-900">Password requirements</p>
+                            <p className="text-sm font-semibold text-gray-900">Change Password</p>
                             <p className="text-sm text-gray-500">
-                              Enforce 2FA setup and complex passwords for internal accounts.
-                            </p>
-                          </div>
-                        </div>
-                        <button className="self-start rounded-xl border border-gray-200 px-3 py-1.5 text-sm font-medium text-gray-700 transition hover:bg-gray-100">
-                          Configure
-                        </button>
-                      </div>
-
-                      <div className="flex flex-col gap-3 rounded-2xl border border-gray-200 p-4 sm:flex-row sm:items-center sm:justify-between">
-                        <div className="flex items-start gap-3">
-                          <FaMobileAlt className="mt-0.5 h-5 w-5 text-gray-500" />
-                          <div>
-                            <p className="text-sm font-semibold text-gray-900">Two-factor authentication</p>
-                            <p className="text-sm text-gray-500">
-                              Require verification codes when signing in from new devices.
+                              Update your password to keep your account secure.
                             </p>
                           </div>
                         </div>
                         <button
-                          className={`self-start rounded-full px-4 py-2 text-xs font-semibold transition ${
-                            twoFactorEnabled ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'
-                          }`}
-                          onClick={() => setTwoFactorEnabled(!twoFactorEnabled)}
+                          onClick={() => navigate('/adminchangepassword')}
+                          className="self-start rounded-xl bg-red-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-600"
                         >
-                          {twoFactorEnabled ? 'Enabled' : 'Disabled'}
+                          Change Password
                         </button>
                       </div>
                     </div>

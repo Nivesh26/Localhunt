@@ -18,6 +18,7 @@ import VendorApprove from './AdminPages/VendorApprove'
 import SellerLogin from './Logins/SellerLogin'
 import AdminProduct from './AdminPages/AdminProduct'
 import AdminSetting from './AdminPages/AdminSetting'
+import AdminChangePassword from './AdminPages/AdminChangePassword'
 import SellerDashboard from './SellerPages/SellerDashboard'
 import SellerProduct from './SellerPages/SellerProduct'
 import SellerOrder from './SellerPages/SellerOrder'
@@ -168,7 +169,12 @@ const App = () => {
         <ProtectedRoute allowedRoles={['SUPERADMIN']}>
           <AdminSetting/>
         </ProtectedRoute>
-      }/>  
+      }/>
+      <Route path="/adminchangepassword" element={
+        <ProtectedRoute allowedRoles={['SUPERADMIN']}>
+          <AdminChangePassword/>
+        </ProtectedRoute>
+      }/>
       <Route path="/adminuser" element={
         <ProtectedRoute allowedRoles={['SUPERADMIN']}>
           <AdminUser/>
