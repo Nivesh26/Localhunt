@@ -7,12 +7,12 @@ import {
   FaCog,
   FaSignOutAlt,
   FaHistory,
+  FaCamera,
 } from 'react-icons/fa'
 import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { useState, useEffect } from 'react'
 import logo from '../assets/Local Hunt Logo NoBG.png'
-import profileImage from '../assets/Nivesh.png'
 import { sessionUtils } from '../utils/sessionUtils'
 
 const navLinks = [
@@ -28,6 +28,8 @@ const navLinks = [
 const SellerNavbar = () => {
   const navigate = useNavigate()
   const [sellerName, setSellerName] = useState('Store owner')
+  const [profilePicture, setProfilePicture] = useState<string | null>(null)
+  const [uploadingPicture, setUploadingPicture] = useState(false)
 
   useEffect(() => {
     const fetchSellerName = async () => {
@@ -43,6 +45,16 @@ const SellerNavbar = () => {
         if (response.ok) {
           const data = await response.json()
           setSellerName(data.userName || 'Store owner')
+          
+          // Set profile picture URL if exists
+          if (data.profilePicture) {
+            const avatarUrl = data.profilePicture.startsWith('http')
+              ? data.profilePicture
+              : `http://localhost:8080${data.profilePicture}`
+            setProfilePicture(avatarUrl)
+          } else {
+            setProfilePicture(null)
+          }
         }
       } catch (error) {
         console.error('Error fetching seller name:', error)
@@ -58,6 +70,65 @@ const SellerNavbar = () => {
     navigate('/sellerlogin')
   }
 
+  const handleProfilePictureUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please upload an image file')
+      return
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image size must be less than 5MB')
+      return
+    }
+
+    setUploadingPicture(true)
+    try {
+      const user = sessionUtils.getUser()
+      if (!user || user.role !== 'VENDOR') {
+        toast.error('Please login as a vendor to upload profile picture')
+        return
+      }
+
+      const sellerId = user.userId
+      const formData = new FormData()
+      formData.append('file', file)
+
+      const response = await fetch(`http://localhost:8080/api/seller/profile/${sellerId}/picture`, {
+        method: 'POST',
+        body: formData,
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        let avatarUrl = null
+        if (data.profilePicture) {
+          avatarUrl = data.profilePicture.startsWith('http')
+            ? data.profilePicture
+            : `http://localhost:8080${data.profilePicture}`
+        }
+        setProfilePicture(avatarUrl)
+        toast.success('Profile picture updated successfully!')
+      } else {
+        const errorData = await response.json().catch(() => ({ message: 'Failed to upload profile picture' }))
+        toast.error(errorData.message || 'Failed to upload profile picture')
+      }
+    } catch (error) {
+      console.error('Error uploading profile picture:', error)
+      toast.error('An error occurred while uploading profile picture')
+    } finally {
+      setUploadingPicture(false)
+      // Reset file input
+      if (e.target) {
+        e.target.value = ''
+      }
+    }
+  }
+
   return (
     <aside className="hidden w-64 shrink-0 lg:block">
       <div className="sticky top-8 space-y-6">
@@ -71,7 +142,43 @@ const SellerNavbar = () => {
 
         <div className="rounded-2xl bg-white p-6 shadow-sm">
           <div className="flex items-center gap-3">
-            <img src={profileImage} alt="Seller profile" className="h-12 w-12 rounded-full object-cover" />
+            <div className="relative">
+              {profilePicture ? (
+                <img
+                  src={profilePicture}
+                  alt="Seller profile"
+                  className="h-12 w-12 rounded-full object-cover border-2 border-gray-200"
+                  onError={(e) => {
+                    // If image fails to load, hide it and show placeholder
+                    e.currentTarget.style.display = 'none'
+                    const parent = e.currentTarget.parentElement
+                    if (parent) {
+                      const placeholder = parent.querySelector('.seller-avatar-placeholder') as HTMLElement
+                      if (placeholder) placeholder.style.display = 'flex'
+                    }
+                  }}
+                />
+              ) : null}
+              {!profilePicture && (
+                <div className="h-12 w-12 rounded-full bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center text-white text-lg font-semibold seller-avatar-placeholder">
+                  {sellerName ? sellerName.charAt(0).toUpperCase() : 'S'}
+                </div>
+              )}
+              <label className="absolute bottom-0 right-0 bg-red-400 text-white p-1.5 rounded-full hover:bg-red-500 transition cursor-pointer">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleProfilePictureUpload}
+                  disabled={uploadingPicture}
+                  className="hidden"
+                />
+                {uploadingPicture ? (
+                  <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                ) : (
+                  <FaCamera className="w-3 h-3" />
+                )}
+              </label>
+            </div>
             <div>
               <p className="text-sm text-gray-500">Store owner</p>
               <p className="text-lg font-semibold text-gray-900">{sellerName}</p>

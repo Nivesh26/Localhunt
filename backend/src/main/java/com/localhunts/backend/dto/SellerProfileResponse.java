@@ -15,6 +15,7 @@ public class SellerProfileResponse {
     private String storeDescription;
     private Boolean storeStatus;
     private Role role;
+    private String profilePicture;
 
     public SellerProfileResponse() {
     }
@@ -130,5 +131,13 @@ public class SellerProfileResponse {
 
     public void setRole(Role role) {
         this.role = role;
+    }
+
+    public String getProfilePicture() {
+        return profilePicture;
+    }
+
+    public void setProfilePicture(String profilePicture) {
+        this.profilePicture = profilePicture;
     }
 }

@@ -68,6 +68,10 @@ public class Seller {
     @Column(length = 2000)
     private String storeDescription;
 
+    @Size(max = 500)
+    @Column(name = "profile_picture")
+    private String profilePicture;
+
     @Column(nullable = false)
     private Boolean approved = false;
 
@@ -241,5 +245,13 @@ public class Seller {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public String getProfilePicture() {
+        return profilePicture;
+    }
+
+    public void setProfilePicture(String profilePicture) {
+        this.profilePicture = profilePicture;
     }
 }

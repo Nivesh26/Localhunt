@@ -228,9 +228,12 @@ public class ChatService {
             response.setUserProfilePicture(chat.getUser().getProfilePicture());
         }
         
-        // Seller profile picture - currently null as Seller doesn't have profile picture field
-        // Can be added later if needed
-        response.setSellerProfilePicture(null);
+        // Set seller profile picture
+        if (chat.getSeller().getProfilePicture() != null && !chat.getSeller().getProfilePicture().isEmpty()) {
+            response.setSellerProfilePicture(chat.getSeller().getProfilePicture());
+        } else {
+            response.setSellerProfilePicture(null);
+        }
         
         return response;
     }

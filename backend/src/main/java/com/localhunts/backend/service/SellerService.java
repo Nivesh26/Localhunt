@@ -27,6 +27,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -61,6 +62,9 @@ public class SellerService {
 
     @Autowired
     private EmailService emailService;
+
+    @Autowired
+    private FileStorageService fileStorageService;
 
     public AuthResponse signup(SellerSignupRequest signupRequest) {
         // Check if passwords match
@@ -288,6 +292,7 @@ public class SellerService {
             seller.getRole()
         );
         response.setStoreStatus(seller.getStoreStatus());
+        response.setProfilePicture(seller.getProfilePicture());
         return response;
     }
 
@@ -578,6 +583,40 @@ public class SellerService {
             response.setCreatedAt(seller.getCreatedAt().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
         }
         
+        return response;
+    }
+
+    @Transactional
+    public SellerProfileResponse updateProfilePicture(Long sellerId, MultipartFile file) {
+        Seller seller = sellerRepository.findById(sellerId)
+            .orElseThrow(() -> new RuntimeException("Seller not found"));
+
+        // Delete old profile picture if exists
+        if (seller.getProfilePicture() != null && !seller.getProfilePicture().isEmpty()) {
+            fileStorageService.deleteFile(seller.getProfilePicture());
+        }
+
+        // Store new profile picture
+        String fileUrl = fileStorageService.storeProfilePicture(file);
+        seller.setProfilePicture(fileUrl);
+        Seller updatedSeller = sellerRepository.save(seller);
+
+        SellerProfileResponse response = new SellerProfileResponse(
+            updatedSeller.getId(),
+            updatedSeller.getUserName(),
+            updatedSeller.getPhoneNumber(),
+            updatedSeller.getContactEmail(),
+            updatedSeller.getLocation(),
+            updatedSeller.getBusinessName(),
+            updatedSeller.getBusinessCategory(),
+            updatedSeller.getBusinessPanVat(),
+            updatedSeller.getBusinessLocation(),
+            updatedSeller.getStoreDescription() != null ? updatedSeller.getStoreDescription() : "",
+            updatedSeller.getRole()
+        );
+        response.setStoreStatus(updatedSeller.getStoreStatus());
+        response.setProfilePicture(updatedSeller.getProfilePicture());
+
         return response;
     }
 }
