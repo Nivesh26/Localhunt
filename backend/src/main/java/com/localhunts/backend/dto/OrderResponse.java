@@ -1,7 +1,5 @@
 package com.localhunts.backend.dto;
 
-import java.time.LocalDateTime;
-
 public class OrderResponse {
     private Long orderId;
     private Long productId;

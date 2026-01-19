@@ -6,7 +6,6 @@ import {
   FaCheckCircle,
   FaClock,
   FaExclamationTriangle,
-  FaCommentDots,
 } from 'react-icons/fa'
 import SellerNavbar from '../SellerComponents/SellerNavbar'
 import { sessionUtils } from '../utils/sessionUtils'
@@ -354,16 +353,6 @@ const SellerOrder = () => {
                               Mark Delivered
                             </button>
                           )}
-                          <button
-                            onClick={() => {
-                              // Navigate to messages page or open message modal
-                              toast.info('Message feature coming soon!')
-                            }}
-                            className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-1 text-xs font-semibold text-gray-700 hover:bg-gray-50"
-                          >
-                            <FaCommentDots className="h-3 w-3" />
-                            Message buyer
-                          </button>
                         </div>
                       </td>
                     </tr>
