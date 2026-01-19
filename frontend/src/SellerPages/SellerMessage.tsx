@@ -12,6 +12,7 @@ import { sessionUtils } from '../utils/sessionUtils'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { Client } from '@stomp/stompjs'
+// @ts-ignore
 import SockJS from 'sockjs-client'
 
 type Message = {
@@ -450,7 +451,7 @@ const SellerMessage = () => {
                     }`}
                   >
                     <div className="flex items-start gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full overflow-hidden flex-shrink-0">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full overflow-hidden shrink-0">
                         {conversation.userProfilePicture ? (
                           <img
                             src={conversation.userProfilePicture.startsWith('http')
@@ -507,7 +508,7 @@ const SellerMessage = () => {
                   <div className="border-b border-gray-200 p-4">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-full overflow-hidden flex-shrink-0">
+                        <div className="flex h-12 w-12 items-center justify-center rounded-full overflow-hidden shrink-0">
                           {selectedConversation.userProfilePicture ? (
                             <img
                               src={selectedConversation.userProfilePicture.startsWith('http')
@@ -581,7 +582,7 @@ const SellerMessage = () => {
                       >
                             {/* Profile Picture for USER messages */}
                             {message.senderType === 'USER' && (
-                              <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
+                              <div className="w-8 h-8 rounded-full overflow-hidden shrink-0">
                                 {formattedProfilePictureUrl ? (
                                   <img
                                     src={formattedProfilePictureUrl}
@@ -645,7 +646,7 @@ const SellerMessage = () => {
                             
                             {/* Profile Picture for SELLER messages */}
                             {message.senderType === 'SELLER' && (
-                              <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
+                              <div className="w-8 h-8 rounded-full overflow-hidden shrink-0">
                                 {formattedProfilePictureUrl ? (
                                   <img
                                     src={formattedProfilePictureUrl}
