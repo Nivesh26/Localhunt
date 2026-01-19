@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { FaComments, FaTimes, FaPaperPlane, FaTrash, FaSearch } from 'react-icons/fa'
 import { Client } from '@stomp/stompjs'
 import SockJS from 'sockjs-client'
@@ -28,13 +29,13 @@ type Conversation = {
 }
 
 const GlobalChatWidget = () => {
+  const navigate = useNavigate()
   const [isOpen, setIsOpen] = useState(false)
   const [conversations, setConversations] = useState<Conversation[]>([])
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null)
   const [messages, setMessages] = useState<Message[]>([])
   const [searchQuery, setSearchQuery] = useState('')
   const [messageText, setMessageText] = useState('')
-  const [loading, setLoading] = useState(false)
   const [stompClient, setStompClient] = useState<Client | null>(null)
   const [connected, setConnected] = useState(false)
   const [loadingMore, setLoadingMore] = useState(false)
@@ -49,17 +50,104 @@ const GlobalChatWidget = () => {
   const lastSentProductIdRef = useRef<number | null>(null)
   const currentProductInfoRef = useRef<{ productId: number; productName: string; productDescription?: string; productImage?: string } | null>(null)
 
+  const [loginStatus, setLoginStatus] = useState(() => {
+    const user = sessionUtils.getUser()
+    return sessionUtils.isLoggedIn() && user && user.role === 'USER'
+  })
+
+  // Listen for login status changes
+  useEffect(() => {
+    const handleLoginStatusChange = () => {
+      const user = sessionUtils.getUser()
+      const isUserLoggedIn = sessionUtils.isLoggedIn() && user && user.role === 'USER'
+      setLoginStatus(isUserLoggedIn)
+    }
+
+    window.addEventListener('userLoginStatusChange', handleLoginStatusChange)
+    return () => {
+      window.removeEventListener('userLoginStatusChange', handleLoginStatusChange)
+    }
+  }, [])
+
   const user = sessionUtils.getUser()
   const userId = user?.userId
+  const isLoggedIn = loginStatus
 
-  // Only show for logged-in users with role USER
-  if (!user || user.role !== 'USER') {
-    return null
-  }
+  // Define fetchConversations before useEffects that use it
+  const fetchConversations = useCallback(async () => {
+    // Always get fresh userId from session to avoid stale closures
+    const currentUser = sessionUtils.getUser()
+    const currentUserId = currentUser?.userId
+    
+    if (!currentUserId) {
+      setConversations([]) // Ensure conversations is set even if no userId
+      return
+    }
+
+    try {
+      const response = await fetch(`http://localhost:8080/api/chat/conversations/user/${currentUserId}`)
+      if (response.ok) {
+        const data = await response.json()
+        setConversations(data || []) // Ensure it's always an array
+        
+        // If there's a pending sellerId to select, select it now
+        if (pendingSellerIdRef.current) {
+          const conversation = (data || []).find((c: Conversation) => c.sellerId === pendingSellerIdRef.current)
+          if (conversation) {
+            setSelectedConversation(conversation)
+            pendingSellerIdRef.current = null
+            pendingChatInfoRef.current = null
+          } else if (pendingChatInfoRef.current) {
+            // If conversation doesn't exist, create a temporary one so user can send messages
+            const tempConversation: Conversation = {
+              productId: pendingChatInfoRef.current.productId,
+              productName: pendingChatInfoRef.current.productName,
+              userId: currentUserId,
+              userName: currentUser?.fullName || 'User',
+              sellerId: pendingChatInfoRef.current.sellerId,
+              sellerName: pendingChatInfoRef.current.sellerName,
+              lastMessage: '',
+              lastMessageTime: null,
+              unreadCount: 0
+            }
+            setSelectedConversation(tempConversation)
+            // Store current product info for sending messages
+            currentProductInfoRef.current = {
+              productId: pendingChatInfoRef.current.productId,
+              productName: pendingChatInfoRef.current.productName,
+              productDescription: pendingChatInfoRef.current.productDescription,
+              productImage: pendingChatInfoRef.current.productImage
+            }
+            // Reset last sent product ID for new conversation
+            lastSentProductIdRef.current = null
+            pendingSellerIdRef.current = null
+            // Keep pendingChatInfoRef for product details
+          }
+        }
+      } else {
+        // Even if response is not ok, set empty array so widget still shows
+        setConversations([])
+      }
+    } catch (error) {
+      console.error('Error fetching conversations:', error)
+      // Even on error, set empty array so widget still shows
+      setConversations([])
+    }
+  }, []) // Empty dependency array - function doesn't depend on component state
 
   // Listen for open chat events from other components (separate useEffect to keep it always active)
   useEffect(() => {
     const handleOpenChat = (event: CustomEvent) => {
+      // Check if user is logged in
+      const currentUser = sessionUtils.getUser()
+      const isUserLoggedIn = sessionUtils.isLoggedIn() && currentUser && currentUser.role === 'USER'
+      
+      if (!isUserLoggedIn) {
+        // User not logged in, open chat to show login prompt
+        setIsOpen(true)
+        return
+      }
+
       const { sellerId, sellerName, productId, productName, productDescription, productImage } = event.detail || {}
       console.log('Received openChatWidget event:', { sellerId, sellerName, productId, productName }) // Debug log
       if (sellerId) {
@@ -83,9 +171,14 @@ const GlobalChatWidget = () => {
     return () => {
       window.removeEventListener('openChatWidget' as any, handleOpenChat as EventListener)
     }
-  }, []) // Empty dependency array - keep listener always active
+  }, [fetchConversations]) // Include fetchConversations in dependency array
 
   useEffect(() => {
+    // Only fetch conversations and connect WebSocket if user is logged in
+    if (!isLoggedIn) {
+      return
+    }
+
     // Fetch conversations on mount and when opened
     fetchConversations()
     
@@ -95,7 +188,7 @@ const GlobalChatWidget = () => {
     }
 
     // Periodically refresh conversations to update badge (every 5 seconds when closed)
-    let intervalId: NodeJS.Timeout | null = null
+    let intervalId: ReturnType<typeof setInterval> | null = null
     if (!isOpen) {
       intervalId = setInterval(() => {
         fetchConversations()
@@ -110,7 +203,7 @@ const GlobalChatWidget = () => {
         clearInterval(intervalId)
       }
     }
-  }, [isOpen])
+  }, [isOpen, isLoggedIn, fetchConversations, stompClient, connected])
 
   useEffect(() => {
     // Update ref whenever selectedConversation changes
@@ -212,68 +305,6 @@ const GlobalChatWidget = () => {
 
     client.activate()
     setStompClient(client)
-  }
-
-  const fetchConversations = async () => {
-    if (!userId) {
-      setLoading(false)
-      setConversations([]) // Ensure conversations is set even if no userId
-      return
-    }
-
-    try {
-      const response = await fetch(`http://localhost:8080/api/chat/conversations/user/${userId}`)
-      if (response.ok) {
-        const data = await response.json()
-        setConversations(data || []) // Ensure it's always an array
-        
-        // If there's a pending sellerId to select, select it now
-        if (pendingSellerIdRef.current) {
-          const conversation = (data || []).find((c: Conversation) => c.sellerId === pendingSellerIdRef.current)
-          if (conversation) {
-            setSelectedConversation(conversation)
-            pendingSellerIdRef.current = null
-            pendingChatInfoRef.current = null
-          } else if (pendingChatInfoRef.current) {
-            // If conversation doesn't exist, create a temporary one so user can send messages
-            const tempConversation: Conversation = {
-              productId: pendingChatInfoRef.current.productId,
-              productName: pendingChatInfoRef.current.productName,
-              userId: userId,
-              userName: user?.fullName || 'User',
-              sellerId: pendingChatInfoRef.current.sellerId,
-              sellerName: pendingChatInfoRef.current.sellerName,
-              lastMessage: '',
-              lastMessageTime: null,
-              unreadCount: 0
-            }
-            setSelectedConversation(tempConversation)
-            // Store current product info for sending messages
-            currentProductInfoRef.current = {
-              productId: pendingChatInfoRef.current.productId,
-              productName: pendingChatInfoRef.current.productName,
-              productDescription: pendingChatInfoRef.current.productDescription,
-              productImage: pendingChatInfoRef.current.productImage
-            }
-            // Reset last sent product ID for new conversation
-            lastSentProductIdRef.current = null
-            pendingSellerIdRef.current = null
-            // Keep pendingChatInfoRef for product details
-          }
-        }
-      } else {
-        // Even if response is not ok, set empty array so widget still shows
-        setConversations([])
-        setLoading(false)
-      }
-    } catch (error) {
-      console.error('Error fetching conversations:', error)
-      // Even on error, set empty array so widget still shows
-      setConversations([])
-      setLoading(false)
-    } finally {
-      setLoading(false)
-    }
   }
 
   const fetchMessages = async (beforeId?: number) => {
@@ -460,8 +491,6 @@ const GlobalChatWidget = () => {
       message: messageToSend,
       senderType: 'USER',
       createdAt: new Date().toISOString(),
-      userId: currentUserId,
-      sellerId: selectedConversation.sellerId,
       productId: productId,
     }
     setMessages((prev) => [...prev, tempMessage])
@@ -606,17 +635,31 @@ const GlobalChatWidget = () => {
     return new Date(b.lastMessageTime).getTime() - new Date(a.lastMessageTime).getTime()
   })
 
+  const handleChatButtonClick = () => {
+    // Check if user is logged in when button is clicked
+    const currentUser = sessionUtils.getUser()
+    const isUserLoggedIn = sessionUtils.isLoggedIn() && currentUser && currentUser.role === 'USER'
+    
+    if (!isUserLoggedIn) {
+      // User not logged in, open chat to show login prompt
+      setIsOpen(true)
+    } else {
+      // User is logged in, open chat normally
+      setIsOpen(true)
+    }
+  }
+
   return (
     <>
-      {/* Chat Button */}
+      {/* Chat Button - Always visible */}
       {!isOpen && (
         <button
-          onClick={() => setIsOpen(true)}
+          onClick={handleChatButtonClick}
           className="fixed bottom-8 right-8 bg-red-600 text-white rounded-full p-4 shadow-lg hover:bg-red-700 transition-all z-50"
           title="Messages"
         >
           <FaComments className="w-6 h-6" />
-          {(() => {
+          {isLoggedIn && (() => {
             const totalUnread = conversations.reduce((sum, c) => sum + (c.unreadCount || 0), 0)
             return totalUnread > 0 && (
               <span className="absolute -top-1 -right-1 bg-yellow-400 text-red-900 text-xs font-bold rounded-full min-w-[20px] h-5 flex items-center justify-center px-1.5 shadow-lg animate-pulse">
@@ -638,63 +681,95 @@ const GlobalChatWidget = () => {
             </button>
           </div>
 
-          <div className="flex flex-1 overflow-hidden">
-            {/* Conversations List */}
-            <div className="w-1/3 border-r border-gray-200 flex flex-col">
-              {/* Search */}
-              <div className="p-3 border-b border-gray-200">
-                <div className="relative">
-                  <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm" />
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search conversations..."
-                    className="w-full rounded-lg border border-gray-200 py-2 pl-9 pr-3 text-sm focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-200"
-                  />
+          {!isLoggedIn ? (
+            /* Login Prompt - Show when user is not logged in */
+            <div className="flex-1 flex items-center justify-center p-8">
+              <div className="text-center max-w-md">
+                <FaComments className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-gray-800 mb-2">Login Required</h3>
+                <p className="text-gray-600 mb-6">
+                  Please login to access your messages and chat with vendors.
+                </p>
+                <div className="flex gap-3 justify-center">
+                  <button
+                    onClick={() => {
+                      navigate('/login')
+                      setIsOpen(false)
+                    }}
+                    className="bg-red-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-red-700 transition-colors"
+                  >
+                    Login
+                  </button>
+                  <button
+                    onClick={() => {
+                      navigate('/signup')
+                      setIsOpen(false)
+                    }}
+                    className="bg-gray-200 text-gray-800 px-6 py-2 rounded-lg font-semibold hover:bg-gray-300 transition-colors"
+                  >
+                    Sign Up
+                  </button>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="flex flex-1 overflow-hidden">
+              {/* Conversations List */}
+              <div className="w-1/3 border-r border-gray-200 flex flex-col">
+                {/* Search */}
+                <div className="p-3 border-b border-gray-200">
+                  <div className="relative">
+                    <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm" />
+                    <input
+                      type="text"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder="Search conversations..."
+                      className="w-full rounded-lg border border-gray-200 py-2 pl-9 pr-3 text-sm focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-200"
+                    />
+                  </div>
+                </div>
+
+                {/* Conversations */}
+                <div className="flex-1 overflow-y-auto">
+                  {filteredConversations.length === 0 ? (
+                    <div className="p-4 text-center text-gray-500 text-sm">
+                      {conversations.length === 0 ? 'No conversations yet' : 'No conversations found'}
+                    </div>
+                  ) : (
+                    filteredConversations.map((conversation) => (
+                      <button
+                        key={`${conversation.sellerId}`}
+                        onClick={() => setSelectedConversation(conversation)}
+                        className={`w-full p-3 text-left border-b border-gray-100 hover:bg-gray-50 transition ${
+                          selectedConversation?.sellerId === conversation.sellerId
+                            ? 'bg-red-50 border-red-200'
+                            : ''
+                        }`}
+                      >
+                        <div className="flex items-center justify-between mb-1">
+                          <p className="font-semibold text-sm text-gray-900">{conversation.sellerName}</p>
+                          {conversation.unreadCount > 0 && (
+                            <span className="bg-red-600 text-white text-xs font-semibold rounded-full px-2 py-1">
+                              {conversation.unreadCount}
+                            </span>
+                          )}
+                        </div>
+                        {conversation.lastMessage && (
+                          <p className="text-xs text-gray-500 mt-1 truncate">{conversation.lastMessage}</p>
+                        )}
+                        {conversation.lastMessageTime && (
+                          <p className="text-[10px] text-gray-400 mt-1">{formatTime(conversation.lastMessageTime)}</p>
+                        )}
+                      </button>
+                    ))
+                  )}
                 </div>
               </div>
 
-              {/* Conversations */}
-              <div className="flex-1 overflow-y-auto">
-                {filteredConversations.length === 0 ? (
-                  <div className="p-4 text-center text-gray-500 text-sm">
-                    {conversations.length === 0 ? 'No conversations yet' : 'No conversations found'}
-                  </div>
-                ) : (
-                  filteredConversations.map((conversation) => (
-                    <button
-                      key={`${conversation.sellerId}`}
-                      onClick={() => setSelectedConversation(conversation)}
-                      className={`w-full p-3 text-left border-b border-gray-100 hover:bg-gray-50 transition ${
-                        selectedConversation?.sellerId === conversation.sellerId
-                          ? 'bg-red-50 border-red-200'
-                          : ''
-                      }`}
-                    >
-                      <div className="flex items-center justify-between mb-1">
-                        <p className="font-semibold text-sm text-gray-900">{conversation.sellerName}</p>
-                        {conversation.unreadCount > 0 && (
-                          <span className="bg-red-600 text-white text-xs font-semibold rounded-full px-2 py-1">
-                            {conversation.unreadCount}
-                          </span>
-                        )}
-                      </div>
-                      {conversation.lastMessage && (
-                        <p className="text-xs text-gray-500 mt-1 truncate">{conversation.lastMessage}</p>
-                      )}
-                      {conversation.lastMessageTime && (
-                        <p className="text-[10px] text-gray-400 mt-1">{formatTime(conversation.lastMessageTime)}</p>
-                      )}
-                    </button>
-                  ))
-                )}
-              </div>
-            </div>
-
-            {/* Messages Area */}
-            <div className="flex-1 flex flex-col">
-              {selectedConversation ? (
+              {/* Messages Area */}
+              <div className="flex-1 flex flex-col">
+                {selectedConversation ? (
                 <>
                   {/* Messages Header */}
                   <div className="p-4 border-b border-gray-200 bg-white">
@@ -722,7 +797,7 @@ const GlobalChatWidget = () => {
                     {messages.length === 0 ? (
                       <div className="text-center text-gray-500 py-8">No messages yet. Start a conversation!</div>
                     ) : (
-                      messages.map((msg) => {
+                      messages.map((msg: Message) => {
                         // Parse message to extract image URL if present
                         const imageUrlMatch = msg.message.match(/\[Image:\s*(.+?)\]/)
                         const imageUrl = imageUrlMatch ? imageUrlMatch[1].trim() : null
@@ -812,6 +887,7 @@ const GlobalChatWidget = () => {
               )}
             </div>
           </div>
+          )}
         </div>
       )}
     </>
