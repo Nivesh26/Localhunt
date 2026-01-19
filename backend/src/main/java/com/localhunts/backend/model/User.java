@@ -53,6 +53,10 @@ public class User {
     @Column(name = "address")
     private String address;
 
+    @Size(max = 500)
+    @Column(name = "profile_picture")
+    private String profilePicture;
+
     public User() {
     }
 
@@ -143,5 +147,13 @@ public class User {
 
     public void setAddress(String address) {
         this.address = address;
+    }
+
+    public String getProfilePicture() {
+        return profilePicture;
+    }
+
+    public void setProfilePicture(String profilePicture) {
+        this.profilePicture = profilePicture;
     }
 }

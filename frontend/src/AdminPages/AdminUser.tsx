@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { toast } from 'react-toastify'
-import { FaUsers, FaTrash } from 'react-icons/fa'
+import { FaUsers, FaTrash, FaSearch } from 'react-icons/fa'
 import AdminNavbar from '../AdminComponents/AdminNavbar'
 
 interface User {
@@ -14,6 +14,7 @@ interface User {
 const AdminUser = () => {
   const [users, setUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
 
   useEffect(() => {
     fetchUsers()
@@ -60,8 +61,23 @@ const AdminUser = () => {
     }
   }
 
-  // Filter out SUPERADMIN users from display
-  const filteredUsers = users.filter(user => user.role !== 'SUPERADMIN')
+  // Filter out SUPERADMIN users and apply search filter
+  const filteredUsers = users.filter(user => {
+    // Always exclude SUPERADMIN
+    if (user.role === 'SUPERADMIN') return false
+    
+    // Apply search query filter (search in name, email, phone)
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase()
+      return (
+        user.fullName.toLowerCase().includes(query) ||
+        user.email.toLowerCase().includes(query) ||
+        user.phone.includes(query)
+      )
+    }
+    
+    return true
+  })
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -71,13 +87,27 @@ const AdminUser = () => {
         {/* Main content */}
         <main className="flex-1 space-y-8">
           <header className="rounded-2xl bg-white p-6 shadow-sm">
-            <div className="flex items-center gap-3">
-              <div className="rounded-xl bg-red-600 px-3 py-2 text-sm font-semibold uppercase tracking-wide text-white">
-                Admin
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="rounded-xl bg-red-600 px-3 py-2 text-sm font-semibold uppercase tracking-wide text-white">
+                  Admin
+                </div>
+                <div>
+                  <h1 className="text-xl font-bold text-gray-900">User Management</h1>
+                  <p className="text-sm text-gray-500">View and manage all registered users in the system</p>
+                </div>
               </div>
-              <div>
-                <h1 className="text-xl font-bold text-gray-900">User Management</h1>
-                <p className="text-sm text-gray-500">View and manage all registered users in the system</p>
+              
+              {/* Search Bar */}
+              <div className="relative flex-1 max-w-md">
+                <FaSearch className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search by name, email, or phone..."
+                  className="w-full rounded-xl border border-gray-200 py-2 pl-10 pr-4 text-sm focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-200"
+                />
               </div>
             </div>
           </header>
@@ -91,7 +121,9 @@ const AdminUser = () => {
                 </div>
                 <div>
                   <h2 className="text-lg font-semibold text-gray-900">All Users</h2>
-                  <p className="text-sm text-gray-500">Total users: {filteredUsers.length}</p>
+                  <p className="text-sm text-gray-500">
+                    Showing {filteredUsers.length} of {users.filter(u => u.role !== 'SUPERADMIN').length} users
+                  </p>
                 </div>
               </div>
               <button
@@ -124,9 +156,6 @@ const AdminUser = () => {
                         Phone
                       </th>
                       <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-700">
-                        Role
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-700">
                         Actions
                       </th>
                     </tr>
@@ -138,17 +167,6 @@ const AdminUser = () => {
                         <td className="px-4 py-3 text-sm font-medium text-gray-900">{user.fullName}</td>
                         <td className="px-4 py-3 text-sm text-gray-600">{user.email}</td>
                         <td className="px-4 py-3 text-sm text-gray-600">{user.phone}</td>
-                        <td className="px-4 py-3">
-                          <span
-                            className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
-                              user.role === 'VENDOR'
-                                ? 'bg-blue-100 text-blue-800'
-                                : 'bg-green-100 text-green-800'
-                            }`}
-                          >
-                            {user.role}
-                          </span>
-                        </td>
                         <td className="px-4 py-3">
                           <button
                             onClick={() => handleDeleteUser(user.userId)}

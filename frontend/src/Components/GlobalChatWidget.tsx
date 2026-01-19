@@ -14,6 +14,8 @@ type Message = {
   sellerName?: string
   productId?: number
   productName?: string
+  userProfilePicture?: string | null
+  sellerProfilePicture?: string | null
 }
 
 type Conversation = {
@@ -810,11 +812,42 @@ const GlobalChatWidget = () => {
                           ? msg.message.replace(/\[Image:\s*.+?\]/g, '').trim()
                           : msg.message
                         
+                        // Get profile picture URL
+                        const profilePictureUrl = msg.senderType === 'USER' 
+                          ? msg.userProfilePicture 
+                          : msg.sellerProfilePicture
+                        const formattedProfilePictureUrl = profilePictureUrl 
+                          ? (profilePictureUrl.startsWith('http') 
+                              ? profilePictureUrl 
+                              : `http://localhost:8080${profilePictureUrl}`)
+                          : null
+                        
                         return (
                           <div
                             key={msg.id}
-                            className={`flex ${msg.senderType === 'USER' ? 'justify-end' : 'justify-start'}`}
+                            className={`flex items-end gap-2 ${msg.senderType === 'USER' ? 'justify-end' : 'justify-start'}`}
                           >
+                            {/* Profile Picture for SELLER messages */}
+                            {msg.senderType === 'SELLER' && (
+                              <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
+                                {formattedProfilePictureUrl ? (
+                                  <img
+                                    src={formattedProfilePictureUrl}
+                                    alt={msg.sellerName || 'Seller'}
+                                    className="w-full h-full object-cover"
+                                    onError={(e) => {
+                                      // Hide image if it fails to load
+                                      e.currentTarget.style.display = 'none'
+                                    }}
+                                  />
+                                ) : (
+                                  <div className="w-full h-full bg-gray-300 flex items-center justify-center text-gray-600 text-xs font-semibold">
+                                    {msg.sellerName ? msg.sellerName.charAt(0).toUpperCase() : 'S'}
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                            
                             <div
                               className={`max-w-[75%] rounded-lg px-3 py-2 ${
                                 msg.senderType === 'USER'
@@ -857,6 +890,27 @@ const GlobalChatWidget = () => {
                                 )}
                               </div>
                             </div>
+                            
+                            {/* Profile Picture for USER messages */}
+                            {msg.senderType === 'USER' && (
+                              <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
+                                {formattedProfilePictureUrl ? (
+                                  <img
+                                    src={formattedProfilePictureUrl}
+                                    alt={msg.userName || 'User'}
+                                    className="w-full h-full object-cover"
+                                    onError={(e) => {
+                                      // Hide image if it fails to load
+                                      e.currentTarget.style.display = 'none'
+                                    }}
+                                  />
+                                ) : (
+                                  <div className="w-full h-full bg-red-500 flex items-center justify-center text-white text-xs font-semibold">
+                                    {msg.userName ? msg.userName.charAt(0).toUpperCase() : 'U'}
+                                  </div>
+                                )}
+                              </div>
+                            )}
                           </div>
                         )
                       })

@@ -15,6 +15,8 @@ public class ChatMessageResponse {
     private LocalDateTime createdAt;
     private Boolean deletedByUser;
     private Boolean deletedBySeller;
+    private String userProfilePicture;
+    private String sellerProfilePicture;
 
     public ChatMessageResponse() {
     }
@@ -113,5 +115,21 @@ public class ChatMessageResponse {
 
     public void setDeletedBySeller(Boolean deletedBySeller) {
         this.deletedBySeller = deletedBySeller;
+    }
+
+    public String getUserProfilePicture() {
+        return userProfilePicture;
+    }
+
+    public void setUserProfilePicture(String userProfilePicture) {
+        this.userProfilePicture = userProfilePicture;
+    }
+
+    public String getSellerProfilePicture() {
+        return sellerProfilePicture;
+    }
+
+    public void setSellerProfilePicture(String sellerProfilePicture) {
+        this.sellerProfilePicture = sellerProfilePicture;
     }
 }

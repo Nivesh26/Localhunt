@@ -4,15 +4,14 @@ import { toast } from 'react-toastify'
 import Topbar from '../Components/Topbar'
 import Header from '../Components/Header'
 import Footer from '../Components/Footer'
-import { FaEdit, FaCheck, FaTimes, FaUser, FaEnvelope, FaPhone, FaLock } from 'react-icons/fa'
-import profileImage from '../assets/Nivesh.png'
+import { FaEdit, FaCheck, FaTimes, FaUser, FaEnvelope, FaPhone, FaLock, FaCamera } from 'react-icons/fa'
 import { sessionUtils } from '../utils/sessionUtils'
 
 interface UserData {
   name: string
   email: string
   phone: string
-  avatar?: string
+  avatar?: string | null
 }
 
 const Profie = () => {
@@ -21,16 +20,17 @@ const Profie = () => {
     name: '',
     email: '',
     phone: '',
-    avatar: profileImage
+    avatar: null
   })
   const [isEditing, setIsEditing] = useState(false)
   const [editForm, setEditForm] = useState<UserData>({
     name: '',
     email: '',
     phone: '',
-    avatar: profileImage
+    avatar: null
   })
   const [loading, setLoading] = useState(true)
+  const [uploadingPicture, setUploadingPicture] = useState(false)
 
   useEffect(() => {
     fetchUserProfile()
@@ -50,17 +50,23 @@ const Profie = () => {
       const response = await fetch(`http://localhost:8080/api/auth/profile/${userId}`)
       if (response.ok) {
         const data = await response.json()
+        let avatarUrl = null
+        if (data.profilePicture) {
+          avatarUrl = data.profilePicture.startsWith('http')
+            ? data.profilePicture
+            : `http://localhost:8080${data.profilePicture}`
+        }
         setUserData({
           name: data.fullName || '',
           email: data.email || '',
           phone: data.phone || '',
-          avatar: profileImage
+          avatar: avatarUrl
         })
         setEditForm({
           name: data.fullName || '',
           email: data.email || '',
           phone: data.phone || '',
-          avatar: profileImage
+          avatar: avatarUrl
         })
       } else if (response.status === 404) {
         // User was deleted from database
@@ -150,14 +156,25 @@ const Profie = () => {
 
         if (response.ok) {
           const data = await response.json()
+          let avatarUrl = userData.avatar
+          if (data.profilePicture) {
+            avatarUrl = data.profilePicture.startsWith('http')
+              ? data.profilePicture
+              : `http://localhost:8080${data.profilePicture}`
+          }
           setUserData({
             name: data.fullName || editForm.name,
             email: data.email || editForm.email,
             phone: data.phone || editForm.phone,
-            avatar: editForm.avatar,
+            avatar: avatarUrl,
           })
           setIsEditing(false)
           toast.success('Profile updated successfully!')
+          
+          // Dispatch event to notify Header component to update profile picture
+          if (avatarUrl !== userData.avatar) {
+            window.dispatchEvent(new CustomEvent('profilePictureUpdated'))
+          }
         } else if (response.status === 404) {
           // User was deleted from database
           sessionUtils.clearSession()
@@ -177,6 +194,75 @@ const Profie = () => {
   const handleCancel = () => {
     setEditForm(userData)
     setIsEditing(false)
+  }
+
+  const handleProfilePictureUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please upload an image file')
+      return
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image size must be less than 5MB')
+      return
+    }
+
+    setUploadingPicture(true)
+    try {
+      const user = sessionUtils.getUser()
+      if (!user) {
+        toast.error('Please login to upload profile picture')
+        return
+      }
+
+      const userId = user.userId
+      const formData = new FormData()
+      formData.append('file', file)
+
+      const response = await fetch(`http://localhost:8080/api/auth/profile/${userId}/picture`, {
+        method: 'POST',
+        body: formData,
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        let avatarUrl = null
+        if (data.profilePicture) {
+          avatarUrl = data.profilePicture.startsWith('http')
+            ? data.profilePicture
+            : `http://localhost:8080${data.profilePicture}`
+        }
+        setUserData({
+          ...userData,
+          avatar: avatarUrl
+        })
+        setEditForm({
+          ...editForm,
+          avatar: avatarUrl
+        })
+        toast.success('Profile picture updated successfully!')
+        
+        // Dispatch event to notify Header component to update profile picture
+        window.dispatchEvent(new CustomEvent('profilePictureUpdated'))
+      } else {
+        const errorData = await response.json().catch(() => ({ message: 'Failed to upload profile picture' }))
+        toast.error(errorData.message || 'Failed to upload profile picture')
+      }
+    } catch (error) {
+      console.error('Error uploading profile picture:', error)
+      toast.error('An error occurred while uploading profile picture')
+    } finally {
+      setUploadingPicture(false)
+      // Reset file input
+      if (e.target) {
+        e.target.value = ''
+      }
+    }
   }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -306,15 +392,36 @@ const Profie = () => {
                       src={userData.avatar}
                       alt={userData.name}
                       className="w-32 h-32 rounded-full object-cover border-4 border-white shadow-md mx-auto mb-4"
+                      onError={(e) => {
+                        // If image fails to load, show placeholder
+                        e.currentTarget.style.display = 'none'
+                        const parent = e.currentTarget.parentElement
+                        if (parent) {
+                          const placeholder = parent.querySelector('.avatar-placeholder') as HTMLElement
+                          if (placeholder) placeholder.style.display = 'flex'
+                        }
+                      }}
                     />
-                  ) : (
-                    <div className="w-32 h-32 rounded-full bg-linear-to-br from-red-500 to-red-600 flex items-center justify-center text-white text-4xl font-bold mx-auto mb-4">
-                      {userData.name.charAt(0).toUpperCase()}
+                  ) : null}
+                  {!userData.avatar && (
+                    <div className="w-32 h-32 rounded-full bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center text-white text-4xl font-bold mx-auto mb-4 avatar-placeholder">
+                      {userData.name ? userData.name.charAt(0).toUpperCase() : 'U'}
                     </div>
                   )}
-                  <button className="absolute bottom-0 right-0 bg-red-400 text-white p-2 rounded-full hover:bg-red-500 transition">
-                    <FaEdit className="w-4 h-4" />
-                  </button>
+                  <label className="absolute bottom-0 right-0 bg-red-400 text-white p-2 rounded-full hover:bg-red-500 transition cursor-pointer">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleProfilePictureUpload}
+                      disabled={uploadingPicture}
+                      className="hidden"
+                    />
+                    {uploadingPicture ? (
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    ) : (
+                      <FaCamera className="w-4 h-4" />
+                    )}
+                  </label>
                 </div>
                 <h2 className="text-2xl font-bold text-gray-900">{userData.name}</h2>
                 <p className="text-gray-600">{userData.email}</p>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import profile from "../assets/Local Hunt Logo NoBG.png";
 import { FaSearch, FaShoppingCart, FaUserCircle } from "react-icons/fa";
 import { Link } from "react-router-dom";
@@ -6,12 +6,47 @@ import { sessionUtils } from "../utils/sessionUtils";
 
 const Header = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [profilePicture, setProfilePicture] = useState<string | null>(null);
+
+  const fetchProfilePicture = async () => {
+    const user = sessionUtils.getUser();
+    if (!user) {
+      setProfilePicture(null);
+      return;
+    }
+
+    try {
+      const userId = user.userId;
+      const response = await fetch(`http://localhost:8080/api/auth/profile/${userId}`);
+      if (response.ok) {
+        const data = await response.json();
+        if (data.profilePicture) {
+          const avatarUrl = data.profilePicture.startsWith('http')
+            ? data.profilePicture
+            : `http://localhost:8080${data.profilePicture}`;
+          setProfilePicture(avatarUrl);
+        } else {
+          setProfilePicture(null);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching profile picture:', error);
+      setProfilePicture(null);
+    }
+  };
 
   useEffect(() => {
     // Check if user is logged in (using sessionStorage - tab-specific)
     const checkLoginStatus = () => {
       const isLoggedIn = sessionUtils.isLoggedIn();
       setIsLoggedIn(isLoggedIn);
+      
+      // Fetch profile picture if user is logged in
+      if (isLoggedIn) {
+        fetchProfilePicture();
+      } else {
+        setProfilePicture(null);
+      }
     };
 
     checkLoginStatus();
@@ -19,9 +54,18 @@ const Header = () => {
     // Listen for custom login event (when user logs in/out in same tab)
     // Note: sessionStorage doesn't trigger 'storage' event across tabs, which is what we want
     window.addEventListener('userLoginStatusChange', checkLoginStatus);
+    
+    // Listen for profile picture updates
+    const handleProfilePictureUpdate = () => {
+      if (sessionUtils.isLoggedIn()) {
+        fetchProfilePicture();
+      }
+    };
+    window.addEventListener('profilePictureUpdated', handleProfilePictureUpdate);
 
     return () => {
       window.removeEventListener('userLoginStatusChange', checkLoginStatus);
+      window.removeEventListener('profilePictureUpdated', handleProfilePictureUpdate);
     };
   }, []);
 
@@ -70,8 +114,26 @@ const Header = () => {
         
         {/* Profile Icon or Login Link */}
         {isLoggedIn ? (
-          <Link to="/profile">
-            <FaUserCircle className="w-6 h-6 text-gray-700 hover:text-red-600 cursor-pointer" />
+          <Link to="/profile" className="flex items-center">
+            {profilePicture ? (
+              <img
+                src={profilePicture}
+                alt="Profile"
+                className="w-8 h-8 rounded-full object-cover border-2 border-gray-300 hover:border-red-600 cursor-pointer transition"
+                onError={(e) => {
+                  // If image fails to load, show default icon instead
+                  e.currentTarget.style.display = 'none';
+                  const parent = e.currentTarget.parentElement;
+                  if (parent) {
+                    const defaultIcon = parent.querySelector('.default-profile-icon') as HTMLElement;
+                    if (defaultIcon) {
+                      defaultIcon.classList.remove('hidden');
+                    }
+                  }
+                }}
+              />
+            ) : null}
+            <FaUserCircle className={`w-8 h-8 text-gray-700 hover:text-red-600 cursor-pointer transition default-profile-icon ${profilePicture ? 'hidden' : ''}`} />
           </Link>
         ) : (
           <Link to="/login" className="text-gray-700 hover:text-red-600 font-medium">

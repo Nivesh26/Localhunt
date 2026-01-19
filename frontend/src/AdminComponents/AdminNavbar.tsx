@@ -7,7 +7,6 @@ import {
   FaUsers,
 } from 'react-icons/fa'
 import logo from '../assets/Local Hunt Logo NoBG.png'
-import profileImage from '../assets/Nivesh.png'
 import { Link } from 'react-router-dom'
 
 const navLinks = [
@@ -36,12 +35,9 @@ const AdminNavbar = () => {
         </div>
 
         <div className="rounded-2xl bg-white p-6 shadow-sm">
-          <div className="flex items-center gap-3">
-            <img src={profileImage} alt="Profile" className="h-12 w-12 rounded-full object-cover" />
-            <div>
-              <p className="text-sm text-gray-500">Marketplace Admin</p>
-              <p className="text-lg font-semibold text-gray-900">Super Admin</p>
-            </div>
+          <div>
+            <p className="text-sm text-gray-500">Marketplace Admin</p>
+            <p className="text-lg font-semibold text-gray-900">Super Admin</p>
           </div>
           
           <button className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-red-600 hover:text-red-700">

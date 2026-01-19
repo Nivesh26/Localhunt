@@ -12,6 +12,7 @@ public class ConversationResponse {
     private String lastMessage;
     private LocalDateTime lastMessageTime;
     private Integer unreadCount;
+    private String userProfilePicture;
 
     public ConversationResponse() {
     }
@@ -86,5 +87,13 @@ public class ConversationResponse {
 
     public void setUnreadCount(Integer unreadCount) {
         this.unreadCount = unreadCount;
+    }
+
+    public String getUserProfilePicture() {
+        return userProfilePicture;
+    }
+
+    public void setUserProfilePicture(String userProfilePicture) {
+        this.userProfilePicture = userProfilePicture;
     }
 }

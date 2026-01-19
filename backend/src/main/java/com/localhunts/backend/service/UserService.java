@@ -29,6 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -62,6 +63,9 @@ public class UserService {
 
     @Autowired
     private EmailService emailService;
+
+    @Autowired
+    private FileStorageService fileStorageService;
 
     public AuthResponse signup(SignupRequest signupRequest) {
         // Check if passwords match
@@ -218,6 +222,7 @@ public class UserService {
         response.setCity(user.getCity());
         response.setArea(user.getArea());
         response.setAddress(user.getAddress());
+        response.setProfilePicture(user.getProfilePicture());
         return response;
     }
 
@@ -247,6 +252,7 @@ public class UserService {
         response.setCity(updatedUser.getCity());
         response.setArea(updatedUser.getArea());
         response.setAddress(updatedUser.getAddress());
+        response.setProfilePicture(updatedUser.getProfilePicture());
 
         try {
             emailService.sendUserProfileUpdateEmail(updatedUser.getEmail(), updatedUser.getFullName());
@@ -278,6 +284,7 @@ public class UserService {
         response.setCity(updatedUser.getCity());
         response.setArea(updatedUser.getArea());
         response.setAddress(updatedUser.getAddress());
+        response.setProfilePicture(updatedUser.getProfilePicture());
 
         try {
             emailService.sendUserProfileUpdateEmail(updatedUser.getEmail(), updatedUser.getFullName());
@@ -457,5 +464,36 @@ public class UserService {
 
         // Delete the user
         userRepository.delete(user);
+    }
+
+    @Transactional
+    public UserProfileResponse updateProfilePicture(Long userId, MultipartFile file) {
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // Delete old profile picture if exists
+        if (user.getProfilePicture() != null && !user.getProfilePicture().isEmpty()) {
+            fileStorageService.deleteFile(user.getProfilePicture());
+        }
+
+        // Store new profile picture
+        String fileUrl = fileStorageService.storeProfilePicture(file);
+        user.setProfilePicture(fileUrl);
+        User updatedUser = userRepository.save(user);
+
+        UserProfileResponse response = new UserProfileResponse(
+            updatedUser.getId(),
+            updatedUser.getFullName(),
+            updatedUser.getEmail(),
+            updatedUser.getPhone(),
+            updatedUser.getRole()
+        );
+        response.setRegion(updatedUser.getRegion());
+        response.setCity(updatedUser.getCity());
+        response.setArea(updatedUser.getArea());
+        response.setAddress(updatedUser.getAddress());
+        response.setProfilePicture(updatedUser.getProfilePicture());
+
+        return response;
     }
 }

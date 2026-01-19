@@ -134,6 +134,7 @@ public class ChatService {
             response.setLastMessage(lastMessage != null ? lastMessage.getMessage() : "");
             response.setLastMessageTime(lastMessage != null ? lastMessage.getCreatedAt() : null);
             response.setUnreadCount(unreadCount != null ? unreadCount.intValue() : 0);
+            response.setUserProfilePicture(user.getProfilePicture());
 
             return response;
         }).sorted((a, b) -> {
@@ -169,6 +170,7 @@ public class ChatService {
             response.setLastMessage(lastMessage != null ? lastMessage.getMessage() : "");
             response.setLastMessageTime(lastMessage != null ? lastMessage.getCreatedAt() : null);
             response.setUnreadCount(unreadCount != null ? unreadCount.intValue() : 0);
+            response.setUserProfilePicture(user.getProfilePicture());
 
             return response;
         }).sorted((a, b) -> {
@@ -220,6 +222,16 @@ public class ChatService {
         response.setCreatedAt(chat.getCreatedAt());
         response.setDeletedByUser(chat.getDeletedByUser());
         response.setDeletedBySeller(chat.getDeletedBySeller());
+        
+        // Set user profile picture
+        if (chat.getUser().getProfilePicture() != null && !chat.getUser().getProfilePicture().isEmpty()) {
+            response.setUserProfilePicture(chat.getUser().getProfilePicture());
+        }
+        
+        // Seller profile picture - currently null as Seller doesn't have profile picture field
+        // Can be added later if needed
+        response.setSellerProfilePicture(null);
+        
         return response;
     }
 }

@@ -14,6 +14,7 @@ import java.util.UUID;
 public class FileStorageService {
 
     private static final String UPLOAD_DIR = "uploads/products/";
+    private static final String PROFILE_UPLOAD_DIR = "uploads/profiles/";
 
     public FileStorageService() {
         try {
@@ -21,12 +22,24 @@ public class FileStorageService {
             if (!Files.exists(uploadPath)) {
                 Files.createDirectories(uploadPath);
             }
+            Path profileUploadPath = Paths.get(PROFILE_UPLOAD_DIR);
+            if (!Files.exists(profileUploadPath)) {
+                Files.createDirectories(profileUploadPath);
+            }
         } catch (IOException e) {
             throw new RuntimeException("Could not create upload directory", e);
         }
     }
 
     public String storeFile(MultipartFile file) {
+        return storeFile(file, UPLOAD_DIR, "/uploads/products/");
+    }
+
+    public String storeProfilePicture(MultipartFile file) {
+        return storeFile(file, PROFILE_UPLOAD_DIR, "/uploads/profiles/");
+    }
+
+    private String storeFile(MultipartFile file, String uploadDir, String urlPrefix) {
         if (file.isEmpty()) {
             throw new RuntimeException("File is empty");
         }
@@ -41,11 +54,11 @@ public class FileStorageService {
             String filename = UUID.randomUUID().toString() + extension;
 
             // Save file
-            Path targetLocation = Paths.get(UPLOAD_DIR).resolve(filename);
+            Path targetLocation = Paths.get(uploadDir).resolve(filename);
             Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
 
             // Return the file URL path
-            return "/uploads/products/" + filename;
+            return urlPrefix + filename;
         } catch (IOException e) {
             throw new RuntimeException("Failed to store file", e);
         }
@@ -59,7 +72,9 @@ public class FileStorageService {
         try {
             // Extract filename from URL
             String filename = fileUrl.substring(fileUrl.lastIndexOf("/") + 1);
-            Path filePath = Paths.get(UPLOAD_DIR).resolve(filename);
+            // Determine which directory based on URL
+            String uploadDir = fileUrl.startsWith("/uploads/profiles/") ? PROFILE_UPLOAD_DIR : UPLOAD_DIR;
+            Path filePath = Paths.get(uploadDir).resolve(filename);
             
             if (Files.exists(filePath)) {
                 Files.delete(filePath);

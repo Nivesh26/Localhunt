@@ -12,6 +12,7 @@ public class UserProfileResponse {
     private String city;
     private String area;
     private String address;
+    private String profilePicture;
 
     public UserProfileResponse() {
     }
@@ -95,5 +96,13 @@ public class UserProfileResponse {
 
     public void setAddress(String address) {
         this.address = address;
+    }
+
+    public String getProfilePicture() {
+        return profilePicture;
+    }
+
+    public void setProfilePicture(String profilePicture) {
+        this.profilePicture = profilePicture;
     }
 }

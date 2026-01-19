@@ -23,6 +23,8 @@ type Message = {
   sellerName?: string
   productId?: number
   productName?: string
+  userProfilePicture?: string | null
+  sellerProfilePicture?: string | null
 }
 
 type Conversation = {
@@ -35,6 +37,7 @@ type Conversation = {
   lastMessage: string
   lastMessageTime: string | null
   unreadCount: number
+  userProfilePicture?: string | null
 }
 
 const SellerMessage = () => {
@@ -447,8 +450,28 @@ const SellerMessage = () => {
                     }`}
                   >
                     <div className="flex items-start gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-100 text-sm font-semibold text-red-700">
-                        {getCustomerAvatar(conversation.userName)}
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full overflow-hidden flex-shrink-0">
+                        {conversation.userProfilePicture ? (
+                          <img
+                            src={conversation.userProfilePicture.startsWith('http')
+                              ? conversation.userProfilePicture
+                              : `http://localhost:8080${conversation.userProfilePicture}`}
+                            alt={conversation.userName}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              // Fallback to avatar if image fails
+                              e.currentTarget.style.display = 'none'
+                              const parent = e.currentTarget.parentElement
+                              if (parent) {
+                                const fallback = parent.querySelector('.avatar-fallback') as HTMLElement
+                                if (fallback) fallback.style.display = 'flex'
+                              }
+                            }}
+                          />
+                        ) : null}
+                        <div className={`w-full h-full bg-red-100 text-red-700 text-sm font-semibold items-center justify-center avatar-fallback ${conversation.userProfilePicture ? 'hidden' : 'flex'}`}>
+                          {getCustomerAvatar(conversation.userName)}
+                        </div>
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between">
@@ -484,8 +507,28 @@ const SellerMessage = () => {
                   <div className="border-b border-gray-200 p-4">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-100 text-sm font-semibold text-red-700">
-                          {getCustomerAvatar(selectedConversation.userName)}
+                        <div className="flex h-12 w-12 items-center justify-center rounded-full overflow-hidden flex-shrink-0">
+                          {selectedConversation.userProfilePicture ? (
+                            <img
+                              src={selectedConversation.userProfilePicture.startsWith('http')
+                                ? selectedConversation.userProfilePicture
+                                : `http://localhost:8080${selectedConversation.userProfilePicture}`}
+                              alt={selectedConversation.userName}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                // Fallback to avatar if image fails
+                                e.currentTarget.style.display = 'none'
+                                const parent = e.currentTarget.parentElement
+                                if (parent) {
+                                  const fallback = parent.querySelector('.header-avatar-fallback') as HTMLElement
+                                  if (fallback) fallback.style.display = 'flex'
+                                }
+                              }}
+                            />
+                          ) : null}
+                          <div className={`w-full h-full bg-red-100 text-red-700 text-sm font-semibold items-center justify-center header-avatar-fallback ${selectedConversation.userProfilePicture ? 'hidden' : 'flex'}`}>
+                            {getCustomerAvatar(selectedConversation.userName)}
+                          </div>
                         </div>
                         <div>
                           <p className="text-sm font-semibold text-gray-900">
@@ -521,11 +564,42 @@ const SellerMessage = () => {
                           ? message.message.replace(/\[Image:\s*.+?\]/g, '').trim()
                           : message.message
                         
+                        // Get profile picture URL
+                        const profilePictureUrl = message.senderType === 'USER' 
+                          ? message.userProfilePicture 
+                          : message.sellerProfilePicture
+                        const formattedProfilePictureUrl = profilePictureUrl 
+                          ? (profilePictureUrl.startsWith('http') 
+                              ? profilePictureUrl 
+                              : `http://localhost:8080${profilePictureUrl}`)
+                          : null
+                        
                         return (
                       <div
                         key={message.id}
-                            className={`flex ${message.senderType === 'SELLER' ? 'justify-end' : 'justify-start'}`}
+                            className={`flex items-end gap-2 ${message.senderType === 'SELLER' ? 'justify-end' : 'justify-start'}`}
                       >
+                            {/* Profile Picture for USER messages */}
+                            {message.senderType === 'USER' && (
+                              <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
+                                {formattedProfilePictureUrl ? (
+                                  <img
+                                    src={formattedProfilePictureUrl}
+                                    alt={message.userName || 'User'}
+                                    className="w-full h-full object-cover"
+                                    onError={(e) => {
+                                      // Hide image if it fails to load
+                                      e.currentTarget.style.display = 'none'
+                                    }}
+                                  />
+                                ) : (
+                                  <div className="w-full h-full bg-gray-300 flex items-center justify-center text-gray-600 text-xs font-semibold">
+                                    {message.userName ? message.userName.charAt(0).toUpperCase() : 'U'}
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                            
                         <div
                           className={`max-w-[75%] rounded-2xl px-4 py-2 ${
                                 message.senderType === 'SELLER'
@@ -568,6 +642,27 @@ const SellerMessage = () => {
                                 )}
                               </div>
                         </div>
+                            
+                            {/* Profile Picture for SELLER messages */}
+                            {message.senderType === 'SELLER' && (
+                              <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
+                                {formattedProfilePictureUrl ? (
+                                  <img
+                                    src={formattedProfilePictureUrl}
+                                    alt={message.sellerName || 'Seller'}
+                                    className="w-full h-full object-cover"
+                                    onError={(e) => {
+                                      // Hide image if it fails to load
+                                      e.currentTarget.style.display = 'none'
+                                    }}
+                                  />
+                                ) : (
+                                  <div className="w-full h-full bg-red-500 flex items-center justify-center text-white text-xs font-semibold">
+                                    {message.sellerName ? message.sellerName.charAt(0).toUpperCase() : 'S'}
+                                  </div>
+                                )}
+                              </div>
+                            )}
                       </div>
                         )
                       })
