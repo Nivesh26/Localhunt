@@ -76,9 +76,7 @@ const GlobalChatWidget = () => {
   const isLoggedIn = loginStatus
 
   // Hide chatbot for VENDOR and SUPERADMIN users
-  if (user && (user.role === 'VENDOR' || user.role === 'SUPERADMIN')) {
-    return null
-  }
+  const shouldHideWidget = user && (user.role === 'VENDOR' || user.role === 'SUPERADMIN')
 
   // Define fetchConversations before useEffects that use it
   const fetchConversations = useCallback(async () => {
@@ -654,6 +652,11 @@ const GlobalChatWidget = () => {
       // User is logged in, open chat normally
       setIsOpen(true)
     }
+  }
+
+  // Hide widget for VENDOR and SUPERADMIN - must return after all hooks are called
+  if (shouldHideWidget) {
+    return null
   }
 
   return (

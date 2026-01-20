@@ -32,17 +32,23 @@ const SellerNavbar = () => {
   const [uploadingPicture, setUploadingPicture] = useState(false)
 
   useEffect(() => {
-    const fetchSellerName = async () => {
+    let isMounted = true
+
+    const fetchSellerProfile = async () => {
       try {
         const user = sessionUtils.getUser()
         if (!user || user.role !== 'VENDOR') {
+          if (isMounted) {
+            setSellerName('Store owner')
+            setProfilePicture(null)
+          }
           return
         }
 
         const sellerId = user.userId
         const response = await fetch(`http://localhost:8080/api/seller/profile/${sellerId}`)
         
-        if (response.ok) {
+        if (response.ok && isMounted) {
           const data = await response.json()
           setSellerName(data.userName || 'Store owner')
           
@@ -57,11 +63,29 @@ const SellerNavbar = () => {
           }
         }
       } catch (error) {
-        console.error('Error fetching seller name:', error)
+        console.error('Error fetching seller profile:', error)
+        if (isMounted) {
+          setSellerName('Store owner')
+          setProfilePicture(null)
+        }
       }
     }
 
-    fetchSellerName()
+    fetchSellerProfile()
+
+    // Listen for profile picture updates
+    const handleProfilePictureUpdate = () => {
+      if (isMounted) {
+        fetchSellerProfile()
+      }
+    }
+
+    window.addEventListener('sellerProfilePictureUpdated', handleProfilePictureUpdate)
+
+    return () => {
+      isMounted = false
+      window.removeEventListener('sellerProfilePictureUpdated', handleProfilePictureUpdate)
+    }
   }, [])
 
   const handleLogout = () => {
@@ -113,6 +137,9 @@ const SellerNavbar = () => {
         }
         setProfilePicture(avatarUrl)
         toast.success('Profile picture updated successfully!')
+        
+        // Dispatch event to notify other components
+        window.dispatchEvent(new CustomEvent('sellerProfilePictureUpdated'))
       } else {
         const errorData = await response.json().catch(() => ({ message: 'Failed to upload profile picture' }))
         toast.error(errorData.message || 'Failed to upload profile picture')
