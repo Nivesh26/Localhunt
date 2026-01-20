@@ -62,6 +62,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/payment/**").permitAll()
                 .requestMatchers("/api/admin/**").permitAll()
                 .requestMatchers("/api/chat/**").permitAll()
+                .requestMatchers("/api/reviews/**").permitAll()
                 .requestMatchers("/ws/**").permitAll()
                 .requestMatchers("/uploads/**").permitAll()
                 .requestMatchers("/error").permitAll()

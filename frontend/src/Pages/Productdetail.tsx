@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
-import { useParams, Link, useNavigate } from 'react-router-dom'
+import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { toast } from 'react-toastify'
-import { FaPaperPlane } from 'react-icons/fa'
+import { FaPaperPlane, FaStar, FaTrash } from 'react-icons/fa'
 import Topbar from '../Components/Topbar'
 import Header from '../Components/Header'
 import Footer from '../Components/Footer'
@@ -30,20 +30,48 @@ interface RelatedProduct {
   imageUrl?: string
 }
 
+interface Review {
+  id: number
+  userId: number
+  userName: string
+  userProfilePicture?: string | null
+  productId: number
+  productName: string
+  rating: number
+  reviewText: string
+  createdAt: string
+  updatedAt: string
+}
+
 const Productdetail = () => {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const [product, setProduct] = useState<Product | null>(null)
   const [relatedProducts, setRelatedProducts] = useState<RelatedProduct[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedSize, setSelectedSize] = useState<string>('')
   const [quantity, setQuantity] = useState(1)
   const [mainImage, setMainImage] = useState<string>('')
+  const [reviews, setReviews] = useState<Review[]>([])
+  const [averageRating, setAverageRating] = useState<number | null>(null)
+  const [showReviewForm, setShowReviewForm] = useState(false)
+  const [reviewRating, setReviewRating] = useState(5)
+  const [reviewText, setReviewText] = useState('')
+  const [submittingReview, setSubmittingReview] = useState(false)
 
   useEffect(() => {
     if (id) {
       fetchProduct()
       fetchRelatedProducts()
+      fetchReviews()
+      fetchAverageRating()
+    }
+    // Check if review=true query parameter exists
+    if (searchParams.get('review') === 'true') {
+      setShowReviewForm(true)
+      // Remove query parameter from URL
+      navigate(`/productdetail/${id}`, { replace: true })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id])
@@ -132,6 +160,140 @@ const Productdetail = () => {
       }
     } catch (error) {
       console.error('Error fetching related products:', error)
+    }
+  }
+
+  const fetchReviews = async () => {
+    if (!id) return
+    try {
+      const response = await fetch(`http://localhost:8080/api/reviews/product/${id}`)
+      if (response.ok) {
+        const data = await response.json()
+        setReviews(data)
+      }
+    } catch (error) {
+      console.error('Error fetching reviews:', error)
+    }
+  }
+
+  const fetchAverageRating = async () => {
+    if (!id) return
+    try {
+      const response = await fetch(`http://localhost:8080/api/reviews/product/${id}/average-rating`)
+      if (response.ok) {
+        const data = await response.json()
+        if (data.averageRating !== null) {
+          setAverageRating(data.averageRating)
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching average rating:', error)
+    }
+  }
+
+  const handleSubmitReview = async () => {
+    if (!reviewText.trim()) {
+      toast.error('Please write a review')
+      return
+    }
+
+    const user = sessionUtils.getUser()
+    if (!user) {
+      toast.error('Please login to write a review')
+      navigate('/login')
+      return
+    }
+
+    setSubmittingReview(true)
+    try {
+      const response = await fetch(`http://localhost:8080/api/reviews/user/${user.userId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          productId: Number(id),
+          rating: reviewRating,
+          reviewText: reviewText.trim(),
+        }),
+      })
+
+      // Check if response is ok before trying to parse JSON
+      if (!response.ok) {
+        // Try to get error message from response
+        let errorMessage = 'Failed to submit review'
+        try {
+          const errorData = await response.json()
+          errorMessage = errorData.message || errorMessage
+        } catch (e) {
+          // If response is not JSON, use status text
+          if (response.status === 403) {
+            errorMessage = 'Access denied. Please check if the backend server has been restarted.'
+          } else {
+            errorMessage = `Server error: ${response.status} ${response.statusText}`
+          }
+        }
+        toast.error(errorMessage)
+        return
+      }
+
+      const data = await response.json()
+
+      if (data.success) {
+        toast.success('Review submitted successfully!')
+        setReviewText('')
+        setReviewRating(5)
+        setShowReviewForm(false)
+        // Refresh reviews and average rating
+        fetchReviews()
+        fetchAverageRating()
+      } else {
+        toast.error(data.message || 'Failed to submit review')
+      }
+    } catch (error) {
+      console.error('Error submitting review:', error)
+      toast.error('An error occurred while submitting review. Please check if the backend server is running.')
+    } finally {
+      setSubmittingReview(false)
+    }
+  }
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString)
+    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+  }
+
+  const handleDeleteReview = async (reviewId: number) => {
+    if (!window.confirm('Are you sure you want to delete your review?')) {
+      return
+    }
+
+    const user = sessionUtils.getUser()
+    if (!user) {
+      toast.error('Please login to delete reviews')
+      navigate('/login')
+      return
+    }
+
+    try {
+      const response = await fetch(`http://localhost:8080/api/reviews/${reviewId}/user/${user.userId}`, {
+        method: 'DELETE',
+      })
+
+      const data = await response.json()
+
+      if (response.ok && data.success) {
+        toast.success('Review deleted successfully!')
+        // Remove review from local state
+        setReviews(reviews.filter(review => review.id !== reviewId))
+        // Refresh average rating
+        fetchAverageRating()
+      } else {
+        toast.error(data.message || 'Failed to delete review')
+      }
+    } catch (error) {
+      console.error('Error deleting review:', error)
+      toast.error('An error occurred while deleting review')
     }
   }
 
@@ -293,9 +455,28 @@ const Productdetail = () => {
 
             <div className="flex items-center gap-4 mb-4">
               <div className="flex text-yellow-500">
-                ★★★★★
+                {averageRating !== null ? (
+                  <>
+                    {[...Array(5)].map((_, i) => (
+                      <FaStar
+                        key={i}
+                        className={i < Math.round(averageRating) ? 'text-yellow-500 fill-current' : 'text-gray-300'}
+                      />
+                    ))}
+                    <span className="ml-2 text-gray-700 font-semibold">{averageRating.toFixed(1)}</span>
+                  </>
+                ) : (
+                  <>
+                    <FaStar className="text-gray-300" />
+                    <FaStar className="text-gray-300" />
+                    <FaStar className="text-gray-300" />
+                    <FaStar className="text-gray-300" />
+                    <FaStar className="text-gray-300" />
+                    <span className="ml-2 text-gray-500">No ratings yet</span>
+                  </>
+                )}
               </div>
-              <span className="text-gray-600">4.5 ({product.stock} in stock)</span>
+              <span className="text-gray-600">({reviews.length} {reviews.length === 1 ? 'review' : 'reviews'}, {product.stock} in stock)</span>
             </div>
 
             <div className="flex items-center gap-4 mb-6">
@@ -435,39 +616,196 @@ const Productdetail = () => {
         )}
 
         {/* Rating Breakdown */}
-        <div className="bg-white rounded-xl shadow-md p-8 mb-8">
-          <h3 className="text-2xl font-bold text-gray-900 mb-6">Rating</h3>
-          <div className="flex items-center gap-4 mb-8">
-            <div className="text-5xl font-bold text-gray-900">4.5</div>
-            <div className="text-4xl text-yellow-500">★</div>
-            <div className="text-gray-600">(99 reviews)</div>
-          </div>
-
-          <div className="space-y-2">
-            {[
-              { stars: 5, percent: 70 },
-              { stars: 4, percent: 20 },
-              { stars: 3, percent: 5 },
-              { stars: 2, percent: 2 },
-              { stars: 1, percent: 2 },
-            ].map(({ stars, percent }) => (
-              <div key={stars} className="flex items-center gap-4">
-                <span className="w-12">{stars} ★</span>
-                <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
-                  <div className="h-full bg-yellow-500" style={{ width: `${percent}%` }}></div>
-                </div>
-                <span className="w-12 text-right">{percent}%</span>
+        {averageRating !== null && (
+          <div className="bg-white rounded-xl shadow-md p-8 mb-8">
+            <h3 className="text-2xl font-bold text-gray-900 mb-6">Rating</h3>
+            <div className="flex items-center gap-4 mb-8">
+              <div className="text-5xl font-bold text-gray-900">{averageRating.toFixed(1)}</div>
+              <div className="text-4xl text-yellow-500">
+                <FaStar className="fill-current" />
               </div>
-            ))}
+              <div className="text-gray-600">({reviews.length} {reviews.length === 1 ? 'review' : 'reviews'})</div>
+            </div>
+
+            {/* Calculate rating distribution */}
+            {(() => {
+              const distribution = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 }
+              reviews.forEach(review => {
+                distribution[review.rating as keyof typeof distribution]++
+              })
+              const maxCount = Math.max(...Object.values(distribution))
+              
+              return (
+                <div className="space-y-2">
+                  {[5, 4, 3, 2, 1].map(stars => {
+                    const count = distribution[stars as keyof typeof distribution]
+                    const percent = maxCount > 0 ? (count / maxCount) * 100 : 0
+                    const percentage = reviews.length > 0 ? (count / reviews.length) * 100 : 0
+                    return (
+                      <div key={stars} className="flex items-center gap-4">
+                        <span className="w-12">{stars} ★</span>
+                        <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+                          <div className="h-full bg-yellow-500" style={{ width: `${percent}%` }}></div>
+                        </div>
+                        <span className="w-12 text-right text-sm text-gray-600">{count} ({percentage.toFixed(0)}%)</span>
+                      </div>
+                    )
+                  })}
+                </div>
+              )
+            })()}
           </div>
-        </div>
+        )}
+
+        {/* Review Form */}
+        {sessionUtils.isLoggedIn() && (
+          <div className="bg-white rounded-xl shadow-md p-8 mb-8">
+            <h3 className="text-2xl font-bold text-gray-900 mb-6">Write a Review</h3>
+            {!showReviewForm ? (
+              <button
+                onClick={() => setShowReviewForm(true)}
+                className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+              >
+                Write a Review
+              </button>
+            ) : (
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-gray-900 font-medium mb-2">Rating</label>
+                  <div className="flex gap-2">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button
+                        key={star}
+                        onClick={() => setReviewRating(star)}
+                        className={`text-3xl transition-colors ${
+                          star <= reviewRating ? 'text-yellow-500' : 'text-gray-300'
+                        }`}
+                        type="button"
+                      >
+                        <FaStar className={star <= reviewRating ? 'fill-current' : ''} />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-gray-900 font-medium mb-2">Your Review</label>
+                  <textarea
+                    value={reviewText}
+                    onChange={(e) => setReviewText(e.target.value)}
+                    placeholder="Share your experience with this product..."
+                    className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-200 min-h-[120px]"
+                    maxLength={1000}
+                  />
+                  <div className="text-right text-xs text-gray-500 mt-1">
+                    {reviewText.length}/1000
+                  </div>
+                </div>
+                <div className="flex gap-3">
+                  <button
+                    onClick={handleSubmitReview}
+                    disabled={submittingReview || !reviewText.trim()}
+                    className="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {submittingReview ? 'Submitting...' : 'Submit Review'}
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowReviewForm(false)
+                      setReviewText('')
+                      setReviewRating(5)
+                    }}
+                    className="bg-gray-200 text-gray-800 px-6 py-2 rounded-lg font-semibold hover:bg-gray-300 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Reviews */}
         <div className="bg-white rounded-xl shadow-md p-8 mb-8">
-          <h3 className="text-2xl font-bold text-gray-900 mb-6">Reviews</h3>
-          <div className="text-center py-12 text-gray-600">
-            <p>Customer reviews will be displayed here</p>
-          </div>
+          <h3 className="text-2xl font-bold text-gray-900 mb-6">
+            Customer Reviews ({reviews.length})
+          </h3>
+          {reviews.length === 0 ? (
+            <div className="text-center py-12 text-gray-600">
+              <p>No reviews yet. Be the first to review this product!</p>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {reviews.map((review) => (
+                <div key={review.id} className="border-b border-gray-200 pb-6 last:border-b-0">
+                  <div className="flex items-start gap-4">
+                    {/* User Profile Picture */}
+                    <div className="w-12 h-12 rounded-full overflow-hidden shrink-0 bg-gray-200 flex items-center justify-center">
+                      {review.userProfilePicture ? (
+                        <img
+                          src={
+                            review.userProfilePicture.startsWith('http')
+                              ? review.userProfilePicture
+                              : `http://localhost:8080${review.userProfilePicture}`
+                          }
+                          alt={review.userName}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none'
+                          }}
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-red-500 flex items-center justify-center text-white font-semibold text-lg">
+                          {review.userName.charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex-1">
+                          <h4 className="font-semibold text-gray-900">{review.userName}</h4>
+                          <div className="flex items-center gap-2 mt-1">
+                            <div className="flex text-yellow-500">
+                              {[...Array(5)].map((_, i) => (
+                                <FaStar
+                                  key={i}
+                                  className={
+                                    i < review.rating
+                                      ? 'text-yellow-500 fill-current'
+                                      : 'text-gray-300'
+                                  }
+                                  style={{ width: '14px', height: '14px' }}
+                                />
+                              ))}
+                            </div>
+                            <span className="text-sm text-gray-500">
+                              {formatDate(review.createdAt)}
+                            </span>
+                          </div>
+                        </div>
+                        {(() => {
+                          const user = sessionUtils.getUser()
+                          if (user && user.userId === review.userId) {
+                            return (
+                              <button
+                                onClick={() => handleDeleteReview(review.id)}
+                                className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors"
+                                title="Delete your review"
+                                aria-label="Delete review"
+                              >
+                                <FaTrash className="w-4 h-4" />
+                              </button>
+                            )
+                          }
+                          return null
+                        })()}
+                      </div>
+                      <p className="text-gray-700 leading-relaxed mt-2">{review.reviewText}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Related Products */}

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
-import { FaTimes } from 'react-icons/fa'
+import { FaTimes, FaStar } from 'react-icons/fa'
 import Topbar from '../Components/Topbar'
 import Header from '../Components/Header'
 import Footer from '../Components/Footer'
@@ -190,14 +190,24 @@ const OrderTracking = () => {
                               : order.status}
                           </span>
                           {order.status === 'Delivered' && (
-                            <button
-                              onClick={() => handleRemoveOrder(order.orderId)}
-                              className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors"
-                              title="Remove from history"
-                              aria-label="Remove order from history"
-                            >
-                              <FaTimes className="w-5 h-5" />
-                            </button>
+                            <>
+                              <button
+                                onClick={() => navigate(`/productdetail/${order.productId}?review=true`)}
+                                className="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+                                title="Write a review"
+                              >
+                                <FaStar className="w-4 h-4" />
+                                Write Review
+                              </button>
+                              <button
+                                onClick={() => handleRemoveOrder(order.orderId)}
+                                className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors"
+                                title="Remove from history"
+                                aria-label="Remove order from history"
+                              >
+                                <FaTimes className="w-5 h-5" />
+                              </button>
+                            </>
                           )}
                         </div>
                       </div>

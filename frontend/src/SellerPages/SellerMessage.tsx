@@ -53,6 +53,7 @@ const SellerMessage = () => {
   const [connected, setConnected] = useState(false)
   const [loadingMore, setLoadingMore] = useState(false)
   const [hasMore, setHasMore] = useState(true)
+  const [sellerProfilePicture, setSellerProfilePicture] = useState<string | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const isInitialLoadRef = useRef<boolean>(true)
   const shouldScrollToBottomRef = useRef<boolean>(false)
@@ -66,13 +67,21 @@ const SellerMessage = () => {
       return
     }
 
+    fetchSellerProfile()
     fetchConversations()
     connectWebSocket()
+
+    // Listen for profile picture updates
+    const handleProfilePictureUpdate = () => {
+      fetchSellerProfile()
+    }
+    window.addEventListener('sellerProfilePictureUpdated', handleProfilePictureUpdate)
 
     return () => {
       if (stompClient) {
         stompClient.deactivate()
       }
+      window.removeEventListener('sellerProfilePictureUpdated', handleProfilePictureUpdate)
     }
   }, [])
 
@@ -158,6 +167,28 @@ const SellerMessage = () => {
 
     client.activate()
     setStompClient(client)
+  }
+
+  const fetchSellerProfile = async () => {
+    const seller = sessionUtils.getUser()
+    if (!seller) return
+
+    try {
+      const response = await fetch(`http://localhost:8080/api/seller/profile/${seller.userId}`)
+      if (response.ok) {
+        const data = await response.json()
+        if (data.profilePicture) {
+          const avatarUrl = data.profilePicture.startsWith('http')
+            ? data.profilePicture
+            : `http://localhost:8080${data.profilePicture}`
+          setSellerProfilePicture(avatarUrl)
+        } else {
+          setSellerProfilePicture(null)
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching seller profile:', error)
+    }
   }
 
   const fetchConversations = async () => {
@@ -283,6 +314,7 @@ const SellerMessage = () => {
       userName: seller.fullName || seller.email,
       sellerName: seller.fullName || seller.email,
       productId: recentProductId || undefined,
+      sellerProfilePicture: sellerProfilePicture, // Include seller profile picture
     }
     setMessages((prev) => [...prev, tempMessage])
 
