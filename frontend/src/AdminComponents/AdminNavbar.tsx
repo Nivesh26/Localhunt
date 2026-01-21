@@ -10,6 +10,7 @@ import logo from '../assets/Local Hunt Logo NoBG.png'
 import { Link, useNavigate } from 'react-router-dom'
 import { sessionUtils } from '../utils/sessionUtils'
 import { toast } from 'react-toastify'
+import { useState, useEffect } from 'react'
 
 const navLinks = [
   { label: 'Overview', icon: FaHome, to: '/admindashboard' },
@@ -25,6 +26,26 @@ const navLinks = [
 
 const AdminNavbar = () => {
   const navigate = useNavigate()
+  const [pendingVendorCount, setPendingVendorCount] = useState(0)
+
+  useEffect(() => {
+    fetchPendingVendorCount()
+    // Refresh count every 30 seconds
+    const interval = setInterval(fetchPendingVendorCount, 30000)
+    return () => clearInterval(interval)
+  }, [])
+
+  const fetchPendingVendorCount = async () => {
+    try {
+      const response = await fetch('http://localhost:8080/api/seller/pending')
+      if (response.ok) {
+        const data = await response.json()
+        setPendingVendorCount(data.length)
+      }
+    } catch (error) {
+      console.error('Error fetching pending vendor count:', error)
+    }
+  }
 
   const handleLogout = () => {
     sessionUtils.clearSession()
@@ -66,10 +87,15 @@ const AdminNavbar = () => {
                 {link.to ? (
                   <Link
                     to={link.to}
-                    className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-red-50 hover:text-red-600 whitespace-nowrap"
+                    className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-red-50 hover:text-red-600 whitespace-nowrap relative"
                   >
                     <link.icon className="h-5 w-5 shrink-0" />
-                    <span className="whitespace-nowrap">{link.label}</span>
+                    <span className="whitespace-nowrap flex-1">{link.label}</span>
+                    {link.label === 'Approve Vendors' && pendingVendorCount > 0 && (
+                      <span className="flex h-4 min-w-[16px] items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-semibold text-white">
+                        {pendingVendorCount > 99 ? '99+' : pendingVendorCount}
+                      </span>
+                    )}
                   </Link>
                 ) : (
                   <button className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-red-50 hover:text-red-600 whitespace-nowrap">

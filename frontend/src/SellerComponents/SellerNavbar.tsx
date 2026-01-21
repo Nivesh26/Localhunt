@@ -28,6 +28,8 @@ const SellerNavbar = () => {
   const [sellerName, setSellerName] = useState('Store owner')
   const [profilePicture, setProfilePicture] = useState<string | null>(null)
   const [uploadingPicture, setUploadingPicture] = useState(false)
+  const [orderCount, setOrderCount] = useState(0)
+  const [messageCount, setMessageCount] = useState(0)
 
   useEffect(() => {
     let isMounted = true
@@ -83,6 +85,58 @@ const SellerNavbar = () => {
     return () => {
       isMounted = false
       window.removeEventListener('sellerProfilePictureUpdated', handleProfilePictureUpdate)
+    }
+  }, [])
+
+  useEffect(() => {
+    let isMounted = true
+
+    const fetchCounts = async () => {
+      try {
+        const user = sessionUtils.getUser()
+        if (!user || user.role !== 'VENDOR') {
+          return
+        }
+
+        const sellerId = user.userId
+
+        // Fetch orders count (pending/processing orders)
+        const ordersResponse = await fetch(`http://localhost:8080/api/payment/seller-orders/${sellerId}`)
+        if (ordersResponse.ok && isMounted) {
+          const ordersData = await ordersResponse.json()
+          // Count orders that are not delivered or cancelled
+          const pendingOrders = ordersData.filter((order: any) => 
+            order.status !== 'Delivered' && order.status !== 'Cancelled'
+          )
+          setOrderCount(pendingOrders.length)
+        }
+
+        // Fetch messages count (unread messages)
+        const messagesResponse = await fetch(`http://localhost:8080/api/chat/conversations/seller/${sellerId}`)
+        if (messagesResponse.ok && isMounted) {
+          const conversationsData = await messagesResponse.json()
+          // Sum up all unread counts
+          const totalUnread = conversationsData.reduce((sum: number, conv: any) => 
+            sum + (conv.unreadCount || 0), 0
+          )
+          setMessageCount(totalUnread)
+        }
+      } catch (error) {
+        console.error('Error fetching counts:', error)
+      }
+    }
+
+    fetchCounts()
+    // Refresh counts every 30 seconds
+    const interval = setInterval(() => {
+      if (isMounted) {
+        fetchCounts()
+      }
+    }, 30000)
+
+    return () => {
+      isMounted = false
+      clearInterval(interval)
     }
   }, [])
 
@@ -227,10 +281,20 @@ const SellerNavbar = () => {
                 {link.to ? (
                   <Link
                     to={link.to}
-                    className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-red-50 hover:text-red-600 whitespace-nowrap"
+                    className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-red-50 hover:text-red-600 whitespace-nowrap relative"
                   >
                     <link.icon className="h-5 w-5 shrink-0" />
-                    <span className="whitespace-nowrap">{link.label}</span>
+                    <span className="whitespace-nowrap flex-1">{link.label}</span>
+                    {link.label === 'Orders' && orderCount > 0 && (
+                      <span className="flex h-4 min-w-[16px] items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-semibold text-white">
+                        {orderCount > 99 ? '99+' : orderCount}
+                      </span>
+                    )}
+                    {link.label === 'Messages' && messageCount > 0 && (
+                      <span className="flex h-4 min-w-[16px] items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-semibold text-white">
+                        {messageCount > 99 ? '99+' : messageCount}
+                      </span>
+                    )}
                   </Link>
                 ) : (
                   <button className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-red-50 hover:text-red-600 whitespace-nowrap">
