@@ -270,22 +270,24 @@ const Header = () => {
         {isLoggedIn ? (
           <Link to="/profile" className="flex items-center">
             {profilePicture ? (
-              <img
-                src={profilePicture}
-                alt="Profile"
-                className="w-8 h-8 rounded-full object-cover border-2 border-gray-300 hover:border-red-600 cursor-pointer transition"
-                onError={(e) => {
-                  // If image fails to load, show default icon instead
-                  e.currentTarget.style.display = 'none';
-                  const parent = e.currentTarget.parentElement;
-                  if (parent) {
-                    const defaultIcon = parent.querySelector('.default-profile-icon') as HTMLElement;
-                    if (defaultIcon) {
-                      defaultIcon.classList.remove('hidden');
+              <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-100 flex items-center justify-center border-2 border-gray-300 hover:border-red-600 cursor-pointer transition">
+                <img
+                  src={profilePicture}
+                  alt="Profile"
+                  className="w-full h-full object-contain"
+                  onError={(e) => {
+                    // If image fails to load, show default icon instead
+                    e.currentTarget.style.display = 'none';
+                    const parent = e.currentTarget.parentElement;
+                    if (parent) {
+                      const defaultIcon = parent.parentElement?.querySelector('.default-profile-icon') as HTMLElement;
+                      if (defaultIcon) {
+                        defaultIcon.classList.remove('hidden');
+                      }
                     }
-                  }
-                }}
-              />
+                  }}
+                />
+              </div>
             ) : null}
             <FaUserCircle className={`w-8 h-8 text-gray-700 hover:text-red-600 cursor-pointer transition default-profile-icon ${profilePicture ? 'hidden' : ''}`} />
           </Link>

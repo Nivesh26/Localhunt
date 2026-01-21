@@ -388,20 +388,22 @@ const Profie = () => {
               <div className="text-center mb-6">
                 <div className="relative inline-block">
                   {userData.avatar ? (
-                    <img
-                      src={userData.avatar}
-                      alt={userData.name}
-                      className="w-32 h-32 rounded-full object-cover border-4 border-white shadow-md mx-auto mb-4"
-                      onError={(e) => {
-                        // If image fails to load, show placeholder
-                        e.currentTarget.style.display = 'none'
-                        const parent = e.currentTarget.parentElement
-                        if (parent) {
-                          const placeholder = parent.querySelector('.avatar-placeholder') as HTMLElement
-                          if (placeholder) placeholder.style.display = 'flex'
-                        }
-                      }}
-                    />
+                    <div className="w-32 h-32 rounded-full overflow-hidden bg-gray-100 flex items-center justify-center border-4 border-white shadow-md mx-auto mb-4">
+                      <img
+                        src={userData.avatar}
+                        alt={userData.name}
+                        className="w-full h-full object-contain"
+                        onError={(e) => {
+                          // If image fails to load, show placeholder
+                          e.currentTarget.style.display = 'none'
+                          const parent = e.currentTarget.parentElement
+                          if (parent) {
+                            const placeholder = parent.parentElement?.querySelector('.avatar-placeholder') as HTMLElement
+                            if (placeholder) placeholder.style.display = 'flex'
+                          }
+                        }}
+                      />
+                    </div>
                   ) : null}
                   {!userData.avatar && (
                     <div className="w-32 h-32 rounded-full bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center text-white text-4xl font-bold mx-auto mb-4 avatar-placeholder">

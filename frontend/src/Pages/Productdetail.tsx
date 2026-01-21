@@ -820,7 +820,7 @@ const Productdetail = () => {
                               : `http://localhost:8080${review.userProfilePicture}`
                           }
                           alt={review.userName}
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-contain"
                           onError={(e) => {
                             e.currentTarget.style.display = 'none'
                           }}

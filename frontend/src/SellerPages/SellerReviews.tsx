@@ -245,26 +245,28 @@ const SellerReviews = () => {
                         <div className="flex-1">
                           <div className="flex items-center gap-3 mb-3">
                             {review.userProfilePicture ? (
-                              <img
-                                src={review.userProfilePicture.startsWith('http') 
-                                  ? review.userProfilePicture 
-                                  : `http://localhost:8080${review.userProfilePicture}`}
-                                alt={review.userName}
-                                className="h-10 w-10 rounded-full object-cover"
-                                onError={(e) => {
-                                  const target = e.target as HTMLImageElement
-                                  target.style.display = 'none'
-                                  const parent = target.parentElement
-                                  if (parent) {
-                                    const placeholder = document.createElement('div')
-                                    placeholder.className = 'h-10 w-10 rounded-full bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center text-white text-sm font-semibold'
-                                    placeholder.textContent = review.userName.charAt(0).toUpperCase()
-                                    parent.insertBefore(placeholder, target)
-                                  }
-                                }}
-                              />
+                              <div className="h-10 w-10 rounded-full overflow-hidden bg-gray-100 flex items-center justify-center shrink-0">
+                                <img
+                                  src={review.userProfilePicture.startsWith('http') 
+                                    ? review.userProfilePicture 
+                                    : `http://localhost:8080${review.userProfilePicture}`}
+                                  alt={review.userName}
+                                  className="w-full h-full object-contain"
+                                  onError={(e) => {
+                                    const target = e.target as HTMLImageElement
+                                    target.style.display = 'none'
+                                    const parent = target.parentElement
+                                    if (parent) {
+                                      const placeholder = document.createElement('div')
+                                      placeholder.className = 'h-10 w-10 rounded-full bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center text-white text-sm font-semibold'
+                                      placeholder.textContent = review.userName.charAt(0).toUpperCase()
+                                      parent.insertBefore(placeholder, target)
+                                    }
+                                  }}
+                                />
+                              </div>
                             ) : (
-                              <div className="h-10 w-10 rounded-full bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center text-white text-sm font-semibold">
+                              <div className="h-10 w-10 rounded-full bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center text-white text-sm font-semibold shrink-0">
                                 {review.userName.charAt(0).toUpperCase()}
                               </div>
                             )}
