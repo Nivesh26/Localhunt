@@ -4,14 +4,11 @@ import {
   FaShieldAlt,
   FaStore,
   FaBell,
-  FaSearch,
-  FaSignOutAlt,
 } from 'react-icons/fa'
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import AdminNavbar from '../AdminComponents/AdminNavbar'
-import { sessionUtils } from '../utils/sessionUtils'
 
 interface DashboardStats {
   totalVendors: number
@@ -81,12 +78,6 @@ const AdminDashboard = () => {
     }
   }
 
-  const handleLogout = () => {
-    sessionUtils.clearSession()
-    toast.success('Logged out successfully')
-    navigate('/login')
-  }
-
   const statCards = stats ? [
     { label: 'Total Vendors', value: stats.totalVendors.toString(), icon: FaStore, color: 'bg-red-500' },
     { label: 'Active Products', value: stats.activeProducts.toString(), icon: FaCube, color: 'bg-blue-500' },
@@ -112,26 +103,9 @@ const AdminDashboard = () => {
               </div>
 
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                <div className="relative w-full sm:w-64">
-                  <FaSearch className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
-                  <input
-                    type="search"
-                    placeholder="Search vendors, orders, products..."
-                    className="w-full rounded-xl border border-gray-200 py-2 pl-10 pr-4 text-sm focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-200"
-                  />
-                </div>
-
                 <button className="flex items-center gap-2 rounded-xl bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700">
                   <FaBell className="h-5 w-5" />
                   Alerts
-                </button>
-
-                <button 
-                  onClick={handleLogout}
-                  className="flex items-center gap-2 rounded-xl border border-red-200 px-4 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-50"
-                >
-                  <FaSignOutAlt className="h-5 w-5" />
-                  Log Out
                 </button>
               </div>
             </div>

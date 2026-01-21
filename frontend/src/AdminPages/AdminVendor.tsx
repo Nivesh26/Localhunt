@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import AdminNavbar from '../AdminComponents/AdminNavbar'
 import {
   FaSearch,
   FaTrash,
+  FaEye,
 } from 'react-icons/fa'
 import { toast } from 'react-toastify'
 
@@ -19,9 +21,12 @@ interface Vendor {
   createdAt: string
   approved: boolean
   storeStatus: boolean
+  businessRegistrationCertificate?: string
+  panVatCertificate?: string
 }
 
 const AdminVender = () => {
+  const navigate = useNavigate()
   const [vendors, setVendors] = useState<Vendor[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
@@ -162,13 +167,22 @@ const AdminVender = () => {
                           </span>
                         </td>
                         <td className="py-3 pr-6 text-right">
-                          <button
-                            onClick={() => handleDelete(vendor.id)}
-                            className="inline-flex items-center gap-2 rounded-lg border border-red-200 px-3 py-2 text-xs font-semibold text-red-600 transition hover:bg-red-50"
-                          >
-                            <FaTrash className="h-4 w-4" />
-                            Delete
-                          </button>
+                          <div className="flex items-center justify-end gap-2">
+                            <button
+                              onClick={() => navigate(`/adminvendordetail/${vendor.id}`)}
+                              className="inline-flex items-center gap-2 rounded-lg border border-blue-200 px-3 py-2 text-xs font-semibold text-blue-600 transition hover:bg-blue-50"
+                            >
+                              <FaEye className="h-4 w-4" />
+                              View
+                            </button>
+                            <button
+                              onClick={() => handleDelete(vendor.id)}
+                              className="inline-flex items-center gap-2 rounded-lg border border-red-200 px-3 py-2 text-xs font-semibold text-red-600 transition hover:bg-red-50"
+                            >
+                              <FaTrash className="h-4 w-4" />
+                              Delete
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))}
