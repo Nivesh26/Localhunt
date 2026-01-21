@@ -1,7 +1,5 @@
 package com.localhunts.backend.dto;
 
-import java.time.LocalDateTime;
-
 public class ReviewResponse {
     private Long id;
     private Long userId;
@@ -9,6 +7,7 @@ public class ReviewResponse {
     private String userProfilePicture;
     private Long productId;
     private String productName;
+    private String productImageUrl;
     private Integer rating;
     private String reviewText;
     private String createdAt;
@@ -63,6 +62,14 @@ public class ReviewResponse {
 
     public void setProductName(String productName) {
         this.productName = productName;
+    }
+
+    public String getProductImageUrl() {
+        return productImageUrl;
+    }
+
+    public void setProductImageUrl(String productImageUrl) {
+        this.productImageUrl = productImageUrl;
     }
 
     public Integer getRating() {

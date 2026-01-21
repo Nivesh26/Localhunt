@@ -100,4 +100,30 @@ public class ReviewController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
     }
+
+    @GetMapping("/all")
+    public ResponseEntity<List<ReviewResponse>> getAllReviews() {
+        try {
+            List<ReviewResponse> reviews = reviewService.getAllReviews();
+            return ResponseEntity.ok(reviews);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @DeleteMapping("/admin/{reviewId}")
+    public ResponseEntity<Map<String, Object>> deleteReviewByAdmin(@PathVariable Long reviewId) {
+        try {
+            reviewService.deleteReviewByAdmin(reviewId);
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "Review deleted successfully");
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("message", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+    }
 }

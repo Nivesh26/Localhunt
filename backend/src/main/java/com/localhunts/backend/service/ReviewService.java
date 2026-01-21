@@ -83,6 +83,13 @@ public class ReviewService {
         return sum / reviews.size();
     }
 
+    public List<ReviewResponse> getAllReviews() {
+        List<Review> reviews = reviewRepository.findAllByOrderByCreatedAtDesc();
+        return reviews.stream()
+            .map(this::convertToResponse)
+            .collect(Collectors.toList());
+    }
+
     @Transactional
     public void deleteReview(Long reviewId, Long userId) {
         Review review = reviewRepository.findById(reviewId)
@@ -96,6 +103,13 @@ public class ReviewService {
         reviewRepository.delete(review);
     }
 
+    @Transactional
+    public void deleteReviewByAdmin(Long reviewId) {
+        Review review = reviewRepository.findById(reviewId)
+            .orElseThrow(() -> new RuntimeException("Review not found"));
+        reviewRepository.delete(review);
+    }
+
     private ReviewResponse convertToResponse(Review review) {
         ReviewResponse response = new ReviewResponse();
         response.setId(review.getId());
@@ -104,6 +118,14 @@ public class ReviewService {
         response.setUserProfilePicture(review.getUser().getProfilePicture());
         response.setProductId(review.getProduct().getId());
         response.setProductName(review.getProduct().getName());
+        
+        // Set product image URL (get first image from comma-separated string)
+        String productImageUrl = review.getProduct().getImageUrl();
+        if (productImageUrl != null && !productImageUrl.isEmpty()) {
+            String firstImage = productImageUrl.split(",")[0].trim();
+            response.setProductImageUrl(firstImage);
+        }
+        
         response.setRating(review.getRating());
         response.setReviewText(review.getReviewText());
 

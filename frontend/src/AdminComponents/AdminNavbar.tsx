@@ -5,6 +5,7 @@ import {
   FaShieldAlt,
   FaSignOutAlt,
   FaUsers,
+  FaStar,
 } from 'react-icons/fa'
 import logo from '../assets/Local Hunt Logo NoBG.png'
 import { Link, useNavigate } from 'react-router-dom'
@@ -18,6 +19,7 @@ const navLinks = [
   { label: 'Vendors', icon: FaStore, to: '/adminvendors' },
   { label: 'Approve Vendors', icon: FaShieldAlt, to: '/adminvendorsapprove' },
   { label: 'Products', icon: FaCube, to: '/adminproducts' },
+  { label: 'Reviews', icon: FaStar, to: '/adminreviews' },
   { label: 'Settings', icon: FaShieldAlt, to: '/adminsettings' },
  
 ]
