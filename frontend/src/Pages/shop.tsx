@@ -1,5 +1,5 @@
 import { useMemo, useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import Header from "../Components/Header";
 import Topbar from "../Components/Topbar";
@@ -16,12 +16,14 @@ interface Product {
 
 const Shop = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [products, setProducts] = useState<Product[]>([]);
   const [shuffledProducts, setShuffledProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [category, setCategory] = useState("All");
   const [priceRange, setPriceRange] = useState([0, 100000]);
   const [sortOption, setSortOption] = useState("featured");
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Shuffle function using Fisher-Yates algorithm
   const shuffleArray = <T,>(array: T[]): T[] => {
@@ -75,7 +77,12 @@ const Shop = () => {
 
   useEffect(() => {
     fetchProducts();
-  }, []);
+    // Get search query from URL params
+    const searchParam = searchParams.get('search');
+    if (searchParam) {
+      setSearchQuery(searchParam);
+    }
+  }, [searchParams]);
 
   // Shuffle products every 5 minutes
   useEffect(() => {
@@ -149,7 +156,10 @@ const Shop = () => {
     const filtered = sourceProducts.filter((product) => {
       const matchCategory = category === "All" || product.category === category;
       const matchPrice = product.price >= priceRange[0] && product.price <= priceRange[1];
-      return matchCategory && matchPrice;
+      const matchSearch = !searchQuery || 
+        product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        product.category.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchCategory && matchPrice && matchSearch;
     });
 
     const sorted = [...filtered];
@@ -171,12 +181,14 @@ const Shop = () => {
         break;
     }
     return sorted;
-  }, [products, shuffledProducts, category, priceRange, sortOption]);
+  }, [products, shuffledProducts, category, priceRange, sortOption, searchQuery]);
 
   const resetFilters = () => {
     setCategory("All");
     setPriceRange([0, maxPrice]);
     setSortOption("featured");
+    setSearchQuery("");
+    setSearchParams({});
   };
 
   return (
@@ -256,7 +268,20 @@ const Shop = () => {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
             <div>
               <h2 className="text-2xl font-semibold text-gray-800">Shop Now</h2>
-      
+              {searchQuery && (
+                <p className="text-gray-600 text-sm mt-1">
+                  Search results for: <span className="font-semibold">"{searchQuery}"</span>
+                  <button
+                    onClick={() => {
+                      setSearchQuery("");
+                      setSearchParams({});
+                    }}
+                    className="ml-2 text-red-600 hover:text-red-700 underline text-xs"
+                  >
+                    Clear
+                  </button>
+                </p>
+              )}
             </div>
           </div>
 
