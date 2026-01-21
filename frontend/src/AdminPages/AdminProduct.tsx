@@ -1,8 +1,6 @@
 import { useMemo, useState, useEffect } from 'react';
 import {
   FaSearch,
-  FaFilter,
-  FaPlus,
   FaEllipsisV,
   FaStar,
   FaCheckCircle,
@@ -243,16 +241,6 @@ const AdminProduct = () => {
                     placeholder="Search product, vendor, or ID..."
                     className="w-full rounded-xl border border-gray-200 py-2 pl-10 pr-4 text-sm focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-200"
                   />
-                </div>
-                <div className="flex gap-2">
-                  <button className="flex items-center gap-2 rounded-xl border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50">
-                    <FaFilter className="h-5 w-5" />
-                    Advanced Filters
-                  </button>
-                  <button className="flex items-center gap-2 rounded-xl bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700">
-                    <FaPlus className="h-5 w-5" />
-                    Add Product
-                  </button>
                 </div>
               </div>
             </div>

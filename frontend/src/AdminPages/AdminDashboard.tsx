@@ -4,8 +4,9 @@ import {
   FaShieldAlt,
   FaStore,
   FaBell,
+  FaTimes,
 } from 'react-icons/fa'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import AdminNavbar from '../AdminComponents/AdminNavbar'
@@ -41,10 +42,29 @@ const AdminDashboard = () => {
   const [stats, setStats] = useState<DashboardStats | null>(null)
   const [topVendors, setTopVendors] = useState<TopVendor[]>([])
   const [onboardingRequests, setOnboardingRequests] = useState<OnboardingRequest[]>([])
+  const [showAlerts, setShowAlerts] = useState(false)
+  const alertsRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     fetchDashboardData()
   }, [])
+
+  // Close alerts dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (alertsRef.current && !alertsRef.current.contains(event.target as Node)) {
+        setShowAlerts(false)
+      }
+    }
+
+    if (showAlerts) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [showAlerts])
 
   const fetchDashboardData = async () => {
     setLoading(true)
@@ -103,10 +123,83 @@ const AdminDashboard = () => {
               </div>
 
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                <button className="flex items-center gap-2 rounded-xl bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700">
-                  <FaBell className="h-5 w-5" />
-                  Alerts
-                </button>
+                <div className="relative" ref={alertsRef}>
+                  <button 
+                    onClick={() => setShowAlerts(!showAlerts)}
+                    className="relative flex items-center gap-2 rounded-xl bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700"
+                  >
+                    <FaBell className="h-5 w-5" />
+                    Alerts
+                    {onboardingRequests.length > 0 && (
+                      <span className="absolute -top-1 -right-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-white px-1 text-[10px] font-semibold text-red-600">
+                        {onboardingRequests.length > 99 ? '99+' : onboardingRequests.length}
+                      </span>
+                    )}
+                  </button>
+
+                  {showAlerts && (
+                    <div className="absolute right-0 mt-2 w-80 rounded-xl bg-white shadow-lg border border-gray-200 z-50 max-h-96 overflow-y-auto">
+                      <div className="p-4 border-b border-gray-200 flex items-center justify-between">
+                        <h3 className="text-sm font-semibold text-gray-900">Vendor Requests</h3>
+                        <button
+                          onClick={() => setShowAlerts(false)}
+                          className="text-gray-400 hover:text-gray-600"
+                        >
+                          <FaTimes className="h-4 w-4" />
+                        </button>
+                      </div>
+                      <div className="p-2">
+                        {onboardingRequests.length === 0 ? (
+                          <div className="p-4 text-center text-sm text-gray-500">
+                            No pending vendor requests
+                          </div>
+                        ) : (
+                          <div className="space-y-2">
+                            {onboardingRequests.map(request => (
+                              <div
+                                key={request.id}
+                                onClick={() => {
+                                  setShowAlerts(false)
+                                  navigate('/adminvendorsapprove')
+                                }}
+                                className="p-3 rounded-lg border border-gray-100 hover:bg-gray-50 cursor-pointer transition"
+                              >
+                                <div className="flex items-start justify-between">
+                                  <div className="flex-1">
+                                    <p className="text-sm font-semibold text-gray-900">{request.businessName}</p>
+                                    <p className="text-xs text-gray-500 mt-1">Owner: {request.ownerName}</p>
+                                    <p className="text-xs text-gray-400 mt-1">{request.submittedAt}</p>
+                                  </div>
+                                  <span className={`ml-2 rounded-full px-2 py-1 text-xs font-medium ${
+                                    request.status === 'High Priority' ? 'bg-red-50 text-red-600' :
+                                    request.status === 'Follow-up' ? 'bg-amber-50 text-amber-600' :
+                                    request.status === 'Ready to Approve' ? 'bg-green-50 text-green-600' :
+                                    'bg-gray-50 text-gray-600'
+                                  }`}>
+                                    {request.status}
+                                  </span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                      {onboardingRequests.length > 0 && (
+                        <div className="p-3 border-t border-gray-200">
+                          <button
+                            onClick={() => {
+                              setShowAlerts(false)
+                              navigate('/adminvendorsapprove')
+                            }}
+                            className="w-full rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 transition"
+                          >
+                            View All Requests
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </header>
@@ -138,12 +231,9 @@ const AdminDashboard = () => {
           {!loading && (
             <section className="grid grid-cols-1 gap-6 xl:grid-cols-3">
               <article className="rounded-2xl bg-white p-6 shadow-sm xl:col-span-2">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h2 className="text-lg font-semibold text-gray-900">Top Performing Vendors</h2>
-                    <p className="text-sm text-gray-500">Vendors with the most products listed</p>
-                  </div>
-                  <button className="text-sm font-medium text-red-600 hover:text-red-700">View analytics</button>
+                <div>
+                  <h2 className="text-lg font-semibold text-gray-900">Top Performing Vendors</h2>
+                  <p className="text-sm text-gray-500">Vendors with the most products listed</p>
                 </div>
 
                 <div className="mt-5 space-y-4">
