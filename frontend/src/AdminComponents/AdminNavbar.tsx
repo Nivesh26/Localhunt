@@ -7,7 +7,9 @@ import {
   FaUsers,
 } from 'react-icons/fa'
 import logo from '../assets/Local Hunt Logo NoBG.png'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import { sessionUtils } from '../utils/sessionUtils'
+import { toast } from 'react-toastify'
 
 const navLinks = [
   { label: 'Overview', icon: FaHome, to: '/admindashboard' },
@@ -22,6 +24,14 @@ const navLinks = [
 
 
 const AdminNavbar = () => {
+  const navigate = useNavigate()
+
+  const handleLogout = () => {
+    sessionUtils.clearSession()
+    toast.success('Logged out successfully')
+    navigate('/login')
+  }
+
   return (
     <aside className="hidden w-64 lg:block">
       
@@ -40,9 +50,12 @@ const AdminNavbar = () => {
             <p className="text-lg font-semibold text-gray-900">Super Admin</p>
           </div>
           
-          <button className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-red-600 hover:text-red-700">
+          <button 
+            onClick={handleLogout}
+            className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-red-600 hover:text-red-700"
+          >
             <FaSignOutAlt className="h-4 w-4" />
-            Switch Accountt
+            Logout
           </button>
         </div>
 

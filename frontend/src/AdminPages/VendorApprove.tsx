@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import AdminNavbar from '../AdminComponents/AdminNavbar'
 import {
   FaSearch,
-  FaFilter,
   FaCheckCircle,
   FaTimes,
 } from 'react-icons/fa'
@@ -173,10 +172,6 @@ const VendorApprove = () => {
                     className="w-full rounded-xl border border-gray-200 py-2 pl-10 pr-4 text-sm focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-200"
                   />
                 </div>
-                <button className="flex items-center gap-2 rounded-xl border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50">
-                  <FaFilter className="h-5 w-5" />
-                  Filters
-                </button>
               </div>
             </div>
           </header>

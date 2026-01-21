@@ -2,7 +2,6 @@ import {
   FaHome,
   FaCube,
   FaShoppingBag,
-  FaMoneyBillWave,
   FaComments,
   FaCog,
   FaSignOutAlt,
@@ -20,7 +19,6 @@ const navLinks = [
   { label: 'Products', icon: FaCube, to: '/sellerproduct' },
   { label: 'Orders', icon: FaShoppingBag, to: '/sellerorder' },
   { label: 'History', icon: FaHistory, to: '/sellerhistory' },
-  { label: 'Payouts', icon: FaMoneyBillWave, to: '/sellerpayout' },
   { label: 'Messages', icon: FaComments, to: '/sellermessage' },
   { label: 'Settings', icon: FaCog, to: '/sellersetting' },
 ]
