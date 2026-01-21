@@ -345,6 +345,42 @@ const Productdetail = () => {
     }
   }
 
+  const handleBuyNow = () => {
+    if (!product) return
+
+    const user = sessionUtils.getUser()
+    if (!user) {
+      toast.error('Please login to proceed with checkout')
+      navigate('/login?returnUrl=/productdetail/' + id)
+      return
+    }
+
+    // Get first image from comma-separated imageUrl
+    const firstImage = product.imageUrl ? product.imageUrl.split(',')[0].trim() : ''
+    const productImageUrl = firstImage && !firstImage.startsWith('http://') && !firstImage.startsWith('https://')
+      ? `http://localhost:8080${firstImage.startsWith('/') ? firstImage : '/' + firstImage}`
+      : firstImage
+
+    // Format product as CartItem for checkout
+    const cartItem = {
+      id: product.id, // Using product id as temporary cart item id
+      productId: product.id,
+      productName: product.name,
+      productPrice: product.price,
+      productImageUrl: productImageUrl || '/placeholder.png',
+      quantity: quantity,
+      subtotal: product.price * quantity,
+      sellerName: product.sellerName
+    }
+
+    // Navigate to checkout with the selected item
+    navigate('/checkout', {
+      state: {
+        selectedItems: [cartItem]
+      }
+    })
+  }
+
   const getSizes = () => {
     if (!product) return []
     if (product.sizeEu) {
@@ -570,7 +606,7 @@ const Productdetail = () => {
                           window.dispatchEvent(event)
                           console.log('openChatWidget event dispatched') // Debug log
                         }}
-                        className="ml-auto flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+                        className="ml-auto flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-700 transition-colors"
                       >
                         <FaPaperPlane />
                         Message Vendor
@@ -591,6 +627,7 @@ const Productdetail = () => {
                 {product.stock === 0 ? 'OUT OF STOCK' : 'ADD TO CART'}
               </button>
               <button 
+                onClick={handleBuyNow}
                 className="flex-1 bg-green-600 text-white py-4 rounded-lg font-semibold hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 disabled={product.stock === 0}
               >
@@ -664,7 +701,7 @@ const Productdetail = () => {
             {!showReviewForm ? (
               <button
                 onClick={() => setShowReviewForm(true)}
-                className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+                className="bg-red-400 text-white px-6 py-3 rounded-lg font-semibold hover:bg-red-500 transition-colors"
               >
                 Write a Review
               </button>
@@ -704,7 +741,7 @@ const Productdetail = () => {
                   <button
                     onClick={handleSubmitReview}
                     disabled={submittingReview || !reviewText.trim()}
-                    className="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="bg-red-400 text-white px-6 py-2 rounded-lg font-semibold hover:bg-red-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {submittingReview ? 'Submitting...' : 'Submit Review'}
                   </button>
