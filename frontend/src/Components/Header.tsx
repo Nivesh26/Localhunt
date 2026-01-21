@@ -7,6 +7,7 @@ import { sessionUtils } from "../utils/sessionUtils";
 const Header = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [profilePicture, setProfilePicture] = useState<string | null>(null);
+  const [cartCount, setCartCount] = useState(0);
 
   const fetchProfilePicture = async () => {
     const user = sessionUtils.getUser();
@@ -35,17 +36,43 @@ const Header = () => {
     }
   };
 
+  const fetchCartCount = async () => {
+    const user = sessionUtils.getUser();
+    if (!user) {
+      setCartCount(0);
+      return;
+    }
+
+    try {
+      const userId = user.userId;
+      const response = await fetch(`http://localhost:8080/api/cart/${userId}`);
+      if (response.ok) {
+        const data = await response.json();
+        // Sum up all quantities from cart items
+        const totalCount = data.reduce((sum: number, item: any) => sum + (item.quantity || 0), 0);
+        setCartCount(totalCount);
+      } else {
+        setCartCount(0);
+      }
+    } catch (error) {
+      console.error('Error fetching cart count:', error);
+      setCartCount(0);
+    }
+  };
+
   useEffect(() => {
     // Check if user is logged in (using sessionStorage - tab-specific)
     const checkLoginStatus = () => {
       const isLoggedIn = sessionUtils.isLoggedIn();
       setIsLoggedIn(isLoggedIn);
       
-      // Fetch profile picture if user is logged in
+      // Fetch profile picture and cart count if user is logged in
       if (isLoggedIn) {
         fetchProfilePicture();
+        fetchCartCount();
       } else {
         setProfilePicture(null);
+        setCartCount(0);
       }
     };
 
@@ -63,9 +90,18 @@ const Header = () => {
     };
     window.addEventListener('profilePictureUpdated', handleProfilePictureUpdate);
 
+    // Listen for cart updates
+    const handleCartUpdate = () => {
+      if (sessionUtils.isLoggedIn()) {
+        fetchCartCount();
+      }
+    };
+    window.addEventListener('cartUpdated', handleCartUpdate);
+
     return () => {
       window.removeEventListener('userLoginStatusChange', checkLoginStatus);
       window.removeEventListener('profilePictureUpdated', handleProfilePictureUpdate);
+      window.removeEventListener('cartUpdated', handleCartUpdate);
     };
   }, []);
 
@@ -108,8 +144,13 @@ const Header = () => {
           <FaSearch className="w-5 h-5 absolute left-3 top-2.5 text-gray-400" />
         </div>
 
-        <Link to="/cart">
-        <FaShoppingCart className="w-6 h-6 text-gray-700 hover:text-red-600 cursor-pointer" />
+        <Link to="/cart" className="relative">
+          <FaShoppingCart className="w-6 h-6 text-gray-700 hover:text-red-600 cursor-pointer" />
+          {cartCount > 0 && (
+            <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+              {cartCount > 99 ? '99+' : cartCount}
+            </span>
+          )}
         </Link>
         
         {/* Profile Icon or Login Link */}

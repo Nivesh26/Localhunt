@@ -115,6 +115,8 @@ const cart = () => {
             ? { ...item, quantity: updatedItem.quantity, subtotal: updatedItem.subtotal, productImageUrl: imageUrl }
             : item
         ))
+        // Dispatch event to update cart count in header
+        window.dispatchEvent(new CustomEvent('cartUpdated'))
       } else if (response.status === 404) {
         // User was deleted from database
         sessionUtils.clearSession()
@@ -148,6 +150,8 @@ const cart = () => {
       if (response.ok) {
         setCartItems(cartItems.filter(item => item.id !== cartId))
         toast.success('Item removed from cart')
+        // Dispatch event to update cart count in header
+        window.dispatchEvent(new CustomEvent('cartUpdated'))
       } else if (response.status === 404) {
         // User was deleted from database
         sessionUtils.clearSession()

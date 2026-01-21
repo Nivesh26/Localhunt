@@ -336,6 +336,8 @@ const Productdetail = () => {
 
       if (response.ok && data.success) {
         toast.success('Product added to cart successfully!')
+        // Dispatch event to update cart count in header
+        window.dispatchEvent(new CustomEvent('cartUpdated'))
       } else {
         toast.error(data.message || 'Failed to add product to cart')
       }

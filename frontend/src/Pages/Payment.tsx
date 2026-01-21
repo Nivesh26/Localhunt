@@ -118,6 +118,8 @@ const Payment = () => {
           console.error('Error removing item from cart:', error)
         }
       }
+      // Dispatch event to update cart count in header
+      window.dispatchEvent(new CustomEvent('cartUpdated'))
 
       // Navigate to COD confirmation page
       navigate('/cod', {
