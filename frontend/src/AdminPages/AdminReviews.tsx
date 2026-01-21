@@ -4,6 +4,7 @@ import {
   FaStar,
   FaTrash,
   FaUser,
+  FaHeart,
 } from 'react-icons/fa'
 import AdminNavbar from '../AdminComponents/AdminNavbar'
 import { toast } from 'react-toastify'
@@ -21,6 +22,8 @@ interface Review {
   reviewText: string
   createdAt: string
   updatedAt: string
+  likeCount?: number
+  userLiked?: boolean
 }
 
 const AdminReviews = () => {
@@ -313,6 +316,12 @@ const AdminReviews = () => {
                             <span className="text-sm text-gray-600 ml-1">{review.rating}/5</span>
                           </div>
                           <p className="text-sm text-gray-700">{review.reviewText}</p>
+                          {review.likeCount !== undefined && review.likeCount > 0 && (
+                            <div className="flex items-center gap-1.5 mt-2 text-sm text-gray-500">
+                              <FaHeart className="w-3.5 h-3.5 text-red-500 fill-current" />
+                              <span>{review.likeCount} {review.likeCount === 1 ? 'like' : 'likes'}</span>
+                            </div>
+                          )}
                         </div>
                         <button
                           onClick={() => handleDelete(review.id)}

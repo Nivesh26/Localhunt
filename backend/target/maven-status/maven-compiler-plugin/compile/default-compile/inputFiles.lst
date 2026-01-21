@@ -52,6 +52,7 @@
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/model/Payment.java
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/model/Product.java
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/model/Review.java
+/Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/model/ReviewLike.java
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/model/Role.java
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/model/Seller.java
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/model/User.java
@@ -61,6 +62,7 @@
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/repository/OtpRepository.java
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/repository/PaymentRepository.java
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/repository/ProductRepository.java
+/Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/repository/ReviewLikeRepository.java
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/repository/ReviewRepository.java
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/repository/SellerRepository.java
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/repository/UserRepository.java

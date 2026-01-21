@@ -4,8 +4,10 @@ import com.localhunts.backend.dto.ReviewRequest;
 import com.localhunts.backend.dto.ReviewResponse;
 import com.localhunts.backend.model.Product;
 import com.localhunts.backend.model.Review;
+import com.localhunts.backend.model.ReviewLike;
 import com.localhunts.backend.model.User;
 import com.localhunts.backend.repository.ProductRepository;
+import com.localhunts.backend.repository.ReviewLikeRepository;
 import com.localhunts.backend.repository.ReviewRepository;
 import com.localhunts.backend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +30,9 @@ public class ReviewService {
     @Autowired
     private ProductRepository productRepository;
 
+    @Autowired
+    private ReviewLikeRepository reviewLikeRepository;
+
     @Transactional
     public ReviewResponse createReview(Long userId, ReviewRequest request) {
         // Find user
@@ -46,16 +51,16 @@ public class ReviewService {
         review.setReviewText(request.getReviewText());
 
         Review savedReview = reviewRepository.save(review);
-        return convertToResponse(savedReview);
+        return convertToResponse(savedReview, null);
     }
 
-    public List<ReviewResponse> getReviewsByProduct(Long productId) {
+    public List<ReviewResponse> getReviewsByProduct(Long productId, Long userId) {
         Product product = productRepository.findById(productId)
             .orElseThrow(() -> new RuntimeException("Product not found"));
 
         List<Review> reviews = reviewRepository.findByProductOrderByCreatedAtDesc(product);
         return reviews.stream()
-            .map(this::convertToResponse)
+            .map(review -> convertToResponse(review, userId))
             .collect(Collectors.toList());
     }
 
@@ -83,17 +88,17 @@ public class ReviewService {
         return sum / reviews.size();
     }
 
-    public List<ReviewResponse> getAllReviews() {
+    public List<ReviewResponse> getAllReviews(Long userId) {
         List<Review> reviews = reviewRepository.findAllByOrderByCreatedAtDesc();
         return reviews.stream()
-            .map(this::convertToResponse)
+            .map(review -> convertToResponse(review, userId))
             .collect(Collectors.toList());
     }
 
-    public List<ReviewResponse> getReviewsBySeller(Long sellerId) {
+    public List<ReviewResponse> getReviewsBySeller(Long sellerId, Long userId) {
         List<Review> reviews = reviewRepository.findByProductSellerIdOrderByCreatedAtDesc(sellerId);
         return reviews.stream()
-            .map(this::convertToResponse)
+            .map(review -> convertToResponse(review, userId))
             .collect(Collectors.toList());
     }
 
@@ -117,7 +122,41 @@ public class ReviewService {
         reviewRepository.delete(review);
     }
 
-    private ReviewResponse convertToResponse(Review review) {
+    @Transactional
+    public void toggleLike(Long userId, Long reviewId) {
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new RuntimeException("User not found"));
+        Review review = reviewRepository.findById(reviewId)
+            .orElseThrow(() -> new RuntimeException("Review not found"));
+
+        ReviewLike existingLike = reviewLikeRepository.findByUserAndReview(user, review).orElse(null);
+        
+        if (existingLike != null) {
+            // Unlike: remove the like
+            reviewLikeRepository.delete(existingLike);
+        } else {
+            // Like: create a new like
+            ReviewLike like = new ReviewLike(user, review);
+            reviewLikeRepository.save(like);
+        }
+    }
+
+    public boolean hasUserLiked(Long userId, Long reviewId) {
+        if (userId == null) {
+            return false;
+        }
+        User user = userRepository.findById(userId).orElse(null);
+        if (user == null) {
+            return false;
+        }
+        Review review = reviewRepository.findById(reviewId).orElse(null);
+        if (review == null) {
+            return false;
+        }
+        return reviewLikeRepository.existsByUserAndReview(user, review);
+    }
+
+    private ReviewResponse convertToResponse(Review review, Long currentUserId) {
         ReviewResponse response = new ReviewResponse();
         response.setId(review.getId());
         response.setUserId(review.getUser().getId());
@@ -142,6 +181,14 @@ public class ReviewService {
         if (review.getUpdatedAt() != null) {
             response.setUpdatedAt(review.getUpdatedAt().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
         }
+
+        // Set like count
+        long likeCount = reviewLikeRepository.countByReview(review);
+        response.setLikeCount(likeCount);
+
+        // Set user liked status
+        boolean userLiked = currentUserId != null && hasUserLiked(currentUserId, review.getId());
+        response.setUserLiked(userLiked);
 
         return response;
     }

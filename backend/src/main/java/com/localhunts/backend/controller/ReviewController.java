@@ -40,9 +40,11 @@ public class ReviewController {
     }
 
     @GetMapping("/product/{productId}")
-    public ResponseEntity<List<ReviewResponse>> getReviewsByProduct(@PathVariable Long productId) {
+    public ResponseEntity<List<ReviewResponse>> getReviewsByProduct(
+            @PathVariable Long productId,
+            @RequestParam(required = false) Long userId) {
         try {
-            List<ReviewResponse> reviews = reviewService.getReviewsByProduct(productId);
+            List<ReviewResponse> reviews = reviewService.getReviewsByProduct(productId, userId);
             return ResponseEntity.ok(reviews);
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
@@ -102,9 +104,10 @@ public class ReviewController {
     }
 
     @GetMapping("/all")
-    public ResponseEntity<List<ReviewResponse>> getAllReviews() {
+    public ResponseEntity<List<ReviewResponse>> getAllReviews(
+            @RequestParam(required = false) Long userId) {
         try {
-            List<ReviewResponse> reviews = reviewService.getAllReviews();
+            List<ReviewResponse> reviews = reviewService.getAllReviews(userId);
             return ResponseEntity.ok(reviews);
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -128,12 +131,32 @@ public class ReviewController {
     }
 
     @GetMapping("/seller/{sellerId}")
-    public ResponseEntity<List<ReviewResponse>> getReviewsBySeller(@PathVariable Long sellerId) {
+    public ResponseEntity<List<ReviewResponse>> getReviewsBySeller(
+            @PathVariable Long sellerId,
+            @RequestParam(required = false) Long userId) {
         try {
-            List<ReviewResponse> reviews = reviewService.getReviewsBySeller(sellerId);
+            List<ReviewResponse> reviews = reviewService.getReviewsBySeller(sellerId, userId);
             return ResponseEntity.ok(reviews);
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+    }
+
+    @PostMapping("/{reviewId}/like/{userId}")
+    public ResponseEntity<Map<String, Object>> toggleLike(
+            @PathVariable Long reviewId,
+            @PathVariable Long userId) {
+        try {
+            reviewService.toggleLike(userId, reviewId);
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "Like toggled successfully");
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("message", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
     }
 }

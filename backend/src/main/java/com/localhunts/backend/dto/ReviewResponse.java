@@ -12,6 +12,8 @@ public class ReviewResponse {
     private String reviewText;
     private String createdAt;
     private String updatedAt;
+    private Long likeCount;
+    private Boolean userLiked;
 
     public ReviewResponse() {
     }
@@ -102,5 +104,21 @@ public class ReviewResponse {
 
     public void setUpdatedAt(String updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public Long getLikeCount() {
+        return likeCount;
+    }
+
+    public void setLikeCount(Long likeCount) {
+        this.likeCount = likeCount;
+    }
+
+    public Boolean getUserLiked() {
+        return userLiked;
+    }
+
+    public void setUserLiked(Boolean userLiked) {
+        this.userLiked = userLiked;
     }
 }
