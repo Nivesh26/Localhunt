@@ -28,6 +28,7 @@ import SellerHistory from './SellerPages/SellerHistory'
 import SellerPayout from './SellerPages/SellerPayout'
 import SellerMessage from './SellerPages/SellerMessage'
 import SellerSetting from './SellerPages/SellerSetting'
+import SellerReviews from './SellerPages/SellerReviews'
 import AdminUser from './AdminPages/AdminUser'
 import Changepassword from './Pages/Changepassord'
 import SellerChangepassword from './SellerPages/SellerChangepassword'
@@ -123,6 +124,11 @@ const App = () => {
       <Route path="/sellerhistory" element={
         <ProtectedRoute allowedRoles={['VENDOR']}>
           <SellerHistory/>
+        </ProtectedRoute>
+      }/>
+      <Route path="/sellerreviews" element={
+        <ProtectedRoute allowedRoles={['VENDOR']}>
+          <SellerReviews/>
         </ProtectedRoute>
       }/>
       <Route path="/sellerpayout" element={

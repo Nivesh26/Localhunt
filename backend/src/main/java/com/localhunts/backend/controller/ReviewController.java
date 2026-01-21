@@ -126,4 +126,14 @@ public class ReviewController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
     }
+
+    @GetMapping("/seller/{sellerId}")
+    public ResponseEntity<List<ReviewResponse>> getReviewsBySeller(@PathVariable Long sellerId) {
+        try {
+            List<ReviewResponse> reviews = reviewService.getReviewsBySeller(sellerId);
+            return ResponseEntity.ok(reviews);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+    }
 }

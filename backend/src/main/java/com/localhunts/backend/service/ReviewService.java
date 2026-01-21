@@ -90,6 +90,13 @@ public class ReviewService {
             .collect(Collectors.toList());
     }
 
+    public List<ReviewResponse> getReviewsBySeller(Long sellerId) {
+        List<Review> reviews = reviewRepository.findByProductSellerIdOrderByCreatedAtDesc(sellerId);
+        return reviews.stream()
+            .map(this::convertToResponse)
+            .collect(Collectors.toList());
+    }
+
     @Transactional
     public void deleteReview(Long reviewId, Long userId) {
         Review review = reviewRepository.findById(reviewId)
