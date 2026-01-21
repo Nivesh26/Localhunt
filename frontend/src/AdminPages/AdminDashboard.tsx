@@ -7,13 +7,79 @@ import {
   FaSearch,
   FaSignOutAlt,
 } from 'react-icons/fa'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import AdminNavbar from '../AdminComponents/AdminNavbar'
 import { sessionUtils } from '../utils/sessionUtils'
 
+interface DashboardStats {
+  totalVendors: number
+  activeProducts: number
+  gmv30d: number
+  pendingVerifications: number
+}
+
+interface TopVendor {
+  sellerId: number
+  businessName: string
+  businessCategory: string
+  productCount: number
+  growth: number
+  rating: number
+}
+
+interface OnboardingRequest {
+  id: number
+  businessName: string
+  ownerName: string
+  submittedAt: string
+  documents: string
+  status: string
+}
+
 const AdminDashboard = () => {
   const navigate = useNavigate()
+  const [loading, setLoading] = useState(true)
+  const [stats, setStats] = useState<DashboardStats | null>(null)
+  const [topVendors, setTopVendors] = useState<TopVendor[]>([])
+  const [onboardingRequests, setOnboardingRequests] = useState<OnboardingRequest[]>([])
+
+  useEffect(() => {
+    fetchDashboardData()
+  }, [])
+
+  const fetchDashboardData = async () => {
+    setLoading(true)
+    try {
+      // Fetch all dashboard data in parallel
+      const [statsResponse, vendorsResponse, requestsResponse] = await Promise.all([
+        fetch('http://localhost:8080/api/admin/dashboard/stats'),
+        fetch('http://localhost:8080/api/admin/dashboard/top-vendors'),
+        fetch('http://localhost:8080/api/admin/dashboard/onboarding-requests'),
+      ])
+
+      if (statsResponse.ok) {
+        const statsData = await statsResponse.json()
+        setStats(statsData)
+      }
+
+      if (vendorsResponse.ok) {
+        const vendorsData = await vendorsResponse.json()
+        setTopVendors(vendorsData)
+      }
+
+      if (requestsResponse.ok) {
+        const requestsData = await requestsResponse.json()
+        setOnboardingRequests(requestsData)
+      }
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error)
+      toast.error('Failed to load dashboard data')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const handleLogout = () => {
     sessionUtils.clearSession()
@@ -21,25 +87,12 @@ const AdminDashboard = () => {
     navigate('/login')
   }
 
-  const statCards = [
-    { label: 'Total Vendors', value: '10',  icon: FaStore, color: 'bg-red-500' },
-    { label: 'Active Products', value: '18',  icon: FaCube, color: 'bg-blue-500' },
-    { label: 'GMV (30d)', value: 'NRP 4000',  icon: FaDollarSign, color: 'bg-green-500' },
-    { label: 'Pending Verifications', value: '32', icon: FaShieldAlt, color: 'bg-amber-500' },
-  ]
-
-  const topVendors = [
-    { name: 'Virinchi College', category: 'Handmade', orders: 982, growth: '+18%', rating: 4.9 },
-    { name: 'General Mechanical Store', category: 'Gourmet Foods', orders: 756, growth: '+12%', rating: 4.8 },
-    { name: 'Momomia Cafe', category: 'Apparel', orders: 604, growth: '+9%', rating: 4.7 },
-    { name: 'Lumbini Herbal Store', category: 'Home Decor', orders: 488, growth: '+7%', rating: 4.6 },
-  ]
-
-  const onboardingRequests = [
-    { store: 'Nepal Spice Hub', owner: 'Meera Thapa', submitted: '2h ago', docs: 'GST & Bank Statement', status: 'High Priority' },
-    { store: 'Sherpa Leather', owner: 'Nima Sherpa', submitted: '5h ago', docs: 'ID Pending', status: 'Follow-up' },
-    { store: 'EcoLife Essentials', owner: 'Anil Shrestha', submitted: 'Yesterday', docs: 'Complete', status: 'Ready to Approve' },
-  ]
+  const statCards = stats ? [
+    { label: 'Total Vendors', value: stats.totalVendors.toString(), icon: FaStore, color: 'bg-red-500' },
+    { label: 'Active Products', value: stats.activeProducts.toString(), icon: FaCube, color: 'bg-blue-500' },
+    { label: 'GMV (30d)', value: `NRP ${stats.gmv30d.toFixed(2)}`, icon: FaDollarSign, color: 'bg-green-500' },
+    { label: 'Pending Verifications', value: stats.pendingVerifications.toString(), icon: FaShieldAlt, color: 'bg-amber-500' },
+  ] : []
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -84,75 +137,105 @@ const AdminDashboard = () => {
             </div>
           </header>
 
-          <section className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
-            {statCards.map(card => (
-              <article key={card.label} className="rounded-2xl bg-white p-6 shadow-sm">
-                <div className="flex items-start justify-between">
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <p className="text-gray-500">Loading dashboard...</p>
+            </div>
+          ) : (
+            <>
+              <section className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
+                {statCards.map(card => (
+                  <article key={card.label} className="rounded-2xl bg-white p-6 shadow-sm">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <p className="text-sm text-gray-500">{card.label}</p>
+                        <p className="mt-3 text-3xl font-bold text-gray-900">{card.value}</p>
+                      </div>
+                      <div className={`${card.color} rounded-xl p-3 text-white`}>
+                        <card.icon className="h-6 w-6" />
+                      </div>
+                    </div>
+                  </article>
+                ))}
+              </section>
+            </>
+          )}
+
+          {!loading && (
+            <section className="grid grid-cols-1 gap-6 xl:grid-cols-3">
+              <article className="rounded-2xl bg-white p-6 shadow-sm xl:col-span-2">
+                <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-500">{card.label}</p>
-                    <p className="mt-3 text-3xl font-bold text-gray-900">{card.value}</p>
+                    <h2 className="text-lg font-semibold text-gray-900">Top Performing Vendors</h2>
+                    <p className="text-sm text-gray-500">Vendors with the most products listed</p>
                   </div>
-                  <div className={`${card.color} rounded-xl p-3 text-white`}>
-                    <card.icon className="h-6 w-6" />
-                  </div>
+                  <button className="text-sm font-medium text-red-600 hover:text-red-700">View analytics</button>
+                </div>
+
+                <div className="mt-5 space-y-4">
+                  {topVendors.length === 0 ? (
+                    <p className="text-gray-500 text-center py-8">No vendor data available</p>
+                  ) : (
+                    topVendors.map(vendor => (
+                      <div key={vendor.sellerId} className="rounded-xl border border-gray-100 px-4 py-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm font-semibold text-gray-900">{vendor.businessName}</p>
+                            <p className="text-xs text-gray-500">{vendor.businessCategory}</p>
+                          </div>
+                          <span className="rounded-full bg-green-50 px-3 py-1 text-xs font-semibold text-green-600">
+                            +{vendor.growth.toFixed(0)}%
+                          </span>
+                        </div>
+                        <div className="mt-3 flex items-center justify-between text-xs text-gray-500">
+                          <span>{vendor.productCount} products</span>
+                          <span>Rating {vendor.rating.toFixed(1)}/5</span>
+                        </div>
+                        <div className="mt-2 h-2 rounded-full bg-gray-100">
+                          <div className="h-full rounded-full bg-red-500" style={{ width: `${Math.min(100, (vendor.productCount / 10))}%` }} />
+                        </div>
+                      </div>
+                    ))
+                  )}
                 </div>
               </article>
-            ))}
-          </section>
 
-          <section className="grid grid-cols-1 gap-6 xl:grid-cols-3">
-            <article className="rounded-2xl bg-white p-6 shadow-sm xl:col-span-2">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-lg font-semibold text-gray-900">Top Performing Vendors</h2>
-                  <p className="text-sm text-gray-500">Performance across fulfillment, ratings, and revenue growth</p>
-                </div>
-                <button className="text-sm font-medium text-red-600 hover:text-red-700">View analytics</button>
-              </div>
-
-              <div className="mt-5 space-y-4">
-                {topVendors.map(vendor => (
-                  <div key={vendor.name} className="rounded-xl border border-gray-100 px-4 py-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm font-semibold text-gray-900">{vendor.name}</p>
-                        <p className="text-xs text-gray-500">{vendor.category}</p>
-                      </div>
-                      <span className="rounded-full bg-green-50 px-3 py-1 text-xs font-semibold text-green-600">{vendor.growth}</span>
-                    </div>
-                    <div className="mt-3 flex items-center justify-between text-xs text-gray-500">
-                      <span>{vendor.orders} orders</span>
-                      <span>Rating {vendor.rating}/5</span>
-                    </div>
-                    <div className="mt-2 h-2 rounded-full bg-gray-100">
-                      <div className="h-full rounded-full bg-red-500" style={{ width: `${Math.min(100, vendor.orders / 10)}%` }} />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </article>
-
-            <article className="rounded-2xl bg-white p-6 shadow-sm">
-              <h2 className="text-lg font-semibold text-gray-900">Onboarding Queue</h2>
-              <p className="text-sm text-gray-500">Vendors awaiting verification or review</p>
-              <ul className="mt-4 space-y-4">
-                {onboardingRequests.map(request => (
-                  <li key={request.store} className="rounded-xl border border-gray-100 p-4">
-                    <p className="text-sm font-semibold text-gray-900">{request.store}</p>
-                    <p className="text-xs text-gray-500">Owner: {request.owner}</p>
-                    <p className="text-xs text-gray-500">Documents: {request.docs}</p>
-                    <div className="mt-3 flex items-center justify-between text-xs">
-                      <span className="text-gray-400">{request.submitted}</span>
-                      <span className="rounded-full bg-amber-50 px-3 py-1 font-medium text-amber-600">{request.status}</span>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-              <button className="mt-4 w-full rounded-xl border border-gray-200 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50">
-                Open vendor pipeline
-              </button>
-            </article>
-          </section>
+              <article className="rounded-2xl bg-white p-6 shadow-sm">
+                <h2 className="text-lg font-semibold text-gray-900">Onboarding Queue</h2>
+                <p className="text-sm text-gray-500">Vendors awaiting verification or review</p>
+                <ul className="mt-4 space-y-4">
+                  {onboardingRequests.length === 0 ? (
+                    <li className="text-center py-8 text-gray-500 text-sm">No pending requests</li>
+                  ) : (
+                    onboardingRequests.map(request => (
+                      <li key={request.id} className="rounded-xl border border-gray-100 p-4">
+                        <p className="text-sm font-semibold text-gray-900">{request.businessName}</p>
+                        <p className="text-xs text-gray-500">Owner: {request.ownerName}</p>
+                        <p className="text-xs text-gray-500">Documents: {request.documents}</p>
+                        <div className="mt-3 flex items-center justify-between text-xs">
+                          <span className="text-gray-400">{request.submittedAt}</span>
+                          <span className={`rounded-full px-3 py-1 font-medium ${
+                            request.status === 'High Priority' ? 'bg-red-50 text-red-600' :
+                            request.status === 'Follow-up' ? 'bg-amber-50 text-amber-600' :
+                            request.status === 'Ready to Approve' ? 'bg-green-50 text-green-600' :
+                            'bg-gray-50 text-gray-600'
+                          }`}>
+                            {request.status}
+                          </span>
+                        </div>
+                      </li>
+                    ))
+                  )}
+                </ul>
+                <button 
+                  onClick={() => navigate('/adminvendorsapprove')}
+                  className="mt-4 w-full rounded-xl border border-gray-200 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50"
+                >
+                  Open Vendor Requests
+                </button>
+              </article>
+            </section>
+          )}
 
           {/* <section className="grid grid-cols-1 gap-6 xl:grid-cols-2">
             <article className="rounded-2xl bg-white p-6 shadow-sm">
