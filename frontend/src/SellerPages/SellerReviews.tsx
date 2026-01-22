@@ -276,12 +276,9 @@ const SellerReviews = () => {
                             </div>
                           </div>
                           <div className="mb-3">
-                            <button
-                              onClick={() => navigate(`/productdetail/${review.productId}`)}
-                              className="text-sm font-semibold text-red-600 hover:text-red-700"
-                            >
+                            <p className="text-sm font-semibold text-gray-900">
                               {review.productName}
-                            </button>
+                            </p>
                           </div>
                           <div className="flex items-center gap-2 mb-2">
                             {[1, 2, 3, 4, 5].map(star => (
