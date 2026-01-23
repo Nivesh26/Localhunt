@@ -8,7 +8,6 @@ import {
   FaShieldAlt,
   FaUserCircle,
   FaStore,
-  FaMoneyBillWave,
   FaTruck,
 } from 'react-icons/fa'
 import SellerNavbar from '../SellerComponents/SellerNavbar'
@@ -586,41 +585,6 @@ const SellerSetting = () => {
                   </div>
                 </div>
               )}
-
-              {/* Payment Settings */}
-              <div className="rounded-2xl bg-white p-6 shadow-sm sm:p-8">
-                <div className="flex items-start gap-4">
-                  <div className="rounded-xl bg-emerald-50 p-3">
-                    <FaMoneyBillWave className="h-6 w-6 text-emerald-500" />
-                  </div>
-                  <div className="flex-1">
-                    <h2 className="text-lg font-semibold text-gray-900">Payment settings</h2>
-                    <p className="mt-2 text-sm text-gray-500">
-                      Manage your bank account and payout preferences.
-                    </p>
-                    <div className="mt-6 space-y-4">
-                      <div className="flex items-center justify-between rounded-xl border border-gray-200 px-4 py-3">
-                        <div>
-                          <p className="text-sm font-semibold text-gray-900">Bank account</p>
-                          <p className="text-xs text-gray-500">****1234 • Nabil Bank</p>
-                        </div>
-                        <button className="rounded-full border border-gray-200 px-3 py-1 text-xs font-medium text-gray-700 transition hover:bg-gray-100">
-                          Edit
-                        </button>
-                      </div>
-                      <div className="flex items-center justify-between rounded-xl border border-gray-200 px-4 py-3">
-                        <div>
-                          <p className="text-sm font-semibold text-gray-900">Payout schedule</p>
-                          <p className="text-xs text-gray-500">Weekly (Every Friday)</p>
-                        </div>
-                        <button className="rounded-full border border-gray-200 px-3 py-1 text-xs font-medium text-gray-700 transition hover:bg-gray-100">
-                          Change
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
 
               {/* Store Status */}
               <div className="rounded-2xl bg-white p-6 shadow-sm sm:p-8">
