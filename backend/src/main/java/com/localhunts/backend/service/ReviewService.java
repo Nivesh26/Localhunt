@@ -112,6 +112,11 @@ public class ReviewService {
             throw new RuntimeException("You can only delete your own reviews");
         }
 
+        // Delete all likes associated with this review first
+        List<ReviewLike> reviewLikes = reviewLikeRepository.findByReview(review);
+        reviewLikeRepository.deleteAll(reviewLikes);
+
+        // Now delete the review
         reviewRepository.delete(review);
     }
 
@@ -119,6 +124,12 @@ public class ReviewService {
     public void deleteReviewByAdmin(Long reviewId) {
         Review review = reviewRepository.findById(reviewId)
             .orElseThrow(() -> new RuntimeException("Review not found"));
+        
+        // Delete all likes associated with this review first
+        List<ReviewLike> reviewLikes = reviewLikeRepository.findByReview(review);
+        reviewLikeRepository.deleteAll(reviewLikes);
+
+        // Now delete the review
         reviewRepository.delete(review);
     }
 

@@ -6,6 +6,7 @@ import com.localhunts.backend.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -14,4 +15,5 @@ public interface ReviewLikeRepository extends JpaRepository<ReviewLike, Long> {
     boolean existsByUserAndReview(User user, Review review);
     long countByReview(Review review);
     void deleteByUserAndReview(User user, Review review);
+    List<ReviewLike> findByReview(Review review);
 }
