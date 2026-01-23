@@ -43,6 +43,8 @@ interface Review {
   updatedAt: string
   likeCount?: number
   userLiked?: boolean
+  vendorLiked?: boolean
+  vendorShopName?: string
 }
 
 const Productdetail = () => {
@@ -887,6 +889,12 @@ const Productdetail = () => {
                             {review.likeCount || 0}
                           </span>
                         </button>
+                        {review.vendorLiked && review.vendorShopName && (
+                          <div className="flex items-center gap-1.5 text-sm text-gray-600">
+                            <FaHeart className="w-3.5 h-3.5 text-red-500 fill-current" />
+                            <span>Liked by {review.vendorShopName}</span>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>

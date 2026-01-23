@@ -14,6 +14,8 @@ public class ReviewResponse {
     private String updatedAt;
     private Long likeCount;
     private Boolean userLiked;
+    private Boolean vendorLiked;
+    private String vendorShopName;
 
     public ReviewResponse() {
     }
@@ -120,5 +122,21 @@ public class ReviewResponse {
 
     public void setUserLiked(Boolean userLiked) {
         this.userLiked = userLiked;
+    }
+
+    public Boolean getVendorLiked() {
+        return vendorLiked;
+    }
+
+    public void setVendorLiked(Boolean vendorLiked) {
+        this.vendorLiked = vendorLiked;
+    }
+
+    public String getVendorShopName() {
+        return vendorShopName;
+    }
+
+    public void setVendorShopName(String vendorShopName) {
+        this.vendorShopName = vendorShopName;
     }
 }

@@ -159,4 +159,22 @@ public class ReviewController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
     }
+
+    @PostMapping("/{reviewId}/like/vendor/{vendorId}")
+    public ResponseEntity<Map<String, Object>> toggleLikeVendor(
+            @PathVariable Long reviewId,
+            @PathVariable Long vendorId) {
+        try {
+            reviewService.toggleLikeVendor(vendorId, reviewId);
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "Like toggled successfully");
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("message", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+    }
 }

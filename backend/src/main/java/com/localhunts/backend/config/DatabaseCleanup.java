@@ -77,6 +77,96 @@ public class DatabaseCleanup {
                     System.out.println("Note: payment.product_id column modification: " + e.getMessage());
                 }
             }
+            
+            // Add vendor like support to review_likes table
+            // Check if review_likes table exists
+            String checkReviewLikesTableSql = "SELECT COUNT(*) FROM information_schema.TABLES " +
+                    "WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'review_likes'";
+            
+            Integer reviewLikesTableExists = jdbcTemplate.queryForObject(checkReviewLikesTableSql, Integer.class);
+            
+            if (reviewLikesTableExists != null && reviewLikesTableExists > 0) {
+                // Check if liked_by_type column exists
+                String checkLikedByTypeSql = "SELECT COUNT(*) FROM information_schema.COLUMNS " +
+                        "WHERE TABLE_SCHEMA = DATABASE() " +
+                        "AND TABLE_NAME = 'review_likes' " +
+                        "AND COLUMN_NAME = 'liked_by_type'";
+                
+                Integer likedByTypeExists = jdbcTemplate.queryForObject(checkLikedByTypeSql, Integer.class);
+                
+                if (likedByTypeExists == null || likedByTypeExists == 0) {
+                    // Step 1: Add liked_by_type column (default to 'USER' for existing records)
+                    try {
+                        jdbcTemplate.execute("ALTER TABLE review_likes ADD COLUMN liked_by_type VARCHAR(20) NOT NULL DEFAULT 'USER'");
+                        System.out.println("✓ Added liked_by_type column to review_likes table");
+                    } catch (Exception e) {
+                        System.out.println("Note: liked_by_type column addition: " + e.getMessage());
+                    }
+                }
+                
+                // Step 2: Make user_id nullable (since vendor_id will be used for vendor likes)
+                try {
+                    jdbcTemplate.execute("ALTER TABLE review_likes MODIFY COLUMN user_id BIGINT NULL");
+                    System.out.println("✓ Modified review_likes.user_id to allow NULL");
+                } catch (Exception e) {
+                    System.out.println("Note: review_likes.user_id column modification: " + e.getMessage());
+                }
+                
+                // Step 3: Check if vendor_id column exists
+                String checkVendorIdSql = "SELECT COUNT(*) FROM information_schema.COLUMNS " +
+                        "WHERE TABLE_SCHEMA = DATABASE() " +
+                        "AND TABLE_NAME = 'review_likes' " +
+                        "AND COLUMN_NAME = 'vendor_id'";
+                
+                Integer vendorIdExists = jdbcTemplate.queryForObject(checkVendorIdSql, Integer.class);
+                
+                if (vendorIdExists == null || vendorIdExists == 0) {
+                    // Add vendor_id column (nullable, only set when liked_by_type is 'VENDOR')
+                    try {
+                        jdbcTemplate.execute("ALTER TABLE review_likes ADD COLUMN vendor_id BIGINT NULL");
+                        System.out.println("✓ Added vendor_id column to review_likes table");
+                    } catch (Exception e) {
+                        System.out.println("Note: vendor_id column addition: " + e.getMessage());
+                    }
+                }
+                
+                // Step 4: Add foreign key constraint for vendor_id if it doesn't exist
+                try {
+                    String checkFkSql = "SELECT COUNT(*) FROM information_schema.KEY_COLUMN_USAGE " +
+                            "WHERE TABLE_SCHEMA = DATABASE() " +
+                            "AND TABLE_NAME = 'review_likes' " +
+                            "AND CONSTRAINT_NAME = 'FK_review_likes_vendor'";
+                    
+                    Integer fkExists = jdbcTemplate.queryForObject(checkFkSql, Integer.class);
+                    
+                    if (fkExists == null || fkExists == 0) {
+                        jdbcTemplate.execute("ALTER TABLE review_likes " +
+                                "ADD CONSTRAINT FK_review_likes_vendor " +
+                                "FOREIGN KEY (vendor_id) REFERENCES sellers(id) ON DELETE CASCADE");
+                        System.out.println("✓ Added foreign key constraint for review_likes.vendor_id");
+                    }
+                } catch (Exception e) {
+                    System.out.println("Note: Foreign key constraint for vendor_id: " + e.getMessage());
+                }
+                
+                // Step 5: Add unique constraint for vendor likes if it doesn't exist
+                try {
+                    String checkUniqueSql = "SELECT COUNT(*) FROM information_schema.TABLE_CONSTRAINTS " +
+                            "WHERE TABLE_SCHEMA = DATABASE() " +
+                            "AND TABLE_NAME = 'review_likes' " +
+                            "AND CONSTRAINT_NAME = 'unique_vendor_review'";
+                    
+                    Integer uniqueExists = jdbcTemplate.queryForObject(checkUniqueSql, Integer.class);
+                    
+                    if (uniqueExists == null || uniqueExists == 0) {
+                        jdbcTemplate.execute("ALTER TABLE review_likes " +
+                                "ADD UNIQUE KEY unique_vendor_review (vendor_id, review_id)");
+                        System.out.println("✓ Added unique constraint for vendor likes");
+                    }
+                } catch (Exception e) {
+                    System.out.println("Note: Unique constraint for vendor likes: " + e.getMessage());
+                }
+            }
         } catch (Exception e) {
             // Log error but don't fail application startup
             System.err.println("Warning: Could not cleanup old address columns or modify delivered table: " + e.getMessage());

@@ -2,6 +2,7 @@ package com.localhunts.backend.repository;
 
 import com.localhunts.backend.model.Review;
 import com.localhunts.backend.model.ReviewLike;
+import com.localhunts.backend.model.Seller;
 import com.localhunts.backend.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -16,4 +17,10 @@ public interface ReviewLikeRepository extends JpaRepository<ReviewLike, Long> {
     long countByReview(Review review);
     void deleteByUserAndReview(User user, Review review);
     List<ReviewLike> findByReview(Review review);
+    
+    // Vendor-specific methods
+    Optional<ReviewLike> findByVendorAndReview(Seller vendor, Review review);
+    boolean existsByVendorAndReview(Seller vendor, Review review);
+    void deleteByVendorAndReview(Seller vendor, Review review);
+    List<ReviewLike> findByReviewAndLikedByType(Review review, ReviewLike.LikedByType likedByType);
 }

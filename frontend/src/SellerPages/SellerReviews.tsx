@@ -24,6 +24,8 @@ interface Review {
   updatedAt: string
   likeCount?: number
   userLiked?: boolean
+  vendorLiked?: boolean
+  vendorShopName?: string
 }
 
 const SellerReviews = () => {
@@ -58,6 +60,31 @@ const SellerReviews = () => {
       toast.error('An error occurred while fetching reviews')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleToggleLike = async (reviewId: number) => {
+    const user = sessionUtils.getUser()
+    if (!user || user.role !== 'VENDOR') {
+      toast.error('Please login as a vendor to like reviews')
+      return
+    }
+
+    try {
+      const response = await fetch(`http://localhost:8080/api/reviews/${reviewId}/like/vendor/${user.userId}`, {
+        method: 'POST',
+      })
+
+      if (response.ok) {
+        // Refresh reviews to get updated like count and vendor like status
+        fetchReviews(user.userId)
+      } else {
+        const errorData = await response.json().catch(() => ({ message: 'Failed to toggle like' }))
+        toast.error(errorData.message || 'Failed to toggle like')
+      }
+    } catch (error) {
+      console.error('Error toggling like:', error)
+      toast.error('An error occurred while toggling like')
     }
   }
 
@@ -294,12 +321,22 @@ const SellerReviews = () => {
                             <span className="text-sm text-gray-600 ml-1">{review.rating}/5</span>
                           </div>
                           <p className="text-sm text-gray-700">{review.reviewText}</p>
-                          {review.likeCount !== undefined && review.likeCount > 0 && (
-                            <div className="flex items-center gap-1.5 mt-2 text-sm text-gray-500">
-                              <FaHeart className="w-3.5 h-3.5 text-red-500 fill-current" />
-                              <span>{review.likeCount} {review.likeCount === 1 ? 'like' : 'likes'}</span>
-                            </div>
-                          )}
+                          <div className="flex items-center gap-3 mt-3">
+                            <button
+                              onClick={() => handleToggleLike(review.id)}
+                              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-colors ${
+                                review.vendorLiked
+                                  ? 'bg-red-50 text-red-600 hover:bg-red-100'
+                                  : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
+                              }`}
+                              title={review.vendorLiked ? 'Unlike this review' : 'Like this review'}
+                            >
+                              <FaHeart className={`w-4 h-4 ${review.vendorLiked ? 'fill-current' : ''}`} />
+                              <span className="text-sm font-medium">
+                                {review.likeCount || 0}
+                              </span>
+                            </button>
+                          </div>
                         </div>
                       </div>
                     </div>

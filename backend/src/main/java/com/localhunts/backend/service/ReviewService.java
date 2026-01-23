@@ -5,10 +5,12 @@ import com.localhunts.backend.dto.ReviewResponse;
 import com.localhunts.backend.model.Product;
 import com.localhunts.backend.model.Review;
 import com.localhunts.backend.model.ReviewLike;
+import com.localhunts.backend.model.Seller;
 import com.localhunts.backend.model.User;
 import com.localhunts.backend.repository.ProductRepository;
 import com.localhunts.backend.repository.ReviewLikeRepository;
 import com.localhunts.backend.repository.ReviewRepository;
+import com.localhunts.backend.repository.SellerRepository;
 import com.localhunts.backend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -33,6 +35,9 @@ public class ReviewService {
     @Autowired
     private ReviewLikeRepository reviewLikeRepository;
 
+    @Autowired
+    private SellerRepository sellerRepository;
+
     @Transactional
     public ReviewResponse createReview(Long userId, ReviewRequest request) {
         // Find user
@@ -51,7 +56,8 @@ public class ReviewService {
         review.setReviewText(request.getReviewText());
 
         Review savedReview = reviewRepository.save(review);
-        return convertToResponse(savedReview, null);
+        Seller productSeller = savedReview.getProduct().getSeller();
+        return convertToResponse(savedReview, null, productSeller != null ? productSeller.getId() : null);
     }
 
     public List<ReviewResponse> getReviewsByProduct(Long productId, Long userId) {
@@ -59,8 +65,10 @@ public class ReviewService {
             .orElseThrow(() -> new RuntimeException("Product not found"));
 
         List<Review> reviews = reviewRepository.findByProductOrderByCreatedAtDesc(product);
+        // For product reviews, check if the product's seller liked each review
+        Seller productSeller = product.getSeller();
         return reviews.stream()
-            .map(review -> convertToResponse(review, userId))
+            .map(review -> convertToResponse(review, userId, productSeller != null ? productSeller.getId() : null))
             .collect(Collectors.toList());
     }
 
@@ -91,14 +99,18 @@ public class ReviewService {
     public List<ReviewResponse> getAllReviews(Long userId) {
         List<Review> reviews = reviewRepository.findAllByOrderByCreatedAtDesc();
         return reviews.stream()
-            .map(review -> convertToResponse(review, userId))
+            .map(review -> {
+                Seller productSeller = review.getProduct().getSeller();
+                return convertToResponse(review, userId, productSeller != null ? productSeller.getId() : null);
+            })
             .collect(Collectors.toList());
     }
 
     public List<ReviewResponse> getReviewsBySeller(Long sellerId, Long userId) {
         List<Review> reviews = reviewRepository.findByProductSellerIdOrderByCreatedAtDesc(sellerId);
+        // For seller reviews, pass sellerId so vendor can see if they liked each review
         return reviews.stream()
-            .map(review -> convertToResponse(review, userId))
+            .map(review -> convertToResponse(review, userId, sellerId))
             .collect(Collectors.toList());
     }
 
@@ -167,7 +179,47 @@ public class ReviewService {
         return reviewLikeRepository.existsByUserAndReview(user, review);
     }
 
-    private ReviewResponse convertToResponse(Review review, Long currentUserId) {
+    @Transactional
+    public void toggleLikeVendor(Long vendorId, Long reviewId) {
+        Seller vendor = sellerRepository.findById(vendorId)
+            .orElseThrow(() -> new RuntimeException("Vendor not found"));
+        Review review = reviewRepository.findById(reviewId)
+            .orElseThrow(() -> new RuntimeException("Review not found"));
+
+        // Validate vendor ownership of the product
+        Product product = review.getProduct();
+        if (!product.getSeller().getId().equals(vendorId)) {
+            throw new RuntimeException("Vendors can only like reviews for their own products");
+        }
+
+        ReviewLike existingLike = reviewLikeRepository.findByVendorAndReview(vendor, review).orElse(null);
+        
+        if (existingLike != null) {
+            // Unlike: remove the like
+            reviewLikeRepository.delete(existingLike);
+        } else {
+            // Like: create a new like
+            ReviewLike like = new ReviewLike(vendor, review);
+            reviewLikeRepository.save(like);
+        }
+    }
+
+    public boolean hasVendorLiked(Long vendorId, Long reviewId) {
+        if (vendorId == null) {
+            return false;
+        }
+        Seller vendor = sellerRepository.findById(vendorId).orElse(null);
+        if (vendor == null) {
+            return false;
+        }
+        Review review = reviewRepository.findById(reviewId).orElse(null);
+        if (review == null) {
+            return false;
+        }
+        return reviewLikeRepository.existsByVendorAndReview(vendor, review);
+    }
+
+    private ReviewResponse convertToResponse(Review review, Long currentUserId, Long vendorIdToCheck) {
         ReviewResponse response = new ReviewResponse();
         response.setId(review.getId());
         response.setUserId(review.getUser().getId());
@@ -200,6 +252,23 @@ public class ReviewService {
         // Set user liked status
         boolean userLiked = currentUserId != null && hasUserLiked(currentUserId, review.getId());
         response.setUserLiked(userLiked);
+
+        // Set vendor like info
+        // vendorIdToCheck can be:
+        // - The product's seller ID (for user views) - to show if the shop liked it
+        // - The current vendor ID (for vendor views) - to show if they liked it
+        if (vendorIdToCheck != null) {
+            boolean vendorLiked = hasVendorLiked(vendorIdToCheck, review.getId());
+            response.setVendorLiked(vendorLiked);
+            if (vendorLiked) {
+                Seller vendor = sellerRepository.findById(vendorIdToCheck).orElse(null);
+                if (vendor != null) {
+                    response.setVendorShopName(vendor.getBusinessName());
+                }
+            }
+        } else {
+            response.setVendorLiked(false);
+        }
 
         return response;
     }
