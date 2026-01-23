@@ -141,7 +141,6 @@ const SellerOrder = () => {
   const statusFilters = [
     { label: 'All', value: 'All', count: orders.length },
     { label: 'Ready to ship', value: 'Ready to ship', count: getStatusCount('Ready to ship') },
-    { label: 'Delivered', value: 'Delivered', count: getStatusCount('Delivered') },
     { label: 'Issues', value: 'Issues', count: getStatusCount('Issues') },
   ]
 
