@@ -252,35 +252,74 @@ const contact = () => {
           <h2 className="text-3xl font-bold text-gray-900 mb-12 text-center">Frequently Asked Questions</h2>
           <div className="space-y-6">
             <div className="bg-white rounded-xl p-6 shadow-md">
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">Do you ship internationally?</h3>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Can I pay using eSewa or Cash on Delivery?</h3>
               <p className="text-gray-700">
-                Currently, we focus on local and domestic shipping to support our community artisans. 
-                International shipping may be available for select products—please contact us for details.
+                Yes, you can pay online through eSewa or choose Cash on Delivery (COD) to pay at your doorstep. 
+                We support both payment methods for your convenience.
               </p>
             </div>
             
             <div className="bg-white rounded-xl p-6 shadow-md">
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">How do I become a Local Hunt seller?</h3>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">How many days does delivery take in Nepal?</h3>
               <p className="text-gray-700">
-                We'd love to work with you! Please reach out to our team through the contact form above 
-                or email us at vendors@localhunt.com with details about your products.
+                Typically, delivery takes 2-3 business days within Kathmandu valley and 5-7 business days to other 
+                districts. Delivery time may vary depending on the product and your location.
               </p>
             </div>
             
             <div className="bg-white rounded-xl p-6 shadow-md">
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">What is your return policy?</h3>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">How can I become a seller on Local Hunt?</h3>
               <p className="text-gray-700">
-                We want you to be completely satisfied with your purchase. Most items can be returned 
-                within 30 days of delivery in original condition. Please contact us for specific return 
-                instructions.
+                Visit our seller signup page and submit your business details, PAN/VAT certificate, and product 
+                information. Our team will review your application and approve it after verification.
               </p>
             </div>
             
             <div className="bg-white rounded-xl p-6 shadow-md">
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">How can I track my order?</h3>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Can I return a product if I'm not satisfied?</h3>
               <p className="text-gray-700">
-                Once your order ships, you'll receive a tracking number via email. You can use this 
-                number to track your package on our shipping partner's website.
+                Yes, you can return products within 7 days of delivery. The product must be in original condition 
+                with original packaging. Please contact us for the return process.
+              </p>
+            </div>
+            
+            <div className="bg-white rounded-xl p-6 shadow-md">
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Do you deliver to all districts in Nepal?</h3>
+              <p className="text-gray-700">
+                We deliver to many districts across Nepal. You can check if delivery is available in your area 
+                during checkout or contact us to inquire about delivery to your location.
+              </p>
+            </div>
+            
+            <div className="bg-white rounded-xl p-6 shadow-md">
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">How do I know if the product is authentic?</h3>
+              <p className="text-gray-700">
+                All sellers on Local Hunt are verified and we conduct quality checks. You can verify product 
+                authenticity by checking the product description, customer reviews, and seller profile.
+              </p>
+            </div>
+            
+            <div className="bg-white rounded-xl p-6 shadow-md">
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Can I cancel my order after placing it?</h3>
+              <p className="text-gray-700">
+                Yes, you can cancel your order before it ships. Orders can be cancelled as long as the status is 
+                "Ready to ship". Visit your order details page to cancel.
+              </p>
+            </div>
+            
+            <div className="bg-white rounded-xl p-6 shadow-md">
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">What if my product arrives damaged or wrong item?</h3>
+              <p className="text-gray-700">
+                If you receive a damaged or wrong product, please contact us immediately with photos. We will arrange 
+                a replacement or full refund. Our customer support team is here to help resolve any issues.
+              </p>
+            </div>
+            
+            <div className="bg-white rounded-xl p-6 shadow-md">
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Do you support local Nepali artisans and businesses?</h3>
+              <p className="text-gray-700">
+                Absolutely! Local Hunt is dedicated to supporting local Nepali artisans, craftsmen, and small businesses. 
+                We provide a platform for them to showcase and sell their authentic handmade and locally produced products.
               </p>
             </div>
           </div>
