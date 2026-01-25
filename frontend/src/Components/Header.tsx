@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import profile from "../assets/Local Hunt Logo NoBG.png";
 import { FaSearch, FaShoppingCart, FaUserCircle } from "react-icons/fa";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { sessionUtils } from "../utils/sessionUtils";
 
 interface Product {
@@ -20,6 +20,7 @@ const Header = () => {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
+  const location = useLocation();
 
   const fetchProfilePicture = async () => {
     const user = sessionUtils.getUser();
@@ -194,19 +195,34 @@ const Header = () => {
 
       {/* Navigation */}
       <nav className="hidden md:flex space-x-6 font-medium text-gray-700">
-        <Link to="/" className="hover:text-red-600">
+        <Link 
+          to="/" 
+          className={`hover:text-red-600 ${location.pathname === "/" ? "text-red-600" : ""}`}
+        >
           Home
         </Link>
-        <Link to="/new" className="hover:text-red-600">
+        <Link 
+          to="/new" 
+          className={`hover:text-red-600 ${location.pathname === "/new" ? "text-red-600" : ""}`}
+        >
           New
         </Link>
-        <Link to="/shop" className="hover:text-red-600">
+        <Link 
+          to="/shop" 
+          className={`hover:text-red-600 ${location.pathname === "/shop" ? "text-red-600" : ""}`}
+        >
           Shop
         </Link>
-        <Link to="/about" className="hover:text-red-600">
+        <Link 
+          to="/about" 
+          className={`hover:text-red-600 ${location.pathname === "/about" ? "text-red-600" : ""}`}
+        >
           About
         </Link>
-        <Link to="/contact" className="hover:text-red-600">
+        <Link 
+          to="/contact" 
+          className={`hover:text-red-600 ${location.pathname === "/contact" ? "text-red-600" : ""}`}
+        >
           Contact
         </Link>
       </nav>
