@@ -82,6 +82,11 @@ const Shop = () => {
     if (searchParam) {
       setSearchQuery(searchParam);
     }
+    // Get category from URL params
+    const categoryParam = searchParams.get('category');
+    if (categoryParam) {
+      setCategory(categoryParam);
+    }
   }, [searchParams]);
 
   // Shuffle products every 5 minutes
