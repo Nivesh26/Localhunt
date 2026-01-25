@@ -81,11 +81,15 @@ const Shop = () => {
     const searchParam = searchParams.get('search');
     if (searchParam) {
       setSearchQuery(searchParam);
+    } else {
+      setSearchQuery("");
     }
     // Get category from URL params
     const categoryParam = searchParams.get('category');
     if (categoryParam) {
       setCategory(categoryParam);
+    } else {
+      setCategory("All");
     }
   }, [searchParams]);
 

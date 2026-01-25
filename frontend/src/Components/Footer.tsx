@@ -1,18 +1,40 @@
+import { useState, useEffect } from "react";
 import gmw from "../assets/Local Hunt Logo NoBG.png";
 import { Link } from "react-router-dom";
 
+interface Product {
+  id: number;
+  name: string;
+  category: string;
+  price: number;
+  imageUrl?: string;
+}
+
 const Footer = () => {
-  // Common categories for Nepali marketplace
-  const categories = [
-    "Handmade & Crafts",
-    "Fashion & Apparel",
-    "Gourmet & Organic",
-    "Home & Living",
-    "Jewelry",
-    "Masks",
-    "Pottery",
-    "Brassware"
-  ];
+  const [categories, setCategories] = useState<string[]>([]);
+
+  // Fetch products and extract unique categories
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await fetch('http://localhost:8080/api/products/live');
+        if (response.ok) {
+          const data: Product[] = await response.json();
+          // Get unique categories from products
+          const uniqueCategories = Array.from(new Set(data.map(p => p.category).filter(Boolean)));
+          // Sort categories alphabetically
+          uniqueCategories.sort();
+          setCategories(uniqueCategories);
+        }
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+        // If fetch fails, use empty array (no categories shown)
+        setCategories([]);
+      }
+    };
+
+    fetchCategories();
+  }, []);
 
   return (
     <footer className="bg-[#dfdfdf] text-black ">
@@ -58,18 +80,30 @@ const Footer = () => {
 
           <div className="flex-shrink-0 basis-[200px] my-5">
             <h4 className="text-base mb-4 font-bold">Categories</h4>
-            <ul className="list-none p-0 text-sm">
-              {categories.map((category) => (
-                <li key={category} className="mb-2.5">
+            {categories.length > 0 ? (
+              <ul className="list-none p-0 text-sm">
+                <li className="mb-2.5">
                   <Link 
-                    to={`/shop?category=${encodeURIComponent(category)}`}
+                    to="/shop"
                     className="hover:text-red-600 transition-colors cursor-pointer"
                   >
-                    {category}
+                    All
                   </Link>
                 </li>
-              ))}
-            </ul>
+                {categories.map((category) => (
+                  <li key={category} className="mb-2.5">
+                    <Link 
+                      to={`/shop?category=${encodeURIComponent(category)}`}
+                      className="hover:text-red-600 transition-colors cursor-pointer"
+                    >
+                      {category}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-sm text-gray-500">Loading categories...</p>
+            )}
           </div>
 
           {/* Contact Us */}
