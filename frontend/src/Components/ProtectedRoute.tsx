@@ -1,5 +1,5 @@
 import { Navigate, useLocation } from 'react-router-dom'
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState } from 'react'
 import { toast } from 'react-toastify'
 import { sessionUtils } from '../utils/sessionUtils'
 
@@ -15,12 +15,6 @@ interface ProtectedRouteProps {
 const ProtectedRoute = ({ children, allowedRoles, redirectTo = '/login' }: ProtectedRouteProps) => {
   const location = useLocation()
   const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null)
-  const hasShownToast = useRef(false)
-
-  useEffect(() => {
-    // Reset toast flag when location changes
-    hasShownToast.current = false
-  }, [location.pathname])
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -29,10 +23,7 @@ const ProtectedRoute = ({ children, allowedRoles, redirectTo = '/login' }: Prote
         if (!sessionUtils.isSessionValid(SESSION_TIMEOUT)) {
           sessionUtils.clearSession()
           setIsAuthorized(false)
-          if (!hasShownToast.current) {
-            hasShownToast.current = true
-            toast.error('Your session has expired. Please login again.')
-          }
+          toast.error('Your session has expired. Please login again.', { toastId: 'session-expired' })
           return
         }
 
@@ -46,10 +37,7 @@ const ProtectedRoute = ({ children, allowedRoles, redirectTo = '/login' }: Prote
         // Check if user has required role
         if (!allowedRoles.includes(user.role)) {
           setIsAuthorized(false)
-          if (!hasShownToast.current) {
-            hasShownToast.current = true
-            toast.error('Access denied. You do not have permission to access this page.')
-          }
+          toast.error('Access denied. You do not have permission to access this page.', { toastId: 'access-denied' })
           return
         }
 
@@ -69,10 +57,7 @@ const ProtectedRoute = ({ children, allowedRoles, redirectTo = '/login' }: Prote
           // User/Seller was deleted from database
           sessionUtils.clearSession()
           setIsAuthorized(false)
-          if (!hasShownToast.current) {
-            hasShownToast.current = true
-            toast.error('Your account has been deleted. Please contact support.')
-          }
+          toast.error('Your account has been deleted. Please contact support.', { toastId: 'account-deleted' })
           return
         }
 
