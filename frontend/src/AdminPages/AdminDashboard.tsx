@@ -170,7 +170,7 @@ const AdminDashboard = () => {
           localStorage.removeItem('viewedVendorRequests')
         }
         
-        previousVendorRequestIds.current = currentIds
+        previousVendorRequestIds.current = currentIds 
         setOnboardingRequests(requestsData)
       }
 
