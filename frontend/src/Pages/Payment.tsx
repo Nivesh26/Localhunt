@@ -5,7 +5,7 @@ import Topbar from '../Components/Topbar'
 import Header from '../Components/Header'
 import Footer from '../Components/Footer'
 import { sessionUtils } from '../utils/sessionUtils'
-import esewaIcon from '../assets/esewa-icon-large.webp'
+import esewaIcon from '../assets/Esewa.png'
 
 interface CartItem {
   id: number
