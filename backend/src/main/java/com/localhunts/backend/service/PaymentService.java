@@ -1,6 +1,9 @@
 package com.localhunts.backend.service;
 
 import com.localhunts.backend.dto.CreateOrderRequest;
+import com.localhunts.backend.dto.EsewaInitRequest;
+import com.localhunts.backend.dto.EsewaInitResponse;
+import com.localhunts.backend.dto.OrderItemRequest;
 import com.localhunts.backend.dto.OrderResponse;
 import com.localhunts.backend.dto.OrderTrackingResponse;
 import com.localhunts.backend.dto.UpdateOrderStatusRequest;
@@ -18,6 +21,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
+import java.nio.charset.StandardCharsets;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.util.Base64;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -49,6 +61,179 @@ public class PaymentService {
 
     // Executor service for asynchronous email sending
     private final ExecutorService emailExecutor = Executors.newFixedThreadPool(5);
+
+    // eSewa Epay V2 (UAT/Test)
+    private static final String ESEWA_FORM_URL = "https://rc-epay.esewa.com.np/api/epay/main/v2/form";
+    private static final String ESEWA_PRODUCT_CODE = "EPAYTEST";
+    private static final String ESEWA_SECRET_KEY = "8gBm/:&EnhH.1/q";
+
+    @Transactional
+    public EsewaInitResponse initEsewaPayment(Long userId, EsewaInitRequest request) {
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new RuntimeException("User not found"));
+
+        double amount = request.getAmount() != null ? request.getAmount() : 0;
+        double taxAmount = request.getTaxAmount() != null ? request.getTaxAmount() : 0;
+        double totalAmount = request.getTotalAmount() != null ? request.getTotalAmount() : (amount + taxAmount);
+
+        if (totalAmount <= 0) {
+            throw new RuntimeException("Invalid order amount");
+        }
+
+        String transactionUuid = "LH-" + UUID.randomUUID().toString().replace("-", "").substring(0, 20);
+
+        List<Payment> payments = request.getItems().stream().map(itemRequest -> {
+            Product product = productRepository.findById(itemRequest.getProductId())
+                .orElseThrow(() -> new RuntimeException("Product not found: " + itemRequest.getProductId()));
+            if (product.getStock() < itemRequest.getQuantity()) {
+                throw new RuntimeException("Insufficient stock for product: " + product.getName());
+            }
+            int newStock = product.getStock() - itemRequest.getQuantity();
+            product.setStock(newStock);
+            productRepository.save(product);
+
+            Payment payment = new Payment();
+            payment.setUser(user);
+            payment.setProduct(product);
+            payment.setQuantity(itemRequest.getQuantity());
+            payment.setUnitPrice(itemRequest.getUnitPrice());
+            payment.setSubtotal(itemRequest.getUnitPrice() * itemRequest.getQuantity());
+            payment.setPaymentMethod("esewa");
+            payment.setRegion(request.getRegion());
+            payment.setCity(request.getCity());
+            payment.setArea(request.getArea());
+            payment.setAddress(request.getAddress());
+            payment.setStatus("Pending");
+            payment.setEsewaTransactionUuid(transactionUuid);
+            return paymentRepository.save(payment);
+        }).collect(Collectors.toList());
+
+        String signedFieldNames = "total_amount,transaction_uuid,product_code";
+        String message = "total_amount=" + String.format("%.2f", totalAmount)
+            + ",transaction_uuid=" + transactionUuid
+            + ",product_code=" + ESEWA_PRODUCT_CODE;
+        String signature = generateEsewaSignature(message, ESEWA_SECRET_KEY);
+
+        Map<String, String> formData = new HashMap<>();
+        formData.put("amount", String.format("%.2f", amount));
+        formData.put("tax_amount", String.format("%.2f", taxAmount));
+        formData.put("total_amount", String.format("%.2f", totalAmount));
+        formData.put("transaction_uuid", transactionUuid);
+        formData.put("product_code", ESEWA_PRODUCT_CODE);
+        formData.put("product_service_charge", "0");
+        formData.put("product_delivery_charge", "0");
+        formData.put("success_url", request.getSuccessUrl());
+        formData.put("failure_url", request.getFailureUrl());
+        formData.put("signed_field_names", signedFieldNames);
+        formData.put("signature", signature);
+
+        return new EsewaInitResponse(ESEWA_FORM_URL, formData);
+    }
+
+    @Transactional
+    public void verifyEsewaPayment(String dataBase64) {
+        if (dataBase64 == null || dataBase64.isBlank()) {
+            throw new RuntimeException("Invalid eSewa response data");
+        }
+        String json = new String(Base64.getDecoder().decode(dataBase64), StandardCharsets.UTF_8);
+        // Parse key fields: status, signature, signed_field_names, transaction_uuid, total_amount, product_code
+        String status = extractJsonValue(json, "status");
+        String signature = extractJsonValue(json, "signature");
+        String signedFieldNames = extractJsonValue(json, "signed_field_names");
+        String transactionUuid = extractJsonValue(json, "transaction_uuid");
+        String totalAmountStr = extractJsonValue(json, "total_amount");
+        String productCode = extractJsonValue(json, "product_code");
+
+        if (!"COMPLETE".equalsIgnoreCase(status)) {
+            throw new RuntimeException("Payment was not successful. Status: " + status);
+        }
+        if (transactionUuid == null || transactionUuid.isBlank()) {
+            throw new RuntimeException("Invalid transaction reference");
+        }
+
+        String message = buildSignatureMessage(json, signedFieldNames);
+        String expectedSignature = generateEsewaSignature(message, ESEWA_SECRET_KEY);
+        if (!expectedSignature.equals(signature)) {
+            throw new RuntimeException("Invalid eSewa response signature");
+        }
+
+        List<Payment> payments = paymentRepository.findByEsewaTransactionUuid(transactionUuid);
+        if (payments.isEmpty()) {
+            throw new RuntimeException("Order not found for this transaction");
+        }
+        for (Payment p : payments) {
+            p.setStatus("Paid");
+            paymentRepository.save(p);
+        }
+
+        User user = payments.get(0).getUser();
+        for (Payment payment : payments) {
+            try {
+                emailService.sendOrderConfirmationEmail(
+                    user.getEmail(),
+                    user.getFullName(),
+                    payment.getId(),
+                    payment.getProduct().getName(),
+                    payment.getQuantity(),
+                    payment.getSubtotal(),
+                    payment.getPaymentMethod(),
+                    payment.getAddress(),
+                    payment.getArea(),
+                    payment.getCity()
+                );
+            } catch (Exception e) {
+                System.err.println("Failed to send order confirmation email: " + e.getMessage());
+            }
+        }
+    }
+
+    private String generateEsewaSignature(String message, String secretKey) {
+        try {
+            Mac mac = Mac.getInstance("HmacSHA256");
+            SecretKeySpec secretKeySpec = new SecretKeySpec(secretKey.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
+            mac.init(secretKeySpec);
+            byte[] hash = mac.doFinal(message.getBytes(StandardCharsets.UTF_8));
+            return Base64.getEncoder().encodeToString(hash);
+        } catch (NoSuchAlgorithmException | InvalidKeyException e) {
+            throw new RuntimeException("Failed to generate eSewa signature", e);
+        }
+    }
+
+    private String extractJsonValue(String json, String key) {
+        String search = "\"" + key + "\"";
+        int start = json.indexOf(search);
+        if (start == -1) return null;
+        start = json.indexOf(":", start) + 1;
+        int valueStart = start;
+        while (valueStart < json.length() && (json.charAt(valueStart) == ' ' || json.charAt(valueStart) == '\t')) valueStart++;
+        if (valueStart >= json.length()) return null;
+        char first = json.charAt(valueStart);
+        if (first == '"') {
+            int end = json.indexOf('"', valueStart + 1);
+            return end == -1 ? null : json.substring(valueStart + 1, end);
+        }
+        if (first == '-' || Character.isDigit(first)) {
+            int end = valueStart + 1;
+            while (end < json.length() && (Character.isDigit(json.charAt(end)) || json.charAt(end) == '.' || json.charAt(end) == '-')) end++;
+            return json.substring(valueStart, end);
+        }
+        return null;
+    }
+
+    private String buildSignatureMessage(String json, String signedFieldNames) {
+        if (signedFieldNames == null) return "";
+        String[] fields = signedFieldNames.split(",");
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < fields.length; i++) {
+            String field = fields[i].trim();
+            String value = extractJsonValue(json, field);
+            if (value != null) {
+                if (i > 0) sb.append(",");
+                sb.append(field).append("=").append(value);
+            }
+        }
+        return sb.toString();
+    }
 
     @Transactional
     public List<OrderResponse> createOrder(Long userId, CreateOrderRequest request) {

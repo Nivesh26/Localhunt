@@ -76,14 +76,66 @@ const Payment = () => {
 
       const userId = user.userId
 
-      // Prepare order items
       const orderItems = orderData.selectedItems.map(item => ({
         productId: item.productId,
         quantity: item.quantity,
         unitPrice: item.productPrice
       }))
 
-      // Create order request
+      // eSewa: init payment and redirect to eSewa form
+      if (paymentMethod === 'esewa') {
+        const baseUrl = window.location.origin
+        const esewaInitRes = await fetch(`http://localhost:8080/api/payment/esewa-init/${userId}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            items: orderItems,
+            amount: orderData.subtotal,
+            taxAmount: orderData.tax,
+            totalAmount: orderData.total,
+            region: orderData.locationData.region,
+            city: orderData.locationData.city,
+            area: orderData.locationData.area,
+            address: orderData.locationData.address,
+            successUrl: `${baseUrl}/payment/esewa/success`,
+            failureUrl: `${baseUrl}/payment/esewa/failure`,
+          }),
+        })
+
+        if (!esewaInitRes.ok) {
+          const err = await esewaInitRes.json().catch(() => ({}))
+          toast.error(err.message || 'Failed to initiate eSewa payment')
+          return
+        }
+
+        // Remove cart items and update header count before redirect to eSewa
+        const cartItemIds = orderData.selectedItems.map(item => item.id)
+        for (const cartId of cartItemIds) {
+          try {
+            await fetch(`http://localhost:8080/api/cart/${userId}/${cartId}`, { method: 'DELETE' })
+          } catch (e) {
+            console.error('Error removing cart item:', e)
+          }
+        }
+        window.dispatchEvent(new CustomEvent('cartUpdated'))
+
+        const { formActionUrl, formData } = await esewaInitRes.json()
+        const form = document.createElement('form')
+        form.method = 'POST'
+        form.action = formActionUrl
+        Object.entries(formData).forEach(([key, value]) => {
+          const input = document.createElement('input')
+          input.type = 'hidden'
+          input.name = key
+          input.value = String(value ?? '')
+          form.appendChild(input)
+        })
+        document.body.appendChild(form)
+        form.submit()
+        return
+      }
+
+      // COD: create order and go to confirmation
       const orderRequest = {
         items: orderItems,
         paymentMethod: paymentMethod,
@@ -93,12 +145,9 @@ const Payment = () => {
         address: orderData.locationData.address
       }
 
-      // Create order in backend
       const orderResponse = await fetch(`http://localhost:8080/api/payment/create-order/${userId}`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(orderRequest),
       })
 
@@ -108,26 +157,18 @@ const Payment = () => {
         return
       }
 
-      // Remove items from cart after successful order
       const cartItemIds = orderData.selectedItems.map(item => item.id)
       for (const cartId of cartItemIds) {
         try {
-          await fetch(`http://localhost:8080/api/cart/${userId}/${cartId}`, {
-            method: 'DELETE',
-          })
+          await fetch(`http://localhost:8080/api/cart/${userId}/${cartId}`, { method: 'DELETE' })
         } catch (error) {
           console.error('Error removing item from cart:', error)
         }
       }
-      // Dispatch event to update cart count in header
       window.dispatchEvent(new CustomEvent('cartUpdated'))
 
-      // Navigate to COD confirmation page
       navigate('/cod', {
-        state: {
-          orderData: orderData,
-          paymentMethod: paymentMethod
-        }
+        state: { orderData: orderData, paymentMethod: paymentMethod }
       })
     } catch (error) {
       console.error('Error processing payment:', error)

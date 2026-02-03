@@ -1,6 +1,8 @@
 package com.localhunts.backend.controller;
 
 import com.localhunts.backend.dto.CreateOrderRequest;
+import com.localhunts.backend.dto.EsewaInitRequest;
+import com.localhunts.backend.dto.EsewaInitResponse;
 import com.localhunts.backend.dto.OrderResponse;
 import com.localhunts.backend.dto.OrderTrackingResponse;
 import com.localhunts.backend.dto.UpdateOrderStatusRequest;
@@ -21,6 +23,38 @@ public class PaymentController {
 
     @Autowired
     private PaymentService paymentService;
+
+    @PostMapping("/esewa-init/{userId}")
+    public ResponseEntity<?> initEsewaPayment(
+            @PathVariable Long userId,
+            @Valid @RequestBody EsewaInitRequest request) {
+        try {
+            EsewaInitResponse response = paymentService.initEsewaPayment(userId, request);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            Map<String, Object> body = new HashMap<>();
+            body.put("success", false);
+            body.put("message", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
+        }
+    }
+
+    @PostMapping("/esewa-verify")
+    public ResponseEntity<?> verifyEsewaPayment(@RequestBody Map<String, String> body) {
+        String dataBase64 = body != null ? body.get("data") : null;
+        try {
+            paymentService.verifyEsewaPayment(dataBase64);
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "Payment verified successfully");
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("message", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+    }
 
     @PostMapping("/create-order/{userId}")
     public ResponseEntity<?> createOrder(

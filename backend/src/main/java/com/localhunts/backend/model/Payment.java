@@ -62,6 +62,10 @@ public class Payment {
     @Column(nullable = false)
     private String status = "Pending"; // Pending, Processing, Shipped, Delivered, Cancelled
 
+    @Size(max = 100)
+    @Column(name = "esewa_transaction_uuid", nullable = true)
+    private String esewaTransactionUuid;
+
     @Column(nullable = false, name = "hidden_from_user")
     private Boolean hiddenFromUser = false;
 
@@ -183,6 +187,14 @@ public class Payment {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public String getEsewaTransactionUuid() {
+        return esewaTransactionUuid;
+    }
+
+    public void setEsewaTransactionUuid(String esewaTransactionUuid) {
+        this.esewaTransactionUuid = esewaTransactionUuid;
     }
 
     public LocalDateTime getCreatedAt() {

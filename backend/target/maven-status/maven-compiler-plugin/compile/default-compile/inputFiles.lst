@@ -22,6 +22,8 @@
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/dto/ChatMessageResponse.java
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/dto/ConversationResponse.java
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/dto/CreateOrderRequest.java
+/Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/dto/EsewaInitRequest.java
+/Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/dto/EsewaInitResponse.java
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/dto/LoginRequest.java
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/dto/OnboardingRequestResponse.java
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/dto/OrderItemRequest.java

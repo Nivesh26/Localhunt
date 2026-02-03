@@ -17,4 +17,6 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
     
     @Query("SELECT p FROM Payment p WHERE p.product.seller = :seller")
     List<Payment> findBySeller(@Param("seller") Seller seller);
+
+    List<Payment> findByEsewaTransactionUuid(String esewaTransactionUuid);
 }

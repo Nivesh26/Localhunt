@@ -15,6 +15,8 @@ import Profile from '../Pages/Profie';
 import Changepassword from '../Pages/Changepassord';
 import Checkout from '../Pages/Checkout';
 import Payment from '../Pages/Payment';
+import PaymentEsewaSuccess from '../Pages/PaymentEsewaSuccess';
+import PaymentEsewaFailure from '../Pages/PaymentEsewaFailure';
 import COD from '../Pages/COD';
 import OrderTracking from '../Pages/OrderTracking';
 import { UserOTP } from '../Pages/UserOTP';
@@ -119,6 +121,20 @@ const AnimatedRoutes = () => {
           <ProtectedRoute allowedRoles={['USER']} redirectTo="/login">
             <PageTransition>
               <Payment />
+            </PageTransition>
+          </ProtectedRoute>
+        } />
+        <Route path="/payment/esewa/success" element={
+          <ProtectedRoute allowedRoles={['USER']} redirectTo="/login">
+            <PageTransition>
+              <PaymentEsewaSuccess />
+            </PageTransition>
+          </ProtectedRoute>
+        } />
+        <Route path="/payment/esewa/failure" element={
+          <ProtectedRoute allowedRoles={['USER']} redirectTo="/login">
+            <PageTransition>
+              <PaymentEsewaFailure />
             </PageTransition>
           </ProtectedRoute>
         } />
