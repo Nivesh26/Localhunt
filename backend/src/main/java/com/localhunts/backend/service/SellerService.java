@@ -617,6 +617,15 @@ public class SellerService {
         response.setStoreStatus(updatedSeller.getStoreStatus());
         response.setProfilePicture(updatedSeller.getProfilePicture());
 
+        try {
+            emailService.sendVendorProfileUpdateEmail(
+                updatedSeller.getContactEmail(),
+                updatedSeller.getUserName(),
+                updatedSeller.getBusinessName()
+            );
+        } catch (Exception e) {
+            System.err.println("Failed to send vendor profile update email: " + e.getMessage());
+        }
         return response;
     }
 }
