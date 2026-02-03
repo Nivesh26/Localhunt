@@ -63,6 +63,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/admin/**").permitAll()
                 .requestMatchers("/api/chat/**").permitAll()
                 .requestMatchers("/api/reviews/**").permitAll()
+                .requestMatchers("/api/contact/**").permitAll()
                 .requestMatchers("/ws/**").permitAll()
                 .requestMatchers("/uploads/**").permitAll()
                 .requestMatchers("/error").permitAll()

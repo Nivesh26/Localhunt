@@ -8,6 +8,7 @@
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/controller/CartController.java
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/controller/ChatController.java
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/controller/ChatWebSocketController.java
+/Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/controller/ContactController.java
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/controller/PaymentController.java
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/controller/ProductController.java
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/controller/ReviewController.java
@@ -20,6 +21,7 @@
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/dto/ChangePasswordRequest.java
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/dto/ChatMessageRequest.java
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/dto/ChatMessageResponse.java
+/Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/dto/ContactRequest.java
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/dto/ConversationResponse.java
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/dto/CreateOrderRequest.java
 /Users/nivesh/SDC-Project/backend/src/main/java/com/localhunts/backend/dto/EsewaInitRequest.java

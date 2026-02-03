@@ -1235,4 +1235,37 @@ public class EmailService {
         );
         sendHtmlEmail(to, subject, htmlContent);
     }
+
+    /**
+     * Send contact form message to admin email
+     */
+    public void sendContactMessageToAdmin(String adminEmail, String senderName, String senderEmail, String subject, String messageBody) {
+        String subjectLine = "Contact Us: " + (subject != null ? subject : "No subject");
+        String safeName = senderName != null ? senderName.replace("<", "&lt;").replace(">", "&gt;") : "";
+        String safeEmail = senderEmail != null ? senderEmail : "";
+        String safeSubject = subject != null ? subject.replace("<", "&lt;").replace(">", "&gt;") : "";
+        String safeMessage = messageBody != null ? messageBody.replace("<", "&lt;").replace(">", "&gt;").replace("\n", "<br>") : "";
+        String htmlContent = String.format(
+            "<!DOCTYPE html>" +
+            "<html><head><meta charset='UTF-8'><meta name='viewport' content='width=device-width, initial-scale=1.0'>" +
+            "<style>body{margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f5f5f5}.container{max-width:600px;margin:0 auto;background:#fff}.header{background:linear-gradient(135deg,#d32f2f 0%%,#f44336 100%%);padding:40px 20px;text-align:center}.header h1{color:#fff;margin:0;font-size:28px;font-weight:600}.content{padding:40px 30px}.info-row{margin:15px 0;padding:12px 0;border-bottom:1px solid #eee}.label{color:#666;font-size:12px;text-transform:uppercase;letter-spacing:0.5px}.value{color:#333;font-size:15px;margin-top:4px}.message-box{background:#f9f9f9;border-left:4px solid #d32f2f;padding:20px;margin:20px 0;border-radius:4px;white-space:pre-wrap}.footer{background:#f9f9f9;padding:30px;text-align:center;color:#666;font-size:12px;border-top:1px solid #e0e0e0}</style>" +
+            "</head><body><div class='container'>" +
+            "<div class='header'><h1>📩 Contact Form Message</h1></div>" +
+            "<div class='content'>" +
+            "<p style='color:#555;'>A user sent a message from the Local Hunt Contact Us page.</p>" +
+            "<div class='info-row'><div class='label'>From (Name)</div><div class='value'>%s</div></div>" +
+            "<div class='info-row'><div class='label'>Reply-to (Email)</div><div class='value'><a href='mailto:%s'>%s</a></div></div>" +
+            "<div class='info-row'><div class='label'>Subject</div><div class='value'>%s</div></div>" +
+            "<div class='info-row'><div class='label'>Message</div><div class='message-box'>%s</div></div>" +
+            "</div>" +
+            "<div class='footer'><p><strong>Local Hunt</strong> – Contact form submission</p></div>" +
+            "</div></body></html>",
+            safeName,
+            safeEmail,
+            safeEmail,
+            safeSubject,
+            safeMessage
+        );
+        sendHtmlEmail(adminEmail, subjectLine, htmlContent);
+    }
 }

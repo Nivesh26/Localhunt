@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { toast } from 'react-toastify'
 import Header from '../Components/Header'
 import Topbar from '../Components/Topbar'
 import Footer from '../Components/Footer'
@@ -16,6 +17,7 @@ const ContactForm = () => {
     subject?: string
     message?: string
   }>({})
+  const [sending, setSending] = useState(false)
 
   const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -30,7 +32,7 @@ const ContactForm = () => {
     }
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     const newErrors: typeof errors = {}
 
@@ -61,8 +63,35 @@ const ContactForm = () => {
     setErrors(newErrors)
 
     if (Object.keys(newErrors).length === 0) {
-      // Form is valid, proceed with submission
-      console.log('Contact form submitted:', formData)
+      setSending(true)
+      try {
+        const res = await fetch('http://localhost:8080/api/contact', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: formData.name.trim(),
+            email: formData.email.trim(),
+            subject: formData.subject.trim(),
+            message: formData.message.trim()
+          })
+        })
+        const text = await res.text()
+        if (res.ok) {
+          toast.success('Message sent! We will get back to you soon.')
+          setFormData({ name: '', email: '', subject: '', message: '' })
+        } else {
+          try {
+            const data = text ? JSON.parse(text) : {}
+            toast.error(typeof data === 'string' ? data : (data.message || 'Failed to send message. Please try again.'))
+          } catch {
+            toast.error(text || 'Failed to send message. Please try again.')
+          }
+        }
+      } catch {
+        toast.error('Failed to send message. Please try again.')
+      } finally {
+        setSending(false)
+      }
     }
   }
 
@@ -142,9 +171,10 @@ const ContactForm = () => {
       
       <button
         type="submit"
-        className="w-full bg-red-400 text-white py-3 rounded-lg font-semibold hover:bg-red-500 transition-colors focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2"
+        disabled={sending}
+        className="w-full bg-red-400 text-white py-3 rounded-lg font-semibold hover:bg-red-500 transition-colors focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2 disabled:opacity-70 disabled:cursor-not-allowed"
       >
-        Send Message
+        {sending ? 'Sending...' : 'Send Message'}
       </button>
     </form>
   )
