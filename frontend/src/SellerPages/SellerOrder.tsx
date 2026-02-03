@@ -120,6 +120,32 @@ const SellerOrder = () => {
     }
   }
 
+  const handleDeleteOrder = async (orderId: number) => {
+    if (!window.confirm('Remove this cancelled order from your list? You will receive a confirmation email.')) {
+      return
+    }
+    try {
+      const seller = sessionUtils.getUser()
+      if (!seller) {
+        toast.error('Please login to delete orders')
+        return
+      }
+      const response = await fetch(`http://localhost:8080/api/payment/seller-orders/${orderId}/${seller.userId}`, {
+        method: 'DELETE',
+      })
+      if (response.ok) {
+        toast.success('Order removed from your list')
+        fetchOrders()
+      } else {
+        const data = await response.json().catch(() => ({}))
+        toast.error(data.message || 'Failed to remove order')
+      }
+    } catch (error) {
+      console.error('Error removing order:', error)
+      toast.error('An error occurred while removing the order')
+    }
+  }
+
   const filteredOrders = orders.filter(order => {
     const matchesSearch =
       (order.customerName?.toLowerCase().includes(search.toLowerCase()) || false) ||
@@ -142,6 +168,7 @@ const SellerOrder = () => {
     { label: 'All', value: 'All', count: orders.length },
     { label: 'Ready to ship', value: 'Ready to ship', count: getStatusCount('Ready to ship') },
     { label: 'Issues', value: 'Issues', count: getStatusCount('Issues') },
+    { label: 'Cancelled', value: 'Cancelled', count: getStatusCount('Cancelled') },
   ]
 
   const formatDate = (dateString: string) => {
@@ -329,30 +356,44 @@ const SellerOrder = () => {
                       </td>
                       <td className="px-4 py-3">
                         <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${statusColors[order.status] || 'bg-gray-50 text-gray-700'}`}>
-                          {order.status === 'Pending' || order.status === 'Processing' 
-                            ? 'Your product is preparing' 
-                            : order.status}
+                          {order.status === 'Pending' || order.status === 'Processing'
+                            ? 'Your product is preparing'
+                            : order.status === 'Cancelled'
+                              ? 'Cancelled by customer'
+                              : order.status}
                         </span>
+                        {order.status === 'Cancelled' && (
+                          <p className="mt-1 text-xs text-gray-500">An email was sent to you when the customer cancelled.</p>
+                        )}
                       </td>
                       <td className="px-4 py-3 text-right">
-                        <div className="inline-flex gap-2 flex-col">
-                          {order.status !== 'Ready to ship' && order.status !== 'Delivered' && (
-                            <button
-                              onClick={() => handleUpdateStatus(order.orderId, 'Ready to ship')}
-                              className="rounded-lg border border-gray-200 px-3 py-1 text-xs font-semibold text-gray-700 hover:bg-gray-50"
-                            >
-                              Mark Ready to Ship
-                            </button>
-                          )}
-                          {order.status !== 'Delivered' && (
-                            <button
-                              onClick={() => handleUpdateStatus(order.orderId, 'Delivered')}
-                              className="rounded-lg border border-gray-200 px-3 py-1 text-xs font-semibold text-gray-700 hover:bg-gray-50"
-                            >
-                              Mark Delivered
-                            </button>
-                          )}
-                        </div>
+                        {order.status === 'Cancelled' ? (
+                          <button
+                            onClick={() => handleDeleteOrder(order.orderId)}
+                            className="rounded-lg border border-red-200 bg-red-50 px-3 py-1 text-xs font-semibold text-red-700 hover:bg-red-100"
+                          >
+                            Delete
+                          </button>
+                        ) : (
+                          <div className="inline-flex gap-2 flex-col">
+                            {order.status !== 'Ready to ship' && order.status !== 'Delivered' && (
+                              <button
+                                onClick={() => handleUpdateStatus(order.orderId, 'Ready to ship')}
+                                className="rounded-lg border border-gray-200 px-3 py-1 text-xs font-semibold text-gray-700 hover:bg-gray-50"
+                              >
+                                Mark Ready to Ship
+                              </button>
+                            )}
+                            {order.status !== 'Delivered' && (
+                              <button
+                                onClick={() => handleUpdateStatus(order.orderId, 'Delivered')}
+                                className="rounded-lg border border-gray-200 px-3 py-1 text-xs font-semibold text-gray-700 hover:bg-gray-50"
+                              >
+                                Mark Delivered
+                              </button>
+                            )}
+                          </div>
+                        )}
                       </td>
                     </tr>
                   ))}

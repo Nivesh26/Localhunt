@@ -956,6 +956,90 @@ public class EmailService {
     }
 
     /**
+     * Send order cancelled email to customer (user)
+     */
+    public void sendOrderCancelledEmailToCustomer(String to, String customerName, Long orderId,
+                                                   String productName, String address, String area, String city) {
+        String subject = "Order Cancelled - Local Hunt";
+        String htmlContent = String.format(
+            "<!DOCTYPE html>" +
+            "<html><head><meta charset='UTF-8'><meta name='viewport' content='width=device-width, initial-scale=1.0'>" +
+            "<style>body{margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f5f5f5}.container{max-width:600px;margin:0 auto;background:#fff}.header{background:linear-gradient(135deg,#9e9e9e 0%%,#757575 100%%);padding:40px 20px;text-align:center}.header h1{color:#fff;margin:0;font-size:28px;font-weight:600}.content{padding:40px 30px}.banner{background:#ffebee;border-left:4px solid #d32f2f;padding:20px;margin:25px 0;border-radius:8px}.banner p{margin:0;color:#c62828;font-weight:600;font-size:16px}.info-box{background:#f9f9f9;border-radius:8px;padding:20px;margin:20px 0}.info-box p{margin:5px 0;color:#555;font-size:14px}.footer{background:#f9f9f9;padding:30px;text-align:center;color:#666;font-size:12px;border-top:1px solid #e0e0e0}.text-primary{color:#d32f2f;font-weight:600}</style>" +
+            "</head><body><div class='container'>" +
+            "<div class='header'><h1>Order Cancelled</h1></div>" +
+            "<div class='content'>" +
+            "<p style='font-size:16px;color:#333;margin:0 0 20px 0;'>Hello <span class='text-primary'>%s</span>,</p>" +
+            "<div class='banner'><p>Your order has been cancelled.</p></div>" +
+            "<p style='font-size:15px;color:#555;line-height:1.6;'>Order <strong>#%d</strong> for <strong>%s</strong> was cancelled as per your request.</p>" +
+            "<div class='info-box'><p><strong>Delivery address:</strong> %s, %s, %s</p></div>" +
+            "<p style='font-size:14px;color:#777;'>If you did not request this cancellation, please contact our support team.</p>" +
+            "</div>" +
+            "<div class='footer'><p><strong>Local Hunt</strong></p><p>Your trusted marketplace for authentic Nepali products</p></div>" +
+            "</div></body></html>",
+            customerName != null ? customerName : "Customer",
+            orderId,
+            productName != null ? productName : "your product",
+            address != null ? address : "",
+            area != null ? area : "",
+            city != null ? city : ""
+        );
+        sendHtmlEmail(to, subject, htmlContent);
+    }
+
+    /**
+     * Send order cancelled email to vendor (seller)
+     */
+    /**
+     * Send email to vendor when they remove a cancelled order from their list
+     */
+    public void sendVendorCancelledOrderRemovedEmail(String to, String vendorName, Long orderId, String productName) {
+        String subject = "Cancelled order removed from your list - Local Hunt";
+        String htmlContent = String.format(
+            "<!DOCTYPE html>" +
+            "<html><head><meta charset='UTF-8'><meta name='viewport' content='width=device-width, initial-scale=1.0'>" +
+            "<style>body{margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f5f5f5}.container{max-width:600px;margin:0 auto;background:#fff}.header{background:linear-gradient(135deg,#4caf50 0%%,#66bb6a 100%%);padding:40px 20px;text-align:center}.header h1{color:#fff;margin:0;font-size:28px;font-weight:600}.content{padding:40px 30px}.banner{background:#e8f5e9;border-left:4px solid #4caf50;padding:20px;margin:25px 0;border-radius:8px}.banner p{margin:0;color:#2e7d32;font-weight:600;font-size:16px}.footer{background:#f9f9f9;padding:30px;text-align:center;color:#666;font-size:12px;border-top:1px solid #e0e0e0}.text-primary{color:#d32f2f;font-weight:600}</style>" +
+            "</head><body><div class='container'>" +
+            "<div class='header'><h1>Order removed</h1></div>" +
+            "<div class='content'>" +
+            "<p style='font-size:16px;color:#333;margin:0 0 20px 0;'>Hello <span class='text-primary'>%s</span>,</p>" +
+            "<div class='banner'><p>Cancelled order #%d (%s) has been removed from your order list.</p></div>" +
+            "<p style='font-size:15px;color:#555;line-height:1.6;'>You will no longer see this order in your seller dashboard.</p>" +
+            "</div>" +
+            "<div class='footer'><p><strong>Local Hunt</strong></p><p>Your trusted marketplace for authentic Nepali products</p></div>" +
+            "</div></body></html>",
+            vendorName != null ? vendorName : "Vendor",
+            orderId,
+            productName != null ? productName : "Product"
+        );
+        sendHtmlEmail(to, subject, htmlContent);
+    }
+
+    public void sendOrderCancelledEmailToVendor(String to, String vendorName, Long orderId,
+                                                String productName, String customerName) {
+        String subject = "Order Cancelled by Customer - Local Hunt";
+        String htmlContent = String.format(
+            "<!DOCTYPE html>" +
+            "<html><head><meta charset='UTF-8'><meta name='viewport' content='width=device-width, initial-scale=1.0'>" +
+            "<style>body{margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f5f5f5}.container{max-width:600px;margin:0 auto;background:#fff}.header{background:linear-gradient(135deg,#9e9e9e 0%%,#757575 100%%);padding:40px 20px;text-align:center}.header h1{color:#fff;margin:0;font-size:28px;font-weight:600}.content{padding:40px 30px}.banner{background:#ffebee;border-left:4px solid #d32f2f;padding:20px;margin:25px 0;border-radius:8px}.banner p{margin:0;color:#c62828;font-weight:600;font-size:16px}.info-box{background:#f9f9f9;border-radius:8px;padding:20px;margin:20px 0}.info-box p{margin:5px 0;color:#555;font-size:14px}.footer{background:#f9f9f9;padding:30px;text-align:center;color:#666;font-size:12px;border-top:1px solid #e0e0e0}.text-primary{color:#d32f2f;font-weight:600}</style>" +
+            "</head><body><div class='container'>" +
+            "<div class='header'><h1>Order Cancelled</h1></div>" +
+            "<div class='content'>" +
+            "<p style='font-size:16px;color:#333;margin:0 0 20px 0;'>Hello <span class='text-primary'>%s</span>,</p>" +
+            "<div class='banner'><p>A customer has cancelled their order.</p></div>" +
+            "<p style='font-size:15px;color:#555;line-height:1.6;'>Order <strong>#%d</strong> for <strong>%s</strong> was cancelled by customer <strong>%s</strong>. Stock for this product has been restored.</p>" +
+            "<div class='info-box'><p>No action is required. You can ignore this order in your pending list.</p></div>" +
+            "</div>" +
+            "<div class='footer'><p><strong>Local Hunt</strong></p><p>Your trusted marketplace for authentic Nepali products</p></div>" +
+            "</div></body></html>",
+            vendorName != null ? vendorName : "Vendor",
+            orderId,
+            productName != null ? productName : "Product",
+            customerName != null ? customerName : "Customer"
+        );
+        sendHtmlEmail(to, subject, htmlContent);
+    }
+
+    /**
      * Send password reset OTP email
      */
     public void sendPasswordResetOTPEmail(String to, String otp, String userName) {

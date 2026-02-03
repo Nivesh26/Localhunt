@@ -118,6 +118,24 @@ public class PaymentController {
         }
     }
 
+    @PutMapping("/orders/{orderId}/cancel/{userId}")
+    public ResponseEntity<?> cancelOrder(
+            @PathVariable Long orderId,
+            @PathVariable Long userId) {
+        try {
+            paymentService.cancelOrder(orderId, userId);
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "Order cancelled successfully");
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("message", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+    }
+
     @DeleteMapping("/orders/{orderId}/{userId}")
     public ResponseEntity<?> deleteOrder(
             @PathVariable Long orderId,

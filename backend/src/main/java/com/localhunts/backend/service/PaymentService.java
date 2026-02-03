@@ -426,6 +426,10 @@ public class PaymentService {
             throw new RuntimeException("Order does not belong to this seller");
         }
 
+        if ("Cancelled".equals(payment.getStatus())) {
+            throw new RuntimeException("This order was cancelled by the customer. No further action can be taken.");
+        }
+
         // Validate status - only allow "Ready to ship" and "Delivered"
         String newStatus = request.getStatus();
         if (!"Ready to ship".equals(newStatus) && !"Delivered".equals(newStatus)) {
@@ -504,6 +508,83 @@ public class PaymentService {
         }
     }
 
+    /**
+     * Cancel order (COD only). Allowed only when status is "Pending" (product is preparing).
+     * Once seller marks "Ready to ship", cancellation is not allowed.
+     * Restores product stock and sends cancellation emails to customer and vendor.
+     */
+    @Transactional
+    public void cancelOrder(Long orderId, Long userId) {
+        Payment payment = paymentRepository.findById(orderId)
+            .orElseThrow(() -> new RuntimeException("Order not found"));
+
+        if (!payment.getUser().getId().equals(userId)) {
+            throw new RuntimeException("Order does not belong to this user");
+        }
+
+        if (!"cod".equalsIgnoreCase(payment.getPaymentMethod())) {
+            throw new RuntimeException("Only Cash on Delivery orders can be cancelled");
+        }
+
+        if (!"Pending".equals(payment.getStatus())) {
+            throw new RuntimeException("Order can only be cancelled while your product is preparing. Once the seller marks it as Ready to ship, cancellation is not allowed.");
+        }
+
+        // Restore product stock
+        if (payment.getProduct() != null) {
+            Product product = payment.getProduct();
+            product.setStock(product.getStock() + payment.getQuantity());
+            productRepository.save(product);
+        }
+
+        payment.setStatus("Cancelled");
+        paymentRepository.save(payment);
+
+        // Load all needed data while session is open (Product and Seller are LAZY)
+        User user = payment.getUser();
+        String customerName = user.getFullName();
+        String customerEmail = user.getEmail();
+        Long cancelledOrderId = payment.getId();
+        String productName = payment.getProduct() != null ? payment.getProduct().getName() : "Product";
+        String address = payment.getAddress();
+        String area = payment.getArea();
+        String city = payment.getCity();
+
+        // Send vendor email first (synchronously so it is sent before response; avoids lazy-load issues)
+        String vendorEmail = null;
+        String vendorName = null;
+        if (payment.getProduct() != null && payment.getProduct().getSeller() != null) {
+            Seller seller = payment.getProduct().getSeller();
+            vendorEmail = seller.getContactEmail();
+            vendorName = seller.getBusinessName();
+        }
+        if (vendorEmail != null && !vendorEmail.isBlank()) {
+            try {
+                emailService.sendOrderCancelledEmailToVendor(vendorEmail, vendorName != null ? vendorName : "Vendor", cancelledOrderId, productName, customerName);
+            } catch (Exception e) {
+                System.err.println("Failed to send order cancellation email to vendor (" + vendorEmail + "): " + e.getMessage());
+                e.printStackTrace();
+            }
+        }
+
+        // Send customer email (async is fine; customer data already copied)
+        if (customerEmail != null && !customerEmail.isBlank()) {
+            final String fCustomerEmail = customerEmail;
+            final String fCustomerName = customerName;
+            final String fProductName = productName;
+            final String fAddress = address;
+            final String fArea = area;
+            final String fCity = city;
+            CompletableFuture.runAsync(() -> {
+                try {
+                    emailService.sendOrderCancelledEmailToCustomer(fCustomerEmail, fCustomerName, cancelledOrderId, fProductName, fAddress, fArea, fCity);
+                } catch (Exception e) {
+                    System.err.println("Failed to send order cancellation email to customer: " + e.getMessage());
+                }
+            }, emailExecutor);
+        }
+    }
+
     @Transactional
     public void deleteOrder(Long orderId, Long userId) {
         // Try to find in Delivered table first (delivered orders)
@@ -538,20 +619,44 @@ public class PaymentService {
 
     @Transactional
     public void deleteSellerOrder(Long orderId, Long sellerId) {
-        Delivered delivered = deliveredRepository.findById(orderId)
-            .orElseThrow(() -> new RuntimeException("Order not found"));
-
-        // Verify that the order belongs to the seller (product belongs to seller)
-        // If product is null (product was deleted), we can't verify ownership
-        if (delivered.getProduct() != null) {
-            if (!delivered.getProduct().getSeller().getId().equals(sellerId)) {
+        // Try Delivered table first (delivered orders)
+        Delivered delivered = deliveredRepository.findById(orderId).orElse(null);
+        if (delivered != null) {
+            if (delivered.getProduct() != null && !delivered.getProduct().getSeller().getId().equals(sellerId)) {
                 throw new RuntimeException("Order does not belong to this seller");
             }
+            delivered.setHiddenFromSeller(true);
+            deliveredRepository.save(delivered);
+            return;
         }
 
-        // Mark as hidden from seller instead of deleting
-        delivered.setHiddenFromSeller(true);
-        deliveredRepository.save(delivered);
+        // Try Payment table (pending, ready to ship, or cancelled orders)
+        Payment payment = paymentRepository.findById(orderId)
+            .orElseThrow(() -> new RuntimeException("Order not found"));
+        if (payment.getProduct() == null || payment.getProduct().getSeller() == null) {
+            throw new RuntimeException("Order does not belong to this seller");
+        }
+        if (!payment.getProduct().getSeller().getId().equals(sellerId)) {
+            throw new RuntimeException("Order does not belong to this seller");
+        }
+
+        payment.setHiddenFromSeller(true);
+        paymentRepository.save(payment);
+
+        // If vendor deleted a cancelled order, send them a confirmation email
+        if ("Cancelled".equals(payment.getStatus())) {
+            Seller seller = payment.getProduct().getSeller();
+            String vendorEmail = seller.getContactEmail();
+            String vendorName = seller.getBusinessName();
+            String productName = payment.getProduct().getName();
+            if (vendorEmail != null && !vendorEmail.isBlank()) {
+                try {
+                    emailService.sendVendorCancelledOrderRemovedEmail(vendorEmail, vendorName, orderId, productName);
+                } catch (Exception e) {
+                    System.err.println("Failed to send vendor cancelled-order-removed email: " + e.getMessage());
+                }
+            }
+        }
     }
 
     public List<OrderTrackingResponse> getSellerDeliveredOrders(Long sellerId) {

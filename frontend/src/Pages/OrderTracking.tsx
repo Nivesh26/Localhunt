@@ -79,11 +79,51 @@ const OrderTracking = () => {
     const statusColors: { [key: string]: string } = {
       'Pending': 'bg-yellow-100 text-yellow-700',
       'Processing': 'bg-blue-100 text-blue-700',
+      'Ready to ship': 'bg-orange-100 text-orange-700',
       'Shipped': 'bg-purple-100 text-purple-700',
       'Delivered': 'bg-green-100 text-green-700',
       'Cancelled': 'bg-red-100 text-red-700'
     }
     return statusColors[status] || 'bg-gray-100 text-gray-700'
+  }
+
+  const getStatusLabel = (status: string) => {
+    if (status === 'Pending' || status === 'Processing') return 'Your product is preparing'
+    return status
+  }
+
+  const canCancelOrder = (order: Order) => {
+    return (
+      order.paymentMethod === 'cod' &&
+      (order.status === 'Pending' || order.status === 'Processing')
+    )
+  }
+
+  const handleCancelOrder = async (orderId: number) => {
+    if (!window.confirm('Are you sure you want to cancel this order? This cannot be undone.')) {
+      return
+    }
+    try {
+      const user = sessionUtils.getUser()
+      if (!user) {
+        toast.error('Please login to cancel orders')
+        navigate('/login')
+        return
+      }
+      const response = await fetch(`http://localhost:8080/api/payment/orders/${orderId}/cancel/${user.userId}`, {
+        method: 'PUT',
+      })
+      if (response.ok) {
+        toast.success('Order cancelled successfully')
+        fetchOrders()
+      } else {
+        const data = await response.json().catch(() => ({}))
+        toast.error(data.message || 'Failed to cancel order')
+      }
+    } catch (error) {
+      console.error('Error cancelling order:', error)
+      toast.error('An error occurred while cancelling the order')
+    }
   }
 
   const handleRemoveOrder = async (orderId: number) => {
@@ -183,12 +223,30 @@ const OrderTracking = () => {
                             NRP {order.subtotal.toFixed(2)}
                           </p>
                         </div>
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-3 flex-wrap">
                           <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-semibold ${getStatusBadge(order.status)}`}>
-                            {order.status === 'Pending' || order.status === 'Processing' 
-                              ? 'Your product is preparing' 
-                              : order.status}
+                            {getStatusLabel(order.status)}
                           </span>
+                          {canCancelOrder(order) && (
+                            <button
+                              onClick={() => handleCancelOrder(order.orderId)}
+                              className="inline-flex items-center gap-2 border-2 border-red-500 text-red-600 px-4 py-2 rounded-lg font-semibold hover:bg-red-50 transition-colors"
+                              title="Cancel order"
+                            >
+                              <FaTimes className="w-4 h-4" />
+                              Cancel Order
+                            </button>
+                          )}
+                          {order.status === 'Cancelled' && (
+                            <button
+                              onClick={() => handleRemoveOrder(order.orderId)}
+                              className="inline-flex items-center gap-2 border-2 border-gray-300 text-gray-700 px-4 py-2 rounded-lg font-semibold hover:bg-gray-50 transition-colors"
+                              title="Remove cancelled order from list"
+                            >
+                              <FaTimes className="w-4 h-4" />
+                              Delete
+                            </button>
+                          )}
                           {order.status === 'Delivered' && (
                             <>
                               <button
