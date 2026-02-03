@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import Topbar from '../Components/Topbar'
@@ -41,8 +41,41 @@ const Payment = () => {
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(null)
   const [orderData, setOrderData] = useState<PaymentState | null>(null)
   const [processing, setProcessing] = useState(false)
+  const [cancellingPending, setCancellingPending] = useState(false)
+  const cancelledPendingRef = useRef(false)
+
+  // If user came back from eSewa without paying (e.g. browser back), cancel pending orders and redirect to cart
+  useEffect(() => {
+    const pendingUuid = sessionStorage.getItem('esewa_pending_transaction_uuid')
+    if (!pendingUuid || cancelledPendingRef.current) return
+
+    const user = sessionUtils.getUser()
+    const userIdStr = sessionStorage.getItem('esewa_pending_user_id')
+    const userId = user?.userId ?? (userIdStr ? Number(userIdStr) : null)
+    if (!userId) return
+
+    cancelledPendingRef.current = true
+    setCancellingPending(true)
+    const cancel = async () => {
+      try {
+        await fetch('http://localhost:8080/api/payment/esewa-cancel-pending', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ transactionUuid: pendingUuid, userId }),
+        })
+      } catch (e) {
+        console.error('Failed to cancel pending eSewa orders:', e)
+      }
+      sessionStorage.removeItem('esewa_pending_transaction_uuid')
+      sessionStorage.removeItem('esewa_pending_user_id')
+      toast.error('Something went wrong. Please try again.')
+      navigate('/cart', { replace: true })
+    }
+    cancel()
+  }, [navigate])
 
   useEffect(() => {
+    if (cancelledPendingRef.current) return
     // Get order data from location state (passed from Checkout)
     const state = location.state as PaymentState | undefined
     if (state?.selectedItems && state.selectedItems.length > 0) {
@@ -120,6 +153,11 @@ const Payment = () => {
         window.dispatchEvent(new CustomEvent('cartUpdated'))
 
         const { formActionUrl, formData } = await esewaInitRes.json()
+        const transactionUuid = formData?.transaction_uuid
+        if (transactionUuid) {
+          sessionStorage.setItem('esewa_pending_transaction_uuid', transactionUuid)
+          sessionStorage.setItem('esewa_pending_user_id', String(userId))
+        }
         const form = document.createElement('form')
         form.method = 'POST'
         form.action = formActionUrl
@@ -176,6 +214,17 @@ const Payment = () => {
     } finally {
       setProcessing(false)
     }
+  }
+
+  if (cancellingPending) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-500 mx-auto mb-4" />
+          <div className="text-xl text-gray-600">Something went wrong. Redirecting to cart...</div>
+        </div>
+      </div>
+    )
   }
 
   if (!orderData) {

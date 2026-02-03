@@ -28,6 +28,8 @@ const PaymentEsewaSuccess = () => {
         })
         const result = await res.json().catch(() => ({}))
         if (res.ok && result.success) {
+          sessionStorage.removeItem('esewa_pending_transaction_uuid')
+          sessionStorage.removeItem('esewa_pending_user_id')
           setStatus('success')
           toast.success('Payment successful!', { toastId: 'esewa-payment-success' })
         } else {

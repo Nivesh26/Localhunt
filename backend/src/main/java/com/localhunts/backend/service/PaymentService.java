@@ -130,6 +130,32 @@ public class PaymentService {
         return new EsewaInitResponse(ESEWA_FORM_URL, formData);
     }
 
+    /**
+     * Cancel pending eSewa orders when user returns from eSewa without paying.
+     * Restores product stock and deletes the pending payment records so they disappear from vendor.
+     */
+    @Transactional
+    public void cancelEsewaPendingOrders(String transactionUuid, Long userId) {
+        if (transactionUuid == null || transactionUuid.isBlank()) {
+            throw new RuntimeException("Invalid transaction reference");
+        }
+        List<Payment> payments = paymentRepository.findByEsewaTransactionUuid(transactionUuid);
+        if (payments.isEmpty()) {
+            return; // already cancelled or not found
+        }
+        if (!payments.get(0).getUser().getId().equals(userId)) {
+            throw new RuntimeException("Order does not belong to this user");
+        }
+        for (Payment payment : payments) {
+            if (payment.getProduct() != null) {
+                Product product = payment.getProduct();
+                product.setStock(product.getStock() + payment.getQuantity());
+                productRepository.save(product);
+            }
+            paymentRepository.delete(payment);
+        }
+    }
+
     @Transactional
     public void verifyEsewaPayment(String dataBase64) {
         if (dataBase64 == null || dataBase64.isBlank()) {

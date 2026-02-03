@@ -1,10 +1,48 @@
+import { useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { toast } from 'react-toastify'
 import Topbar from '../Components/Topbar'
 import Header from '../Components/Header'
 import Footer from '../Components/Footer'
+import { sessionUtils } from '../utils/sessionUtils'
 
 const PaymentEsewaFailure = () => {
   const navigate = useNavigate()
+  const didRun = useRef(false)
+
+  useEffect(() => {
+    if (didRun.current) return
+    didRun.current = true
+
+    const transactionUuid = sessionStorage.getItem('esewa_pending_transaction_uuid')
+    const userIdStr = sessionStorage.getItem('esewa_pending_user_id')
+    const user = sessionUtils.getUser()
+    const userId = user?.userId ?? (userIdStr ? Number(userIdStr) : null)
+
+    const run = async () => {
+      if (transactionUuid && userId) {
+        try {
+          const res = await fetch('http://localhost:8080/api/payment/esewa-cancel-pending', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ transactionUuid, userId }),
+          })
+          if (!res.ok) {
+            const err = await res.json().catch(() => ({}))
+            console.error('Cancel pending failed:', err)
+          }
+        } catch (e) {
+          console.error('Failed to cancel pending eSewa orders:', e)
+        }
+      }
+      sessionStorage.removeItem('esewa_pending_transaction_uuid')
+      sessionStorage.removeItem('esewa_pending_user_id')
+      toast.error('Something went wrong. Please try again.')
+      navigate('/cart', { replace: true })
+    }
+
+    run()
+  }, [navigate])
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -12,29 +50,8 @@ const PaymentEsewaFailure = () => {
       <Header />
       <section className="py-16 px-4">
         <div className="max-w-md mx-auto bg-white rounded-xl shadow-lg p-8 text-center">
-          <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
-            <svg className="w-10 h-10 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Payment Failed</h1>
-          <p className="text-gray-600 mb-6">
-            The payment could not be completed. You can try again or choose another payment method.
-          </p>
-          <div className="space-y-3">
-            <button
-              onClick={() => navigate('/cart')}
-              className="w-full py-3 rounded-lg font-semibold bg-red-500 text-white hover:bg-red-600"
-            >
-              Back to Cart
-            </button>
-            <button
-              onClick={() => navigate('/shop')}
-              className="w-full py-3 rounded-lg font-semibold border-2 border-gray-300 text-gray-700 hover:bg-gray-50"
-            >
-              Continue Shopping
-            </button>
-          </div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-500 mx-auto mb-4" />
+          <p className="text-gray-600">Something went wrong. Redirecting you to cart...</p>
         </div>
       </section>
       <Footer />

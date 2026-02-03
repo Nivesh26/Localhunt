@@ -39,6 +39,38 @@ public class PaymentController {
         }
     }
 
+    @PostMapping("/esewa-cancel-pending")
+    public ResponseEntity<?> cancelEsewaPending(@RequestBody Map<String, Object> body) {
+        String transactionUuid = body != null && body.get("transactionUuid") != null ? body.get("transactionUuid").toString() : null;
+        Long userId = null;
+        if (body != null && body.get("userId") != null) {
+            if (body.get("userId") instanceof Number) {
+                userId = ((Number) body.get("userId")).longValue();
+            } else {
+                try {
+                    userId = Long.parseLong(body.get("userId").toString());
+                } catch (NumberFormatException e) {
+                    userId = null;
+                }
+            }
+        }
+        try {
+            if (userId == null) {
+                throw new RuntimeException("User ID required");
+            }
+            paymentService.cancelEsewaPendingOrders(transactionUuid, userId);
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "Pending orders cancelled");
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("message", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+    }
+
     @PostMapping("/esewa-verify")
     public ResponseEntity<?> verifyEsewaPayment(@RequestBody Map<String, String> body) {
         String dataBase64 = body != null ? body.get("data") : null;
