@@ -29,7 +29,7 @@ const PaymentEsewaSuccess = () => {
         const result = await res.json().catch(() => ({}))
         if (res.ok && result.success) {
           setStatus('success')
-          toast.success('Payment successful!')
+          toast.success('Payment successful!', { toastId: 'esewa-payment-success' })
         } else {
           setStatus('error')
           setMessage(result.message || 'Payment verification failed.')
