@@ -362,9 +362,6 @@ const SellerOrder = () => {
                               ? 'Cancelled by customer'
                               : order.status}
                         </span>
-                        {order.status === 'Cancelled' && (
-                          <p className="mt-1 text-xs text-gray-500">An email was sent to you when the customer cancelled.</p>
-                        )}
                       </td>
                       <td className="px-4 py-3 text-right">
                         {order.status === 'Cancelled' ? (
