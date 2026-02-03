@@ -552,6 +552,32 @@ public class EmailService {
     }
 
     /**
+     * Send rejection notification email to vendor when admin rejects their signup
+     */
+    public void sendVendorRejectionEmail(String to, String vendorName, String businessName) {
+        String subject = "Vendor Application Not Approved - Local Hunt";
+        String htmlContent = String.format(
+            "<!DOCTYPE html>" +
+            "<html><head><meta charset='UTF-8'><meta name='viewport' content='width=device-width, initial-scale=1.0'>" +
+            "<style>body{margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f5f5f5}.container{max-width:600px;margin:0 auto;background:#fff}.header{background:linear-gradient(135deg,#9e9e9e 0%%,#757575 100%%);padding:40px 20px;text-align:center}.header h1{color:#fff;margin:0;font-size:28px;font-weight:600}.content{padding:40px 30px}.banner{background:#ffebee;border-left:4px solid #d32f2f;padding:20px;margin:25px 0;border-radius:8px}.banner p{margin:0;color:#c62828;font-weight:600;font-size:16px}.info-box{background:#f9f9f9;border-left:4px solid #d32f2f;padding:15px 20px;margin:25px 0;border-radius:4px}.info-box p{margin:5px 0;color:#555;font-size:14px;line-height:1.5}.footer{background:#f9f9f9;padding:30px;text-align:center;color:#666;font-size:12px;border-top:1px solid #e0e0e0}.text-primary{color:#d32f2f;font-weight:600}</style>" +
+            "</head><body><div class='container'>" +
+            "<div class='header'><h1>Vendor Application Update</h1></div>" +
+            "<div class='content'>" +
+            "<p style='font-size:16px;color:#333;margin:0 0 20px 0;'>Hello <span class='text-primary'>%s</span>,</p>" +
+            "<div class='banner'><p>Your vendor application for <strong>%s</strong> has been reviewed and was not approved at this time.</p></div>" +
+            "<p style='font-size:15px;color:#555;line-height:1.6;'>We encourage you to try again. Please ensure your business details, documents, and product information are complete and accurate when you reapply.</p>" +
+            "<div class='info-box'><p><strong>Need help?</strong> If you have questions about why your application was not approved or how to improve it, please contact our support team.</p></div>" +
+            "<p style='font-size:14px;color:#777;'>Thank you for your interest in Local Hunt.</p>" +
+            "</div>" +
+            "<div class='footer'><p><strong>Local Hunt</strong></p><p>Your trusted marketplace for authentic Nepali products</p></div>" +
+            "</div></body></html>",
+            vendorName != null ? vendorName : "Vendor",
+            businessName != null ? businessName : "Your Business"
+        );
+        sendHtmlEmail(to, subject, htmlContent);
+    }
+
+    /**
      * Send store paused notification email to vendor
      */
     public void sendStorePausedEmail(String to, String vendorName, String businessName) {

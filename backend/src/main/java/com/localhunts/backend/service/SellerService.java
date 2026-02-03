@@ -270,7 +270,18 @@ public class SellerService {
     public void rejectSeller(Long sellerId) {
         Seller seller = sellerRepository.findById(sellerId)
             .orElseThrow(() -> new RuntimeException("Seller not found"));
-        
+
+        // Send rejection email before deleting so we have contact details
+        try {
+            emailService.sendVendorRejectionEmail(
+                seller.getContactEmail(),
+                seller.getUserName(),
+                seller.getBusinessName()
+            );
+        } catch (Exception e) {
+            System.err.println("Failed to send vendor rejection email: " + e.getMessage());
+        }
+
         sellerRepository.delete(seller);
     }
 
