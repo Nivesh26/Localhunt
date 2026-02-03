@@ -254,11 +254,8 @@ public class UserService {
         response.setAddress(updatedUser.getAddress());
         response.setProfilePicture(updatedUser.getProfilePicture());
 
-        try {
-            emailService.sendUserProfileUpdateEmail(updatedUser.getEmail(), updatedUser.getFullName());
-        } catch (Exception e) {
-            System.err.println("Failed to send profile update email: " + e.getMessage());
-        }
+        // Do not send "Profile updated" email - it was incorrectly sent when saving address at checkout.
+        // User gets in-app toast on Profile page. Re-enable here only if you add a way to distinguish checkout vs profile.
         return response;
     }
 
@@ -287,9 +284,16 @@ public class UserService {
         response.setProfilePicture(updatedUser.getProfilePicture());
 
         try {
-            emailService.sendUserProfileUpdateEmail(updatedUser.getEmail(), updatedUser.getFullName());
+            emailService.sendDeliveryAddressUpdatedEmail(
+                updatedUser.getEmail(),
+                updatedUser.getFullName(),
+                updatedUser.getAddress(),
+                updatedUser.getArea(),
+                updatedUser.getCity(),
+                updatedUser.getRegion()
+            );
         } catch (Exception e) {
-            System.err.println("Failed to send profile update email: " + e.getMessage());
+            System.err.println("Failed to send delivery address updated email: " + e.getMessage());
         }
         return response;
     }

@@ -1103,6 +1103,38 @@ public class EmailService {
     }
 
     /**
+     * Send delivery address updated email to user (customer)
+     */
+    public void sendDeliveryAddressUpdatedEmail(String to, String fullName, String address, String area, String city, String region) {
+        String subject = "Delivery Address Updated - Local Hunt";
+        String htmlContent = String.format(
+            "<!DOCTYPE html>" +
+            "<html><head><meta charset='UTF-8'><meta name='viewport' content='width=device-width, initial-scale=1.0'>" +
+            "<style>body{margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f5f5f5}.container{max-width:600px;margin:0 auto;background:#fff}.header{background:linear-gradient(135deg,#d32f2f 0%%,#f44336 100%%);padding:40px 20px;text-align:center}.header h1{color:#fff;margin:0;font-size:28px;font-weight:600}.content{padding:40px 30px}.success-banner{background:linear-gradient(135deg,#e8f5e9 0%%,#c8e6c9 100%%);border-left:4px solid #4caf50;padding:20px;margin:25px 0;border-radius:8px}.success-banner p{margin:0;color:#2e7d32;font-weight:600;font-size:16px}.address-box{background:#f9f9f9;border-left:4px solid #d32f2f;padding:15px 20px;margin:20px 0;border-radius:4px}.address-box p{margin:5px 0;color:#555;font-size:14px;line-height:1.5}.footer{background:#f9f9f9;padding:30px;text-align:center;color:#666;font-size:12px;border-top:1px solid #e0e0e0}.text-primary{color:#d32f2f;font-weight:600}</style>" +
+            "</head><body><div class='container'>" +
+            "<div class='header'><h1>📍 Delivery Address Updated</h1></div>" +
+            "<div class='content'>" +
+            "<p style='font-size:16px;color:#333;margin:0 0 20px 0;'>Hello <span class='text-primary'>%s</span>,</p>" +
+            "<div class='success-banner'><p>✅ Your delivery address has been updated successfully.</p></div>" +
+            "<p style='font-size:15px;color:#555;line-height:1.6;'>Future orders will be delivered to:</p>" +
+            "<div class='address-box'>" +
+            "<p><strong>%s</strong></p>" +
+            "<p>%s, %s, %s</p>" +
+            "</div>" +
+            "<p style='font-size:14px;color:#777;'>If you did not make this change, please contact our support team.</p>" +
+            "</div>" +
+            "<div class='footer'><p><strong>Local Hunt</strong></p><p>Your trusted marketplace for authentic Nepali products</p></div>" +
+            "</div></body></html>",
+            fullName != null ? fullName : "Customer",
+            address != null ? address : "",
+            area != null ? area : "",
+            city != null ? city : "",
+            region != null ? region : ""
+        );
+        sendHtmlEmail(to, subject, htmlContent);
+    }
+
+    /**
      * Send profile update confirmation email to user (customer)
      */
     public void sendUserProfileUpdateEmail(String to, String fullName) {

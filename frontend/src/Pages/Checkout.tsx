@@ -168,7 +168,7 @@ const Checkout = () => {
       })
 
       if (response.ok) {
-        toast.success('Address saved successfully!')
+        toast.success('Profile updated')
       } else if (response.status === 404) {
         sessionUtils.clearSession()
         toast.error('Your account has been deleted. Please contact support.')
@@ -209,8 +209,7 @@ const Checkout = () => {
       })
 
       if (response.ok) {
-        // Address saved, proceed to payment
-        // Navigate to payment page with order details
+        // Address saved, proceed to payment (no toast - user is going to payment page)
         navigate('/payment', {
           state: {
             selectedItems: selectedItems,
