@@ -143,7 +143,7 @@ export const SellerOTP = () => {
           } else {
             navigate('/')
           }
-        }, 1000)
+        }, 400)
       } else {
         toast.error(data.message || 'Invalid OTP')
       }

@@ -155,7 +155,7 @@ export const UserForgetPassword = () => {
         toast.success('Password reset successfully! Please login with your new password.')
         setTimeout(() => {
           navigate('/login')
-        }, 2000)
+        }, 500)
       } else {
         toast.error(data.message || 'Failed to reset password')
       }

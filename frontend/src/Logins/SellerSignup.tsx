@@ -256,7 +256,7 @@ const Sellerlogin = () => {
         // Redirect to login after a short delay
         setTimeout(() => {
           navigate('/sellerlogin')
-        }, 2000)
+        }, 500)
       } else {
         toast.error(data.message || 'Registration failed')
       }

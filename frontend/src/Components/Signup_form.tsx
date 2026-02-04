@@ -124,7 +124,7 @@ const Signup_form = () => {
         // Redirect to login after a short delay
         setTimeout(() => {
           navigate('/login');
-        }, 1500);
+        }, 500);
       } else {
         toast.error(data.message || 'Registration failed');
       }
