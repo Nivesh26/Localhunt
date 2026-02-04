@@ -46,6 +46,7 @@ import SellerDashboard from '../SellerPages/SellerDashboard';
 import SellerProduct from '../SellerPages/SellerProduct';
 import SellerOrder from '../SellerPages/SellerOrder';
 import SellerHistory from '../SellerPages/SellerHistory';
+import SellerHistoryRemoved from '../SellerPages/SellerHistoryRemoved';
 import SellerPayout from '../SellerPages/SellerPayout';
 import SellerMessage from '../SellerPages/SellerMessage';
 import SellerSetting from '../SellerPages/SellerSetting';
@@ -200,6 +201,11 @@ const AnimatedRoutes = () => {
         <Route path="/sellerhistory" element={
           <ProtectedRoute allowedRoles={['VENDOR']}>
             <SellerHistory />
+          </ProtectedRoute>
+        } />
+        <Route path="/sellerhistoryremoved" element={
+          <ProtectedRoute allowedRoles={['VENDOR']}>
+            <SellerHistoryRemoved />
           </ProtectedRoute>
         } />
         <Route path="/sellerreviews" element={

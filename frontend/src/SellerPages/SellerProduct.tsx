@@ -778,11 +778,11 @@ const SellerProduct = () => {
             </article>
           </section>
 
-          {/* Product list */}
+          {/* Product list – only Live, Draft, Out of stock (removed/Unlisted show in Removed from shop page) */}
           <section className="rounded-2xl bg-white p-6 shadow-sm">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold text-gray-900">Product Catalog</h2>
-              <p className="text-xs text-gray-500">Showing {products.length} products</p>
+              <p className="text-xs text-gray-500">Showing {products.filter(p => p.status !== 'Unlisted').length} products</p>
             </div>
 
             {loading ? (
@@ -827,7 +827,7 @@ const SellerProduct = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
-                  {products.map(product => (
+                  {products.filter(p => p.status !== 'Unlisted').map(product => (
                     <tr key={product.id} className="hover:bg-gray-50">
                       <td className="px-4 py-3">
                         {product.imageUrl ? (
@@ -854,12 +854,10 @@ const SellerProduct = () => {
                               ? 'bg-emerald-50 text-emerald-700'
                               : product.status === 'Out of stock'
                                 ? 'bg-amber-50 text-amber-700'
-                                : product.status === 'Unlisted'
-                                  ? 'bg-slate-100 text-slate-600'
-                                  : 'bg-gray-100 text-gray-600'
+                                : 'bg-gray-100 text-gray-600'
                           }`}
                         >
-                          {product.status === 'Unlisted' ? 'Removed from shop' : product.status}
+                          {product.status}
                         </span>
                       </td>
                       <td className="px-4 py-3 text-xs text-gray-500">
@@ -909,10 +907,10 @@ const SellerProduct = () => {
                       </td>
                     </tr>
                   ))}
-                  {products.length === 0 && (
+                  {products.filter(p => p.status !== 'Unlisted').length === 0 && (
                     <tr>
                       <td colSpan={9} className="px-4 py-6 text-center text-xs text-gray-500">
-                        No products yet. Use the form above to add your first product.
+                        No products in catalog. Use the form above to add a product. Removed items are in Removed from shop.
                       </td>
                     </tr>
                   )}

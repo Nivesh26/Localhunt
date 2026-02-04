@@ -697,6 +697,22 @@ public class PaymentService {
             .collect(Collectors.toList());
     }
 
+    /**
+     * Delivered orders where the product has been removed from shop (status Unlisted).
+     * Vendor can delete these from history.
+     */
+    public List<OrderTrackingResponse> getSellerDeliveredOrdersWithRemovedProduct(Long sellerId) {
+        Seller seller = sellerRepository.findById(sellerId)
+            .orElseThrow(() -> new RuntimeException("Seller not found"));
+
+        List<Delivered> deliveredOrders = deliveredRepository.findBySeller(seller);
+        return deliveredOrders.stream()
+            .filter(delivered -> !Boolean.TRUE.equals(delivered.getHiddenFromSeller()))
+            .filter(delivered -> delivered.getProduct() != null && "Unlisted".equals(delivered.getProduct().getStatus()))
+            .map(this::convertDeliveredToResponse)
+            .collect(Collectors.toList());
+    }
+
     private OrderTrackingResponse convertDeliveredToResponse(Delivered delivered) {
         Product product = delivered.getProduct();
         

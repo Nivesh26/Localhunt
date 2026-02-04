@@ -130,22 +130,23 @@ const AdminProduct = () => {
   }, []);
 
   const handleDelete = async (productId: number) => {
-    const shouldDelete = window.confirm('Are you sure you want to delete this product?');
+    const shouldDelete = window.confirm(
+      'Permanently delete this product? All related data (reviews, orders, chat, etc.) will be removed from the database. This cannot be undone.'
+    );
     if (!shouldDelete) return;
 
     try {
-      const response = await fetch(`http://localhost:8080/api/products/${productId}`, {
+      const response = await fetch(`http://localhost:8080/api/admin/products/${productId}`, {
         method: 'DELETE',
       });
 
+      const data = await response.json().catch(() => ({}));
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to delete product');
+        throw new Error(typeof data.message === 'string' ? data.message : 'Failed to delete product');
       }
 
-      // Remove from local state
       setProducts((prev) => prev.filter((product) => product.id !== productId));
-      toast.success('Product deleted successfully');
+      toast.success('Product deleted permanently');
     } catch (error) {
       console.error('Error deleting product:', error);
       toast.error(error instanceof Error ? error.message : 'Failed to delete product');

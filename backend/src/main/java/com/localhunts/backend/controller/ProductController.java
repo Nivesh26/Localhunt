@@ -64,6 +64,16 @@ public class ProductController {
         }
     }
 
+    @GetMapping("/seller/{sellerId}/removed")
+    public ResponseEntity<List<ProductResponse>> getRemovedProductsBySeller(@PathVariable Long sellerId) {
+        try {
+            List<ProductResponse> products = productService.getRemovedProductsBySeller(sellerId);
+            return ResponseEntity.ok(products);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+    }
+
     @PostMapping("/upload")
     public ResponseEntity<Map<String, Object>> uploadFile(@RequestParam("file") MultipartFile file) {
         try {

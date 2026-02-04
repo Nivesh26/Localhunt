@@ -5,6 +5,7 @@ import com.localhunts.backend.dto.OnboardingRequestResponse;
 import com.localhunts.backend.dto.TopVendorResponse;
 import com.localhunts.backend.dto.UserListResponse;
 import com.localhunts.backend.service.AdminService;
+import com.localhunts.backend.service.ProductService;
 import com.localhunts.backend.service.SellerService;
 import com.localhunts.backend.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +29,9 @@ public class AdminController {
 
     @Autowired
     private AdminService adminService;
+
+    @Autowired
+    private ProductService productService;
 
     @GetMapping("/users")
     public ResponseEntity<List<UserListResponse>> getAllUsers() {
@@ -76,6 +80,30 @@ public class AdminController {
             Map<String, Object> response = new HashMap<>();
             response.put("success", false);
             response.put("message", "Error deleting vendor");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
+    /**
+     * Super admin: Permanently delete a product and all related data from the database.
+     */
+    @DeleteMapping("/products/{productId}")
+    public ResponseEntity<Map<String, Object>> deleteProduct(@PathVariable Long productId) {
+        try {
+            productService.permanentDeleteProduct(productId);
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "Product and all related data deleted successfully");
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("message", e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        } catch (Exception e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("message", "Error deleting product");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }

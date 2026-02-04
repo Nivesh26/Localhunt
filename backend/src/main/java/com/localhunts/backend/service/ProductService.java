@@ -97,8 +97,14 @@ public class ProductService {
         Seller seller = sellerRepository.findById(sellerId)
             .orElseThrow(() -> new RuntimeException("Seller not found"));
         List<Product> products = productRepository.findBySeller(seller);
-        // Include all statuses (Live, Draft, Out of stock, Unlisted) so vendor sees "removed from shop" items
         return products.stream().map(this::convertToResponse).collect(Collectors.toList());
+    }
+
+    /** Products removed from shop (Unlisted) for the "Removed from shop" page. */
+    public List<ProductResponse> getRemovedProductsBySeller(Long sellerId) {
+        return getProductsBySeller(sellerId).stream()
+            .filter(p -> "Unlisted".equals(p.getStatus()))
+            .collect(Collectors.toList());
     }
 
     public List<ProductResponse> getLiveProducts() {
@@ -155,8 +161,8 @@ public class ProductService {
 
     /**
      * Delete product from shop (vendor or admin).
-     * - If the product has been purchased (any Payment or Delivered): only remove from shop (set status Unlisted);
-     *   product stays in DB so "Track your purchase" still shows it for buyers.
+     * - If product is already Unlisted and has no pending payments: permanently delete (vendor can remove from "Removed from shop" when all delivered).
+     * - If the product has been purchased (any Payment or Delivered) and is not Unlisted: only remove from shop (set status Unlisted).
      * - If the product was never purchased: permanently delete product and all related data.
      */
     @Transactional
@@ -164,8 +170,20 @@ public class ProductService {
         Product product = productRepository.findById(productId)
             .orElseThrow(() -> new RuntimeException("Product not found"));
 
-        boolean hasPurchases = !paymentRepository.findByProduct(product).isEmpty()
-            || !deliveredRepository.findByProduct(product).isEmpty();
+        boolean hasPendingPayments = !paymentRepository.findByProduct(product).isEmpty();
+        boolean hasDelivered = !deliveredRepository.findByProduct(product).isEmpty();
+
+        // Already removed from shop but still has orders not yet delivered: cannot permanently delete yet
+        if ("Unlisted".equals(product.getStatus()) && hasPendingPayments) {
+            throw new RuntimeException("Cannot permanently delete: some orders are not yet delivered. You can delete this product once all orders are delivered.");
+        }
+        // Already removed from shop and no pending orders (all delivered or never sold): allow permanent delete
+        if ("Unlisted".equals(product.getStatus()) && !hasPendingPayments) {
+            doPermanentDeleteProduct(product);
+            return;
+        }
+
+        boolean hasPurchases = hasPendingPayments || hasDelivered;
 
         if (hasPurchases) {
             // Product was bought by someone: remove from shop only, keep for order tracking
@@ -176,6 +194,20 @@ public class ProductService {
         }
 
         // Never purchased: full cascade delete
+        doPermanentDeleteProduct(product);
+    }
+
+    /**
+     * Super admin only: permanently delete product and all related data from the database.
+     */
+    @Transactional
+    public void permanentDeleteProduct(Long productId) {
+        Product product = productRepository.findById(productId)
+            .orElseThrow(() -> new RuntimeException("Product not found"));
+        doPermanentDeleteProduct(product);
+    }
+
+    private void doPermanentDeleteProduct(Product product) {
         List<Review> productReviews = reviewRepository.findByProduct(product);
         for (Review review : productReviews) {
             reviewLikeRepository.deleteAll(reviewLikeRepository.findByReview(review));
