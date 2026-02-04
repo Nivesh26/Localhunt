@@ -2,14 +2,17 @@ package com.localhunts.backend.service;
 
 import com.localhunts.backend.dto.ProductRequest;
 import com.localhunts.backend.dto.ProductResponse;
-import com.localhunts.backend.model.Delivered;
 import com.localhunts.backend.model.Payment;
 import com.localhunts.backend.model.Product;
+import com.localhunts.backend.model.Review;
 import com.localhunts.backend.model.Seller;
 import com.localhunts.backend.repository.CartRepository;
+import com.localhunts.backend.repository.ChatRepository;
 import com.localhunts.backend.repository.DeliveredRepository;
 import com.localhunts.backend.repository.PaymentRepository;
 import com.localhunts.backend.repository.ProductRepository;
+import com.localhunts.backend.repository.ReviewLikeRepository;
+import com.localhunts.backend.repository.ReviewRepository;
 import com.localhunts.backend.repository.SellerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -36,6 +39,15 @@ public class ProductService {
 
     @Autowired
     private DeliveredRepository deliveredRepository;
+
+    @Autowired
+    private ChatRepository chatRepository;
+
+    @Autowired
+    private ReviewRepository reviewRepository;
+
+    @Autowired
+    private ReviewLikeRepository reviewLikeRepository;
 
     public ProductResponse createProduct(ProductRequest request) {
         // Find seller
@@ -136,34 +148,44 @@ public class ProductService {
         return convertToResponse(updatedProduct);
     }
 
+    /**
+     * Permanently delete a product and all related data (vendor or admin).
+     * Removes: review likes on this product's reviews, reviews, chat messages, cart, payments (after restoring stock), delivered orders, then product.
+     */
     @Transactional
     public void deleteProduct(Long productId) {
         Product product = productRepository.findById(productId)
             .orElseThrow(() -> new RuntimeException("Product not found"));
 
-        // Delete all cart items that reference this product
+        // 1. Delete review likes on reviews for this product, then delete the reviews
+        List<Review> productReviews = reviewRepository.findByProduct(product);
+        for (Review review : productReviews) {
+            reviewLikeRepository.deleteAll(reviewLikeRepository.findByReview(review));
+        }
+        reviewRepository.deleteAll(productReviews);
+
+        // 2. Delete all chat messages that reference this product
+        chatRepository.deleteAll(chatRepository.findByProduct(product));
+
+        // 3. Delete all cart items that reference this product
         cartRepository.deleteByProduct(product);
 
-        // For Payment orders (non-delivered), set product_id to NULL to preserve order records
-        List<Payment> payments = paymentRepository.findAll().stream()
-            .filter(payment -> payment.getProduct() != null && payment.getProduct().getId().equals(productId))
-            .collect(Collectors.toList());
-        
+        // 4. Restore product stock and delete payment orders for this product
+        List<Payment> payments = paymentRepository.findByProduct(product);
         for (Payment payment : payments) {
-            payment.setProduct(null);
-            paymentRepository.save(payment);
+            if (payment.getProduct() != null) {
+                Product p = payment.getProduct();
+                int newStock = p.getStock() + payment.getQuantity();
+                p.setStock(newStock);
+                productRepository.save(p);
+            }
         }
+        paymentRepository.deleteAll(payments);
 
-        // For Delivered orders, delete them from database when product is deleted
-        List<Delivered> deliveredOrders = deliveredRepository.findAll().stream()
-            .filter(delivered -> delivered.getProduct() != null && delivered.getProduct().getId().equals(productId))
-            .collect(Collectors.toList());
-        
-        for (Delivered delivered : deliveredOrders) {
-            deliveredRepository.delete(delivered);
-        }
+        // 5. Delete all delivered order records for this product
+        deliveredRepository.deleteAll(deliveredRepository.findByProduct(product));
 
-        // Now delete the product
+        // 6. Delete the product
         productRepository.delete(product);
     }
 

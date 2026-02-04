@@ -1,6 +1,7 @@
 package com.localhunts.backend.repository;
 
 import com.localhunts.backend.model.Chat;
+import com.localhunts.backend.model.Product;
 import com.localhunts.backend.model.Seller;
 import com.localhunts.backend.model.User;
 import org.springframework.data.domain.Pageable;
@@ -52,4 +53,5 @@ public interface ChatRepository extends JpaRepository<Chat, Long> {
 
     List<Chat> findByUser(User user);
     List<Chat> findBySeller(Seller seller);
+    List<Chat> findByProduct(Product product);
 }

@@ -1,6 +1,7 @@
 package com.localhunts.backend.repository;
 
 import com.localhunts.backend.model.Payment;
+import com.localhunts.backend.model.Product;
 import com.localhunts.backend.model.Seller;
 import com.localhunts.backend.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -19,4 +20,5 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
     List<Payment> findBySeller(@Param("seller") Seller seller);
 
     List<Payment> findByEsewaTransactionUuid(String esewaTransactionUuid);
+    List<Payment> findByProduct(Product product);
 }

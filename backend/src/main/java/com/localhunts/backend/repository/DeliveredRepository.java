@@ -1,6 +1,7 @@
 package com.localhunts.backend.repository;
 
 import com.localhunts.backend.model.Delivered;
+import com.localhunts.backend.model.Product;
 import com.localhunts.backend.model.Seller;
 import com.localhunts.backend.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -17,4 +18,5 @@ public interface DeliveredRepository extends JpaRepository<Delivered, Long> {
     
     @Query("SELECT d FROM Delivered d WHERE d.product.seller = :seller")
     List<Delivered> findBySeller(@Param("seller") Seller seller);
+    List<Delivered> findByProduct(Product product);
 }
