@@ -2,6 +2,7 @@ import Header from '../Components/Header'
 import Topbar from '../Components/Topbar'
 import Footer from '../Components/Footer'
 import Hero from '../assets/Hero.png'
+import { FaLeaf, FaUsers, FaStar, FaShoppingBag, FaPalette, FaGlobeAmericas, FaGift } from 'react-icons/fa'
 
 const about = () => {
   return (
@@ -50,7 +51,7 @@ const about = () => {
           <h2 className="text-3xl font-bold text-gray-900 mb-12 text-center">Our Core Values</h2>
           <div className="grid md:grid-cols-3 gap-8">
             <div className="bg-red-50 rounded-xl p-8 text-center hover:shadow-lg transition-shadow">
-              <div className="text-4xl mb-4">🌱</div>
+              <div className="flex justify-center mb-4"><FaLeaf className="w-12 h-12 text-red-600" /></div>
               <h3 className="text-xl font-semibold text-gray-900 mb-3">Sustainability</h3>
               <p className="text-gray-700">
                 We promote eco-friendly practices and support products made with sustainable materials 
@@ -58,7 +59,7 @@ const about = () => {
               </p>
             </div>
             <div className="bg-green-50 rounded-xl p-8 text-center hover:shadow-lg transition-shadow">
-              <div className="text-4xl mb-4">🤝</div>
+              <div className="flex justify-center mb-4"><FaUsers className="w-12 h-12 text-green-600" /></div>
               <h3 className="text-xl font-semibold text-gray-900 mb-3">Community</h3>
               <p className="text-gray-700">
                 Building strong connections between local artisans and customers to strengthen 
@@ -66,7 +67,7 @@ const about = () => {
               </p>
             </div>
             <div className="bg-purple-50 rounded-xl p-8 text-center hover:shadow-lg transition-shadow">
-              <div className="text-4xl mb-4">✨</div>
+              <div className="flex justify-center mb-4"><FaStar className="w-12 h-12 text-purple-600" /></div>
               <h3 className="text-xl font-semibold text-gray-900 mb-3">Quality</h3>
               <p className="text-gray-700">
                 Ensuring every product meets our high standards of craftsmanship and authenticity.
@@ -100,7 +101,7 @@ const about = () => {
           <h2 className="text-3xl font-bold text-gray-900 mb-12 text-center">Why Choose Local Hunt?</h2>
           <div className="grid md:grid-cols-2 gap-8">
             <div className="flex gap-4 p-6 bg-white rounded-xl shadow-md">
-              <div className="text-3xl">🛍️</div>
+              <div className="shrink-0"><FaShoppingBag className="w-10 h-10 text-gray-600" /></div>
               <div>
                 <h3 className="text-xl font-semibold text-gray-900 mb-2">Unique Products</h3>
                 <p className="text-gray-700">
@@ -110,7 +111,7 @@ const about = () => {
               </div>
             </div>
             <div className="flex gap-4 p-6 bg-white rounded-xl shadow-md">
-              <div className="text-3xl">🎨</div>
+              <div className="shrink-0"><FaPalette className="w-10 h-10 text-gray-600" /></div>
               <div>
                 <h3 className="text-xl font-semibold text-gray-900 mb-2">Support Artisans</h3>
                 <p className="text-gray-700">
@@ -119,7 +120,7 @@ const about = () => {
               </div>
             </div>
             <div className="flex gap-4 p-6 bg-white rounded-xl shadow-md">
-              <div className="text-3xl">🌍</div>
+              <div className="shrink-0"><FaGlobeAmericas className="w-10 h-10 text-gray-600" /></div>
               <div>
                 <h3 className="text-xl font-semibold text-gray-900 mb-2">Eco-Friendly</h3>
                 <p className="text-gray-700">
@@ -128,7 +129,7 @@ const about = () => {
               </div>
             </div>
             <div className="flex gap-4 p-6 bg-white rounded-xl shadow-md">
-              <div className="text-3xl">💝</div>
+              <div className="shrink-0"><FaGift className="w-10 h-10 text-gray-600" /></div>
               <div>
                 <h3 className="text-xl font-semibold text-gray-900 mb-2">Perfect Gifts</h3>
                 <p className="text-gray-700">
