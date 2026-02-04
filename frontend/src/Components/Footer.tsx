@@ -38,7 +38,7 @@ const Footer = () => {
   }, []);
 
   return (
-    <footer className="bg-[#dfdfdf] text-black">
+    <footer className="bg-[#f2f2f2] text-black">
       <div className="px-4 sm:px-6 md:px-10 lg:px-16 xl:px-20">
         <div className="flex flex-col sm:flex-row flex-wrap justify-between gap-8 sm:gap-6 pt-8 sm:pt-10 pb-32 sm:pb-40">
 
@@ -127,11 +127,11 @@ const Footer = () => {
         </div>
       </div>
 
-      <div className="bg-[#be1e2d] text-white p-4 text-center text-sm sm:text-base">
+      <div className="bg-[#c94a56] text-white p-4 text-center text-sm sm:text-base">
         <p>
-          &copy; 2025 Localhunt Nepal | All rights reserved | Designed
+          &copy; 2026 Localhunt Nepal | All rights reserved | Designed
           by{" "}
-          <span className="underline">Nivesh</span>
+          <span className="underline">Nivesh Shrestha</span>
           {" "}|{" "}
           <Link to="/contact" className="underline hover:text-gray-200">
             Privacy Policy

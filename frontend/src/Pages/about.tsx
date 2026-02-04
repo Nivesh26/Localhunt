@@ -141,8 +141,15 @@ const about = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 px-4 md:px-10 bg-gradient-to-r from-red-600 to-red-700">
-        <div className="max-w-4xl mx-auto text-center text-white">
+      <section className="relative py-16 px-4 md:px-10 overflow-hidden">
+        <img 
+          src={Hero} 
+          alt="" 
+          className="absolute inset-0 w-full h-full object-cover"
+          aria-hidden="true"
+        />
+        <div className="absolute inset-0 bg-black/50" />
+        <div className="relative max-w-4xl mx-auto text-center text-white">
           <h2 className="text-3xl font-bold mb-4">Join the Local Movement</h2>
           <p className="text-xl mb-8 opacity-90">
             Start exploring amazing local products today and be part of something meaningful.
