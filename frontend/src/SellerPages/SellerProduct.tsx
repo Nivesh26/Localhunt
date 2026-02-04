@@ -18,7 +18,7 @@ type Product = {
   sku: string
   price: number
   stock: number
-  status: 'Live' | 'Draft' | 'Out of stock'
+  status: 'Live' | 'Draft' | 'Out of stock' | 'Unlisted'
   category: string
   imageUrl?: string
   description: string
@@ -114,7 +114,7 @@ const SellerProduct = () => {
             sku: p.sku,
             price: p.price,
             stock: p.stock,
-            status: p.status as 'Live' | 'Draft' | 'Out of stock',
+            status: p.status as 'Live' | 'Draft' | 'Out of stock' | 'Unlisted',
             category: p.category,
             imageUrl: imageUrl,
             description: p.description || '',
@@ -854,10 +854,12 @@ const SellerProduct = () => {
                               ? 'bg-emerald-50 text-emerald-700'
                               : product.status === 'Out of stock'
                                 ? 'bg-amber-50 text-amber-700'
-                                : 'bg-gray-100 text-gray-600'
+                                : product.status === 'Unlisted'
+                                  ? 'bg-slate-100 text-slate-600'
+                                  : 'bg-gray-100 text-gray-600'
                           }`}
                         >
-                          {product.status}
+                          {product.status === 'Unlisted' ? 'Removed from shop' : product.status}
                         </span>
                       </td>
                       <td className="px-4 py-3 text-xs text-gray-500">

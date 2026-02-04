@@ -97,6 +97,7 @@ public class ProductService {
         Seller seller = sellerRepository.findById(sellerId)
             .orElseThrow(() -> new RuntimeException("Seller not found"));
         List<Product> products = productRepository.findBySeller(seller);
+        // Include all statuses (Live, Draft, Out of stock, Unlisted) so vendor sees "removed from shop" items
         return products.stream().map(this::convertToResponse).collect(Collectors.toList());
     }
 
@@ -112,6 +113,10 @@ public class ProductService {
     public ProductResponse getProductById(Long productId) {
         Product product = productRepository.findById(productId)
             .orElseThrow(() -> new RuntimeException("Product not found"));
+        // Unlisted products are not browsable (only visible in order tracking for buyers)
+        if ("Unlisted".equals(product.getStatus())) {
+            throw new RuntimeException("Product not found");
+        }
         return convertToResponse(product);
     }
 
@@ -149,28 +154,35 @@ public class ProductService {
     }
 
     /**
-     * Permanently delete a product and all related data (vendor or admin).
-     * Removes: review likes on this product's reviews, reviews, chat messages, cart, payments (after restoring stock), delivered orders, then product.
+     * Delete product from shop (vendor or admin).
+     * - If the product has been purchased (any Payment or Delivered): only remove from shop (set status Unlisted);
+     *   product stays in DB so "Track your purchase" still shows it for buyers.
+     * - If the product was never purchased: permanently delete product and all related data.
      */
     @Transactional
     public void deleteProduct(Long productId) {
         Product product = productRepository.findById(productId)
             .orElseThrow(() -> new RuntimeException("Product not found"));
 
-        // 1. Delete review likes on reviews for this product, then delete the reviews
+        boolean hasPurchases = !paymentRepository.findByProduct(product).isEmpty()
+            || !deliveredRepository.findByProduct(product).isEmpty();
+
+        if (hasPurchases) {
+            // Product was bought by someone: remove from shop only, keep for order tracking
+            cartRepository.deleteByProduct(product);
+            product.setStatus("Unlisted");
+            productRepository.save(product);
+            return;
+        }
+
+        // Never purchased: full cascade delete
         List<Review> productReviews = reviewRepository.findByProduct(product);
         for (Review review : productReviews) {
             reviewLikeRepository.deleteAll(reviewLikeRepository.findByReview(review));
         }
         reviewRepository.deleteAll(productReviews);
-
-        // 2. Delete all chat messages that reference this product
         chatRepository.deleteAll(chatRepository.findByProduct(product));
-
-        // 3. Delete all cart items that reference this product
         cartRepository.deleteByProduct(product);
-
-        // 4. Restore product stock and delete payment orders for this product
         List<Payment> payments = paymentRepository.findByProduct(product);
         for (Payment payment : payments) {
             if (payment.getProduct() != null) {
@@ -181,11 +193,7 @@ public class ProductService {
             }
         }
         paymentRepository.deleteAll(payments);
-
-        // 5. Delete all delivered order records for this product
         deliveredRepository.deleteAll(deliveredRepository.findByProduct(product));
-
-        // 6. Delete the product
         productRepository.delete(product);
     }
 

@@ -43,7 +43,7 @@ public class Product {
     private String imageUrl;
 
     @Column(nullable = false)
-    private String status = "Draft"; // Live, Draft, Out of stock
+    private String status = "Draft"; // Live, Draft, Out of stock, Unlisted (removed from shop but kept for order history)
 
     @Column(columnDefinition = "TEXT")
     private String specs; // JSON string or comma-separated
