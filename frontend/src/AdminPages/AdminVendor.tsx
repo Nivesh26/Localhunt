@@ -64,12 +64,12 @@ const AdminVender = () => {
 
   const handleDelete = async (vendorId: number) => {
     const shouldDelete = window.confirm(
-      'Are you sure you want to delete this vendor? This will also delete all their products. This action cannot be undone.'
+      'Permanently delete this vendor? All their products, orders, reviews, chat history, and data will be completely removed from the database. This cannot be undone.'
     )
     if (!shouldDelete) return
 
     try {
-      const response = await fetch(`http://localhost:8080/api/seller/${vendorId}`, {
+      const response = await fetch(`http://localhost:8080/api/admin/vendors/${vendorId}`, {
         method: 'DELETE',
       })
 

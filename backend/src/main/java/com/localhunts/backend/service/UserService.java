@@ -450,6 +450,10 @@ public class UserService {
         return new AuthResponse("Password reset successfully", true);
     }
 
+    /**
+     * Permanently delete a user and all related data from the database (super admin).
+     * Removes: review likes, reviews, chat, cart, payments, delivered orders, profile picture, then user.
+     */
     @Transactional
     public void deleteUser(Long userId) {
         User user = userRepository.findById(userId)

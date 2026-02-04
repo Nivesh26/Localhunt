@@ -554,6 +554,10 @@ public class SellerService {
         return new AuthResponse("Password reset successfully", true);
     }
 
+    /**
+     * Permanently delete a vendor and all related data from the database (super admin).
+     * Removes: review likes (by vendor), reviews on their products, chat, cart, payments, delivered orders, products, profile picture, then seller.
+     */
     @Transactional
     public void deleteSeller(Long sellerId) {
         Seller seller = sellerRepository.findById(sellerId)

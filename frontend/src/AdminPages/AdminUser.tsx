@@ -39,7 +39,7 @@ const AdminUser = () => {
   }
 
   const handleDeleteUser = async (userId: number) => {
-    if (!window.confirm('Are you sure you want to delete this user? This will also delete all their cart items.')) {
+    if (!window.confirm('Permanently delete this user? All their reviews, orders, chat history, and data will be completely removed from the database. This cannot be undone.')) {
       return
     }
 
