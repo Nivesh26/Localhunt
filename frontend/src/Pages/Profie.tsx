@@ -288,8 +288,8 @@ const Profie = () => {
     }
   }
 
-  const clearSession = () => {
-    sessionUtils.clearSession()
+  const clearSession = (intentional = false) => {
+    sessionUtils.clearSession(intentional)
   }
 
   const handleDeleteAccount = async () => {
@@ -331,12 +331,12 @@ const Profie = () => {
 
       if (response.ok) {
         // Clear user data
-        clearSession()
+        clearSession(true)
         toast.success('Your account has been deleted successfully')
         navigate('/')
       } else if (response.status === 404) {
         // User already deleted
-        clearSession()
+        clearSession(true)
         toast.error('Account not found')
         navigate('/login')
       } else {
@@ -350,7 +350,7 @@ const Profie = () => {
   }
 
   const handleLogout = () => {
-    clearSession()
+    sessionUtils.clearSession(true)
     toast.success('Logged out successfully')
     navigate('/')
   }

@@ -148,7 +148,7 @@ const SellerNavbar = () => {
   }, [])
 
   const handleLogout = () => {
-    sessionUtils.clearSession()
+    sessionUtils.clearSession(true)
     toast.success('Logged out successfully')
     navigate('/sellerlogin')
   }

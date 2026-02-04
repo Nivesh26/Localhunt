@@ -23,7 +23,10 @@ const ProtectedRoute = ({ children, allowedRoles, redirectTo = '/login' }: Prote
         if (!sessionUtils.isSessionValid(SESSION_TIMEOUT)) {
           sessionUtils.clearSession()
           setIsAuthorized(false)
-          toast.error('Your session has expired. Please login again.', { toastId: 'session-expired' })
+          // Don't show "session expired" if user explicitly logged out (they already saw "Logged out successfully")
+          if (!sessionUtils.consumeIntentionalLogout()) {
+            toast.error('Your session has expired. Please login again.', { toastId: 'session-expired' })
+          }
           return
         }
 
@@ -31,6 +34,10 @@ const ProtectedRoute = ({ children, allowedRoles, redirectTo = '/login' }: Prote
         
         if (!user) {
           setIsAuthorized(false)
+          // Don't show "session expired" if user explicitly logged out
+          if (!sessionUtils.consumeIntentionalLogout()) {
+            toast.error('Your session has expired. Please login again.', { toastId: 'session-expired' })
+          }
           return
         }
         

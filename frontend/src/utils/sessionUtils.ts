@@ -33,11 +33,24 @@ export const sessionUtils = {
     return sessionStorage.getItem('user') !== null
   },
 
-  // Clear user session
-  clearSession: (): void => {
+  // Clear user session (pass true when user explicitly clicks logout to avoid duplicate "session expired" toast)
+  clearSession: (intentionalLogout = false): void => {
+    if (intentionalLogout) {
+      sessionStorage.setItem('intentionalLogout', '1')
+    }
     sessionStorage.removeItem('user')
     sessionStorage.removeItem('sessionTime')
     window.dispatchEvent(new Event('userLoginStatusChange'))
+  },
+
+  // Check and clear intentional logout flag (used by ProtectedRoute to avoid duplicate toasts)
+  consumeIntentionalLogout: (): boolean => {
+    const flag = sessionStorage.getItem('intentionalLogout')
+    if (flag) {
+      sessionStorage.removeItem('intentionalLogout')
+      return true
+    }
+    return false
   },
 
   // Get session timestamp
