@@ -176,108 +176,162 @@ const AnimatedRoutes = () => {
           </PageTransition>
         } />
 
-        {/* Seller Login and Signup */}
-        <Route path="/sellersignup" element={<Sellersignup />} />
-        <Route path="/sellerlogin" element={<SellerLogin />} />
-        <Route path="/sellerotp" element={<SellerOTP />} />
-        <Route path="/sellerforgetpassword" element={<SellerForgetPassword />} />
+        {/* Seller Login and Signup with Transitions */}
+        <Route path="/sellersignup" element={
+          <PageTransition>
+            <Sellersignup />
+          </PageTransition>
+        } />
+        <Route path="/sellerlogin" element={
+          <PageTransition>
+            <SellerLogin />
+          </PageTransition>
+        } />
+        <Route path="/sellerotp" element={
+          <PageTransition>
+            <SellerOTP />
+          </PageTransition>
+        } />
+        <Route path="/sellerforgetpassword" element={
+          <PageTransition>
+            <SellerForgetPassword />
+          </PageTransition>
+        } />
 
-        {/* Seller Pages - Protected: VENDOR only */}
+        {/* Seller Pages - Protected: VENDOR only with Transitions */}
         <Route path="/sellerdashboard" element={
           <ProtectedRoute allowedRoles={['VENDOR']}>
-            <SellerDashboard />
+            <PageTransition>
+              <SellerDashboard />
+            </PageTransition>
           </ProtectedRoute>
         } />
         <Route path="/sellerproduct" element={
           <ProtectedRoute allowedRoles={['VENDOR']}>
-            <SellerProduct />
+            <PageTransition>
+              <SellerProduct />
+            </PageTransition>
           </ProtectedRoute>
         } />
         <Route path="/sellerorder" element={
           <ProtectedRoute allowedRoles={['VENDOR']}>
-            <SellerOrder />
+            <PageTransition>
+              <SellerOrder />
+            </PageTransition>
           </ProtectedRoute>
         } />
         <Route path="/sellerhistory" element={
           <ProtectedRoute allowedRoles={['VENDOR']}>
-            <SellerHistory />
+            <PageTransition>
+              <SellerHistory />
+            </PageTransition>
           </ProtectedRoute>
         } />
         <Route path="/sellerhistoryremoved" element={
           <ProtectedRoute allowedRoles={['VENDOR']}>
-            <SellerHistoryRemoved />
+            <PageTransition>
+              <SellerHistoryRemoved />
+            </PageTransition>
           </ProtectedRoute>
         } />
         <Route path="/sellerreviews" element={
           <ProtectedRoute allowedRoles={['VENDOR']}>
-            <SellerReviews />
+            <PageTransition>
+              <SellerReviews />
+            </PageTransition>
           </ProtectedRoute>
         } />
         <Route path="/sellerpayout" element={
           <ProtectedRoute allowedRoles={['VENDOR']}>
-            <SellerPayout />
+            <PageTransition>
+              <SellerPayout />
+            </PageTransition>
           </ProtectedRoute>
         } />
         <Route path="/sellermessage" element={
           <ProtectedRoute allowedRoles={['VENDOR']}>
-            <SellerMessage />
+            <PageTransition>
+              <SellerMessage />
+            </PageTransition>
           </ProtectedRoute>
         } />
         <Route path="/sellersetting" element={
           <ProtectedRoute allowedRoles={['VENDOR']}>
-            <SellerSetting />
+            <PageTransition>
+              <SellerSetting />
+            </PageTransition>
           </ProtectedRoute>
         } />
         <Route path="/sellerchangepassword" element={
           <ProtectedRoute allowedRoles={['VENDOR']}>
-            <SellerChangepassword />
+            <PageTransition>
+              <SellerChangepassword />
+            </PageTransition>
           </ProtectedRoute>
         } />
 
-        {/* Admin Pages - Protected: SUPERADMIN only */}
+        {/* Admin Pages - Protected: SUPERADMIN only with Transitions */}
         <Route path="/admindashboard" element={
           <ProtectedRoute allowedRoles={['SUPERADMIN']}>
-            <AdminDashboard />
+            <PageTransition>
+              <AdminDashboard />
+            </PageTransition>
           </ProtectedRoute>
         } />
         <Route path="/adminvendors" element={
           <ProtectedRoute allowedRoles={['SUPERADMIN']}>
-            <AdminVender />
+            <PageTransition>
+              <AdminVender />
+            </PageTransition>
           </ProtectedRoute>
         } />
         <Route path="/adminvendordetail/:id" element={
           <ProtectedRoute allowedRoles={['SUPERADMIN']}>
-            <VendorDetail />
+            <PageTransition>
+              <VendorDetail />
+            </PageTransition>
           </ProtectedRoute>
         } />
         <Route path="/adminvendorsapprove" element={
           <ProtectedRoute allowedRoles={['SUPERADMIN']}>
-            <VendorApprove />
+            <PageTransition>
+              <VendorApprove />
+            </PageTransition>
           </ProtectedRoute>
         } />
         <Route path="/adminproducts" element={
           <ProtectedRoute allowedRoles={['SUPERADMIN']}>
-            <AdminProduct />
+            <PageTransition>
+              <AdminProduct />
+            </PageTransition>
           </ProtectedRoute>
         } />
         <Route path="/adminreviews" element={
           <ProtectedRoute allowedRoles={['SUPERADMIN']}>
-            <AdminReviews />
+            <PageTransition>
+              <AdminReviews />
+            </PageTransition>
           </ProtectedRoute>
         } />
         <Route path="/adminsettings" element={
           <ProtectedRoute allowedRoles={['SUPERADMIN']}>
-            <AdminSetting />
+            <PageTransition>
+              <AdminSetting />
+            </PageTransition>
           </ProtectedRoute>
         } />
         <Route path="/adminchangepassword" element={
           <ProtectedRoute allowedRoles={['SUPERADMIN']}>
-            <AdminChangePassword />
+            <PageTransition>
+              <AdminChangePassword />
+            </PageTransition>
           </ProtectedRoute>
         } />
         <Route path="/adminuser" element={
           <ProtectedRoute allowedRoles={['SUPERADMIN']}>
-            <AdminUser />
+            <PageTransition>
+              <AdminUser />
+            </PageTransition>
           </ProtectedRoute>
         } />
       </Routes>
