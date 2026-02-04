@@ -1,5 +1,13 @@
 @import "tailwindcss";
 
+/* Prevent horizontal overflow on mobile */
+html {
+  overflow-x: hidden;
+}
+body {
+  overflow-x: hidden;
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;

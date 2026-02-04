@@ -231,17 +231,17 @@ const cart = () => {
       <Header/>
       
       {/* Cart Content */}
-      <section className="py-12 px-4 md:px-10">
+      <section className="py-8 md:py-12 px-4 sm:px-6 md:px-10">
         <div className="max-w-6xl mx-auto">
           {/* Track Your Purchase Button - Always Visible */}
           <div className="mb-6 flex justify-end">
             <button
               onClick={() => navigate('/ordertracking')}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+              className="flex items-center gap-2 px-3 py-2 sm:px-4 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm"
               title="Track Your Purchase"
             >
-              <FaBox className="w-5 h-5" />
-              <span className="text-sm font-medium">Track Your Purchase</span>
+              <FaBox className="w-4 h-4 sm:w-5 sm:h-5" />
+              <span className="font-medium">Track Order</span>
             </button>
           </div>
 
@@ -292,7 +292,8 @@ const cart = () => {
                       !selectedItems.has(item.id) || isOutOfStock ? 'opacity-60' : ''
                     } ${isOutOfStock ? 'border-2 border-red-200' : ''}`}
                   >
-                    <div className="flex gap-4">
+                    <div className="flex flex-col sm:flex-row gap-4">
+                      <div className="flex gap-4 flex-1">
                       {/* Checkbox */}
                       <input
                         type="checkbox"
@@ -306,7 +307,7 @@ const cart = () => {
                       <img
                         src={item.productImageUrl || '/placeholder.png'}
                         alt={item.productName}
-                        className="w-32 h-32 object-cover rounded-lg"
+                        className="w-20 h-20 sm:w-32 sm:h-32 object-cover rounded-lg flex-shrink-0"
                         onError={(e) => {
                           (e.target as HTMLImageElement).src = '/placeholder.png'
                         }}
@@ -314,8 +315,8 @@ const cart = () => {
 
                       {/* Product Details */}
                       <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <h3 className="text-xl font-semibold text-gray-900">{item.productName}</h3>
+                        <div className="flex items-center gap-2 mb-1 min-w-0">
+                          <h3 className="text-lg sm:text-xl font-semibold text-gray-900 truncate">{item.productName}</h3>
                           {isOutOfStock && (
                             <span className="inline-flex items-center gap-1 rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-semibold text-red-700">
                               Out of Stock
@@ -362,8 +363,10 @@ const cart = () => {
                           </div>
                         </div>
                       </div>
+                      </div>
 
-                      {/* Remove Button */}
+                      {/* Remove Button - row on mobile */}
+                      <div className="flex justify-end sm:block sm:self-start">
                       <button
                         onClick={() => removeFromCart(item.id)}
                         className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors self-start"
@@ -371,6 +374,7 @@ const cart = () => {
                       >
                         <FaTrash className="w-6 h-6" />
                       </button>
+                      </div>
                     </div>
 
                     {/* Item Total */}
@@ -389,7 +393,7 @@ const cart = () => {
 
               {/* Order Summary */}
               <div className="md:col-span-1">
-                <div className="bg-white rounded-xl shadow-lg p-6 sticky top-4">
+                <div className="bg-white rounded-xl shadow-lg p-6 sticky top-20 md:top-4">
                   <h2 className="text-2xl font-bold text-gray-900 mb-6">Order Summary</h2>
                   
                   <div className="space-y-4 mb-6">

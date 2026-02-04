@@ -137,8 +137,8 @@ const Signup_form = () => {
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-100">
-      <div className="bg-white shadow-lg rounded-xl px-8 py-10 w-full max-w-sm">
+    <div className="flex justify-center items-center min-h-screen bg-gray-100 px-4 py-8">
+      <div className="bg-white shadow-lg rounded-xl px-6 sm:px-8 py-8 sm:py-10 w-full max-w-sm">
         {/* Title */}
         <h2 className="text-2xl font-semibold text-center mb-6">Create an Account</h2>
 

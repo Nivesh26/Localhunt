@@ -88,7 +88,7 @@ const BestSellers = () => {
   }
 
   return (
-    <div className=" py-12 px-[40px] md:px-[80px]">
+    <div className="py-8 sm:py-12 px-4 sm:px-6 md:px-10 lg:px-16 xl:px-20">
       <h2 className="text-2xl font-semibold mb-8">Best Sellers</h2>
 
       {loading ? (

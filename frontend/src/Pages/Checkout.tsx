@@ -279,9 +279,9 @@ const Checkout = () => {
       <Topbar />
       <Header />
 
-      <section className="py-12 px-4 md:px-10">
+      <section className="py-8 md:py-12 px-4 sm:px-6 md:px-10">
         <div className="max-w-6xl mx-auto">
-          <h1 className="text-3xl font-bold text-gray-900 mb-8">Checkout</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6 md:mb-8">Checkout</h1>
 
           <div className="grid md:grid-cols-3 gap-8">
             {/* Left Column - Delivery Address and Products */}

@@ -439,7 +439,7 @@ const Productdetail = () => {
       <div className="min-h-screen bg-gray-50">
         <Topbar/>
         <Header/>
-        <div className="max-w-7xl mx-auto px-4 md:px-10 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-10 py-6 md:py-8">
           <div className="flex items-center justify-center py-12">
             <p className="text-gray-500">Loading product...</p>
           </div>
@@ -454,7 +454,7 @@ const Productdetail = () => {
       <div className="min-h-screen bg-gray-50">
         <Topbar/>
         <Header/>
-        <div className="max-w-7xl mx-auto px-4 md:px-10 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-10 py-6 md:py-8">
           <div className="flex items-center justify-center py-12">
             <p className="text-gray-500">Product not found</p>
           </div>
@@ -474,7 +474,7 @@ const Productdetail = () => {
       <Topbar/>
       <Header/>
       
-      <div className="max-w-7xl mx-auto px-4 md:px-10 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-10 py-6 md:py-8">
         {/* Breadcrumbs */}
         <div className="flex items-center space-x-2 text-sm text-gray-600 mb-8">
           <Link to="/" className="hover:text-red-600 cursor-pointer">Home</Link>
@@ -485,16 +485,16 @@ const Productdetail = () => {
         </div>
 
         {/* Main Product Section */}
-        <div className="grid md:grid-cols-2 gap-12 mb-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 mb-12 md:mb-16">
           {/* Product Images */}
           <div>
             <div className="mb-4 bg-white rounded-xl overflow-hidden shadow-md">
               {mainImage ? (
-                <div className="w-full h-96 bg-gray-100 flex items-center justify-center">
+                <div className="w-full h-64 sm:h-80 md:h-96 bg-gray-100 flex items-center justify-center">
                   <img src={mainImage} alt={product.name} className="w-full h-full object-contain" />
                 </div>
               ) : (
-                <div className="w-full h-96 bg-gray-200 flex items-center justify-center">
+                <div className="w-full h-64 sm:h-80 md:h-96 bg-gray-200 flex items-center justify-center">
                   <p className="text-gray-400">No Image</p>
                 </div>
               )}
@@ -518,7 +518,7 @@ const Productdetail = () => {
 
           {/* Product Details */}
           <div className="product-details">
-            <h1 className="text-3xl font-bold text-gray-900 mb-4">{product.name}</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4">{product.name}</h1>
             
             {product.sellerName && (
               <div className="mb-4">

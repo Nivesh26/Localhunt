@@ -37,13 +37,13 @@ const Footer = () => {
   }, []);
 
   return (
-    <footer className="bg-[#dfdfdf] text-black ">
-      <div className="px-[80px]">
-        <div className="flex flex-wrap justify-between pt-10 pb-40">
+    <footer className="bg-[#dfdfdf] text-black">
+      <div className="px-4 sm:px-6 md:px-10 lg:px-16 xl:px-20">
+        <div className="flex flex-col sm:flex-row flex-wrap justify-between gap-8 sm:gap-6 pt-8 sm:pt-10 pb-32 sm:pb-40">
 
           {/* Logo Section  */}
 
-          <div className="flex-shrink-0 basis-[250px] max-w-[300px]">
+          <div className="flex-shrink-0 w-full sm:w-auto sm:basis-[250px] sm:max-w-[300px]">
             <Link to="/">
               <img src={gmw} className="w-[120px] mb-2.5" alt="Local Hunt Logo" />
             </Link>
@@ -55,7 +55,7 @@ const Footer = () => {
 
           {/* Quick Links */}
 
-          <div className="flex-shrink-0 basis-[200px] my-5">
+          <div className="flex-shrink-0 w-full sm:w-auto sm:basis-[200px] my-0 sm:my-5">
             <h4 className="text-base mb-4 font-bold">Quick links</h4>
             <ul className="list-none p-0">
               <li className="mb-2.5 text-sm">
@@ -78,7 +78,7 @@ const Footer = () => {
 
           {/* Categories */}
 
-          <div className="flex-shrink-0 basis-[200px] my-5">
+          <div className="flex-shrink-0 w-full sm:w-auto sm:basis-[200px] my-0 sm:my-5">
             <h4 className="text-base mb-4 font-bold">Categories</h4>
             {categories.length > 0 ? (
               <ul className="list-none p-0 text-sm">
@@ -108,7 +108,7 @@ const Footer = () => {
 
           {/* Contact Us */}
 
-          <div className="flex-shrink-0 basis-[220px] my-5">
+          <div className="flex-shrink-0 w-full sm:w-auto sm:basis-[220px] my-0 sm:my-5">
             <h4 className="text-base mb-4 font-bold">Contact Us</h4>
             <p className="my-2.5 text-sm">+977 9876543212, 01 - 1234567</p>
             <p className="my-2.5 text-sm">asfsdfsdf@gmail.com</p>
@@ -118,7 +118,7 @@ const Footer = () => {
         </div>
       </div>
 
-      <div className="bg-[#be1e2d] text-white p-4 text-center text-[16px]">
+      <div className="bg-[#be1e2d] text-white p-4 text-center text-sm sm:text-base">
         <p>
           &copy; 2025 Localhunt Nepal | All rights reserved | Designed
           by{" "}

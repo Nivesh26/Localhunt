@@ -19,7 +19,7 @@ const categories = [
 
 const Categories = () => {
   return (
-    <div className="bg-white py-6 px-[20px] md:px-[80px]">
+    <div className="bg-white py-6 px-4 sm:px-6 md:px-10 lg:px-16 xl:px-20">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-lg font-semibold">Shop by Categories</h2>

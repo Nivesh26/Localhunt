@@ -403,7 +403,7 @@ const SellerMessage = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-100">
-        <div className="mx-auto flex max-w-7xl gap-6 px-6 py-8">
+        <div className="mx-auto flex max-w-7xl gap-4 lg:gap-6 px-4 sm:px-6 py-8 pt-14 lg:pt-8">
           <SellerNavbar />
           <main className="flex-1 space-y-8">
             <div className="flex items-center justify-center py-12">
@@ -417,7 +417,7 @@ const SellerMessage = () => {
 
   return (
     <div className="min-h-screen bg-gray-100">
-      <div className="mx-auto flex max-w-7xl gap-6 px-6 py-8">
+      <div className="mx-auto flex max-w-7xl gap-4 lg:gap-6 px-4 sm:px-6 py-8 pt-14 lg:pt-8">
         <SellerNavbar />
 
         <main className="flex-1 space-y-8">

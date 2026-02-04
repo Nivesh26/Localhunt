@@ -15,10 +15,10 @@ const Hero = () => {
       <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/40 to-transparent"></div>
       
       {/* Content */}
-      <div className="absolute inset-0 flex items-center justify-start px-[80px] md:px-12 sm:px-6">
+      <div className="absolute inset-0 flex items-center justify-start px-4 sm:px-6 md:px-10 lg:px-16 xl:px-20">
         <div className="max-w-2xl text-white space-y-6 animate-fade-in">
           {/* Main Heading */}
-          <h1 className="text-6xl md:text-5xl sm:text-4xl font-bold leading-tight">
+          <h1 className="text-4xl sm:text-5xl md:text-5xl lg:text-6xl font-bold leading-tight">
             Discover Local
             <span className="block text-red-500">Treasures</span>
           </h1>

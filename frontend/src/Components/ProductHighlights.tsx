@@ -88,7 +88,7 @@ const ProductHighlights = () => {
   }
 
   return (
-    <div className="bg-white py-10 px-[40px] md:px-[80px]">
+    <div className="bg-white py-8 sm:py-10 px-4 sm:px-6 md:px-10 lg:px-16 xl:px-20">
       <h2 className="text-xl font-semibold mb-8">Product Highlights</h2>
 
       {loading ? (
@@ -100,12 +100,12 @@ const ProductHighlights = () => {
           <p className="text-gray-500">No products available</p>
         </div>
       ) : (
-        <div className="flex justify-center items-center gap-6 md:gap-10">
+        <div className="grid grid-cols-2 sm:flex sm:justify-center sm:items-center gap-4 sm:gap-6 md:gap-10">
           {products.map((item) => (
             <Link
               key={item.id}
               to={`/productdetail/${item.id}`}
-              className="group relative w-[220px] md:w-[260px] bg-white shadow-sm hover:shadow-md rounded-md overflow-hidden transition-all duration-300"
+              className="group relative w-full min-w-0 sm:w-[220px] md:w-[260px] bg-white shadow-sm hover:shadow-md rounded-md overflow-hidden transition-all duration-300"
             >
               <div className="overflow-hidden bg-gray-100">
                 {item.imageUrl ? (

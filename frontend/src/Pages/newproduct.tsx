@@ -159,7 +159,7 @@ const newproduct = () => {
       <Header />
 
       {/* --- Shop Section --- */}
-      <section className="flex flex-col md:flex-row bg-gray-50 min-h-screen px-4 md:px-10 py-8">
+      <section className="flex flex-col md:flex-row bg-gray-50 min-h-screen px-4 sm:px-6 md:px-10 py-6 md:py-8">
         {/* Sidebar Filter */}
         <aside className="w-full md:w-1/4 bg-white p-6 rounded-xl mb-6 md:mb-0 md:mr-6 shadow-lg">
           <h2 className="text-xl font-semibold mb-4">Filters</h2>

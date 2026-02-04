@@ -682,7 +682,7 @@ const GlobalChatWidget = () => {
 
       {/* Chat Window */}
       {isOpen && (
-        <div className="fixed bottom-8 right-8 w-[800px] h-[600px] bg-white rounded-lg shadow-2xl flex flex-col z-50 border border-gray-200">
+        <div className="fixed inset-4 sm:inset-auto sm:bottom-8 sm:right-8 sm:w-[800px] sm:h-[600px] sm:max-h-[90vh] h-[calc(100vh-2rem)] bg-white rounded-lg shadow-2xl flex flex-col z-50 border border-gray-200">
           {/* Header */}
           <div className="bg-red-600 text-white p-4 rounded-t-lg flex items-center justify-between">
             <h3 className="font-semibold">Messages</h3>
