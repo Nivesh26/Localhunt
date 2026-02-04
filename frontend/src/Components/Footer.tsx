@@ -120,7 +120,7 @@ const Footer = () => {
           <div className="flex-shrink-0 w-full sm:w-auto sm:basis-[220px] my-0 sm:my-5">
             <h4 className="text-base mb-4 font-bold">Contact Us</h4>
             <p className="my-2.5 text-sm">+977 9876543212, 01 - 1234567</p>
-            <p className="my-2.5 text-sm">asfsdfsdf@gmail.com</p>
+            <p className="my-2.5 text-sm">localhunt@gmail.com</p>
             <p className="my-2.5 text-sm">Pulchowk, Lalitpur</p>
             <Link to="/sellersignup" className="my-5 text-sm cursor-pointer text-[#be1e2d] font-semibold hover:underline block">Become a Seller</Link>
           </div>

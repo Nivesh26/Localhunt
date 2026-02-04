@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import dress from "../assets/C1.png";
 import jewelry from "../assets/C2.png";
 import mask from "../assets/C3.png";
@@ -23,12 +24,12 @@ const Categories = () => {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-lg font-semibold">Shop by Categories</h2>
-        <a
-          href="#"
+        <Link
+          to="/shop"
           className="text-sm italic underline hover:text-gray-600 transition-colors duration-200"
         >
           View All →
-        </a>
+        </Link>
       </div>
 
       {/* Categories row */}
