@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import gmw from "../assets/Local Hunt Logo NoBG.png";
 import { Link } from "react-router-dom";
+import { FaFacebookF, FaInstagram } from "react-icons/fa";
 
 interface Product {
   id: number;
@@ -50,7 +51,15 @@ const Footer = () => {
             <p className="text-sm my-2.5">
               Bringing Nepali Traditions Online.
             </p>
-            <h4 className="my-5 text-base font-bold mt-10    ">Follow our Socials</h4>
+            <h4 className="my-5 text-base font-bold mt-10">Follow our Socials</h4>
+            <div className="flex gap-3 mt-2">
+              <span className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center" aria-hidden="true">
+                <FaFacebookF className="w-5 h-5 text-gray-600" />
+              </span>
+              <span className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center" aria-hidden="true">
+                <FaInstagram className="w-5 h-5 text-gray-600" />
+              </span>
+            </div>
           </div>
 
           {/* Quick Links */}
