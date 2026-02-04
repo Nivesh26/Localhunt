@@ -49,4 +49,7 @@ public interface ChatRepository extends JpaRepository<Chat, Long> {
     @Modifying
     @Query("UPDATE Chat c SET c.readByUser = true WHERE c.user = :user AND c.seller = :seller AND c.readByUser = false")
     void markAsReadByUser(@Param("user") User user, @Param("seller") Seller seller);
+
+    List<Chat> findByUser(User user);
+    List<Chat> findBySeller(Seller seller);
 }

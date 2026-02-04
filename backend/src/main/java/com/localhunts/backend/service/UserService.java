@@ -14,13 +14,17 @@ import com.localhunts.backend.dto.UserProfileResponse;
 import com.localhunts.backend.model.Otp;
 import com.localhunts.backend.model.Payment;
 import com.localhunts.backend.model.Product;
+import com.localhunts.backend.model.Review;
 import com.localhunts.backend.model.Role;
 import com.localhunts.backend.model.User;
 import com.localhunts.backend.repository.CartRepository;
+import com.localhunts.backend.repository.ChatRepository;
 import com.localhunts.backend.repository.DeliveredRepository;
 import com.localhunts.backend.repository.OtpRepository;
 import com.localhunts.backend.repository.PaymentRepository;
 import com.localhunts.backend.repository.ProductRepository;
+import com.localhunts.backend.repository.ReviewLikeRepository;
+import com.localhunts.backend.repository.ReviewRepository;
 import com.localhunts.backend.repository.SellerRepository;
 import com.localhunts.backend.repository.UserRepository;
 import java.time.LocalDateTime;
@@ -66,6 +70,15 @@ public class UserService {
 
     @Autowired
     private FileStorageService fileStorageService;
+
+    @Autowired
+    private ReviewRepository reviewRepository;
+
+    @Autowired
+    private ReviewLikeRepository reviewLikeRepository;
+
+    @Autowired
+    private ChatRepository chatRepository;
 
     public AuthResponse signup(SignupRequest signupRequest) {
         // Check if passwords match
@@ -442,34 +455,47 @@ public class UserService {
         User user = userRepository.findById(userId)
             .orElseThrow(() -> new RuntimeException("User not found"));
 
-        // Delete all cart items associated with this user
+        // 1. Delete review likes made by this user
+        reviewLikeRepository.deleteAll(reviewLikeRepository.findByUser(user));
+
+        // 2. Delete all reviews by this user (and likes on those reviews)
+        List<Review> userReviews = reviewRepository.findByUser(user);
+        for (Review review : userReviews) {
+            reviewLikeRepository.deleteAll(reviewLikeRepository.findByReview(review));
+        }
+        reviewRepository.deleteAll(userReviews);
+
+        // 3. Delete all chat messages involving this user
+        chatRepository.deleteAll(chatRepository.findByUser(user));
+
+        // 4. Delete all cart items associated with this user
         cartRepository.deleteByUser(user);
 
-        // For Payment orders (non-delivered orders), restore product stock before deleting
+        // 5. For Payment orders: restore product stock then delete
         List<Payment> payments = paymentRepository.findByUser(user);
         for (Payment payment : payments) {
-            // Only restore stock if product exists (product might have been deleted)
             if (payment.getProduct() != null) {
                 Product product = payment.getProduct();
-                // Restore stock by adding back the quantity that was ordered
                 int newStock = product.getStock() + payment.getQuantity();
                 product.setStock(newStock);
                 productRepository.save(product);
             }
         }
-        // Delete all Payment orders (non-delivered orders) after restoring stock
         paymentRepository.deleteAll(payments);
 
-        // For Delivered orders, set user_id to NULL to preserve order data
-        // but allow user deletion (foreign key constraint)
-        // No need to restore stock for delivered orders as they were already shipped
-        List<com.localhunts.backend.model.Delivered> deliveredOrders = deliveredRepository.findByUser(user);
-        for (com.localhunts.backend.model.Delivered delivered : deliveredOrders) {
-            delivered.setUser(null);
-            deliveredRepository.save(delivered);
+        // 6. Delete all delivered order history for this user
+        deliveredRepository.deleteAll(deliveredRepository.findByUser(user));
+
+        // 7. Delete profile picture file if exists
+        if (user.getProfilePicture() != null && !user.getProfilePicture().isEmpty()) {
+            try {
+                fileStorageService.deleteFile(user.getProfilePicture());
+            } catch (Exception e) {
+                System.err.println("Failed to delete user profile picture: " + e.getMessage());
+            }
         }
 
-        // Delete the user
+        // 8. Delete the user
         userRepository.delete(user);
     }
 

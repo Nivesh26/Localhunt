@@ -12,13 +12,17 @@ import com.localhunts.backend.dto.SellerSignupRequest;
 import com.localhunts.backend.dto.UpdateSellerSettingsRequest;
 import com.localhunts.backend.model.Otp;
 import com.localhunts.backend.model.Product;
+import com.localhunts.backend.model.Review;
 import com.localhunts.backend.model.Role;
 import com.localhunts.backend.model.Seller;
 import com.localhunts.backend.repository.CartRepository;
+import com.localhunts.backend.repository.ChatRepository;
 import com.localhunts.backend.repository.DeliveredRepository;
 import com.localhunts.backend.repository.OtpRepository;
 import com.localhunts.backend.repository.PaymentRepository;
 import com.localhunts.backend.repository.ProductRepository;
+import com.localhunts.backend.repository.ReviewLikeRepository;
+import com.localhunts.backend.repository.ReviewRepository;
 import com.localhunts.backend.repository.SellerRepository;
 import com.localhunts.backend.repository.UserRepository;
 import java.time.LocalDateTime;
@@ -65,6 +69,15 @@ public class SellerService {
 
     @Autowired
     private FileStorageService fileStorageService;
+
+    @Autowired
+    private ReviewRepository reviewRepository;
+
+    @Autowired
+    private ReviewLikeRepository reviewLikeRepository;
+
+    @Autowired
+    private ChatRepository chatRepository;
 
     public AuthResponse signup(SellerSignupRequest signupRequest) {
         // Check if passwords match
@@ -545,31 +558,56 @@ public class SellerService {
     public void deleteSeller(Long sellerId) {
         Seller seller = sellerRepository.findById(sellerId)
             .orElseThrow(() -> new RuntimeException("Seller not found"));
-        
-        // Find all products by this seller
+
+        // 1. Delete review likes made by this vendor
+        reviewLikeRepository.deleteAll(reviewLikeRepository.findByVendor(seller));
+
+        // 2. Find all products by this seller; for each product delete reviews (and likes on them)
         List<Product> products = productRepository.findBySeller(seller);
-        
-        // Delete all cart items that reference these products
+        for (Product product : products) {
+            List<Review> productReviews = reviewRepository.findByProduct(product);
+            for (Review review : productReviews) {
+                reviewLikeRepository.deleteAll(reviewLikeRepository.findByReview(review));
+            }
+            reviewRepository.deleteAll(productReviews);
+        }
+
+        // 3. Delete all chat messages involving this seller
+        chatRepository.deleteAll(chatRepository.findBySeller(seller));
+
+        // 4. Delete all cart items that reference these products
         for (Product product : products) {
             cartRepository.deleteByProduct(product);
         }
-        
-        // Delete all Payment orders (non-delivered orders) for products of this seller
+
+        // 5. Restore product stock for pending payments then delete payments
         List<com.localhunts.backend.model.Payment> payments = paymentRepository.findBySeller(seller);
-        paymentRepository.deleteAll(payments);
-        
-        // For Delivered orders, set product_id to NULL to preserve order data
-        // but allow product deletion (foreign key constraint)
-        List<com.localhunts.backend.model.Delivered> deliveredOrders = deliveredRepository.findBySeller(seller);
-        for (com.localhunts.backend.model.Delivered delivered : deliveredOrders) {
-            delivered.setProduct(null);
-            deliveredRepository.save(delivered);
+        for (com.localhunts.backend.model.Payment payment : payments) {
+            if (payment.getProduct() != null) {
+                Product product = payment.getProduct();
+                int newStock = product.getStock() + payment.getQuantity();
+                product.setStock(newStock);
+                productRepository.save(product);
+            }
         }
-        
-        // Delete all products
+        paymentRepository.deleteAll(payments);
+
+        // 6. Delete all delivered order history for this seller's products
+        deliveredRepository.deleteAll(deliveredRepository.findBySeller(seller));
+
+        // 7. Delete all products
         productRepository.deleteAll(products);
-        
-        // Delete the seller
+
+        // 8. Delete seller profile picture if exists
+        if (seller.getProfilePicture() != null && !seller.getProfilePicture().isEmpty()) {
+            try {
+                fileStorageService.deleteFile(seller.getProfilePicture());
+            } catch (Exception e) {
+                System.err.println("Failed to delete seller profile picture: " + e.getMessage());
+            }
+        }
+
+        // 9. Delete the seller
         sellerRepository.delete(seller);
     }
 
