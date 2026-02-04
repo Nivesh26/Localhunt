@@ -96,7 +96,7 @@ const Login_form = () => {
         // Navigate to OTP verification page with email
         setTimeout(() => {
           navigate('/userotp', { state: { email, loginType: 'user' } });
-        }, 400);
+        }, 200);
       } else {
         toast.error(otpData.message || 'Failed to send OTP');
       }

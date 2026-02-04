@@ -100,7 +100,7 @@ const SellerLogin = () => {
         // Navigate to OTP verification page with email
         setTimeout(() => {
           navigate('/sellerotp', { state: { email, loginType: 'seller' } })
-        }, 400)
+        }, 200)
       } else {
         toast.error(otpData.message || 'Failed to send OTP')
       }

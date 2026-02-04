@@ -189,13 +189,8 @@ public class SellerService {
         otp.setOtpCode(otpCode);
         otpRepository.save(otp);
 
-        // Send OTP via email
-        try {
-            emailService.sendOTPEmail(otpRequest.getEmail(), otpCode, seller.getUserName());
-        } catch (Exception e) {
-            System.err.println("Failed to send OTP email: " + e.getMessage());
-            return new AuthResponse("Failed to send OTP. Please try again.", false);
-        }
+        // Send OTP via email asynchronously - returns immediately for faster login response
+        emailService.sendOTPEmailAsync(otpRequest.getEmail(), otpCode, seller.getUserName());
 
         return new AuthResponse("OTP sent to your email. Please check your inbox.", true);
     }
