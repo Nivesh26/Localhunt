@@ -118,17 +118,22 @@ const SellerSetting = () => {
   }
 
   const handleToggleStoreStatus = async () => {
+    const user = sessionUtils.getUser()
+    if (!user) {
+      toast.error('Please login to toggle store status')
+      navigate('/sellerlogin')
+      return
+    }
+
+    if (closedByAdmin) return
+
+    const sellerId = user.userId
+    const prevStatus = storeStatus
+    setStoreStatus(!prevStatus)
+    setTogglingStatus(true)
+    toast.success(!prevStatus ? 'Store is now live!' : 'Store has been paused')
+
     try {
-      const user = sessionUtils.getUser()
-      if (!user) {
-        toast.error('Please login to toggle store status')
-        navigate('/sellerlogin')
-        return
-      }
-
-      const sellerId = user.userId
-      setTogglingStatus(true)
-
       const response = await fetch(`http://localhost:8080/api/seller/toggle-store-status/${sellerId}`, {
         method: 'PUT',
         headers: {
@@ -139,17 +144,19 @@ const SellerSetting = () => {
       if (response.ok) {
         const data = await response.json()
         setStoreStatus(data.storeStatus !== false)
-        toast.success(data.storeStatus ? 'Store is now live!' : 'Store has been paused')
       } else if (response.status === 404) {
         sessionUtils.clearSession()
+        setStoreStatus(prevStatus)
         toast.error('Your account has been deleted. Please contact support.')
         navigate('/sellerlogin')
       } else {
+        setStoreStatus(prevStatus)
         const errData = await response.json().catch(() => ({}))
         toast.error(errData.message || 'Failed to toggle store status')
       }
     } catch (error) {
       console.error('Error toggling store status:', error)
+      setStoreStatus(prevStatus)
       toast.error('An error occurred while toggling store status')
     } finally {
       setTogglingStatus(false)
