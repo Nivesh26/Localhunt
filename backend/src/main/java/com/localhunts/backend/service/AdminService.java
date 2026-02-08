@@ -1,11 +1,14 @@
 package com.localhunts.backend.service;
 
 import com.localhunts.backend.dto.AdminDashboardStats;
+import com.localhunts.backend.dto.AdminProfitDetailResponse;
 import com.localhunts.backend.dto.OnboardingRequestResponse;
 import com.localhunts.backend.dto.TopVendorResponse;
+import com.localhunts.backend.model.Delivered;
 import com.localhunts.backend.model.Payment;
 import com.localhunts.backend.model.Product;
 import com.localhunts.backend.model.Seller;
+import com.localhunts.backend.repository.DeliveredRepository;
 import com.localhunts.backend.repository.PaymentRepository;
 import com.localhunts.backend.repository.ProductRepository;
 import com.localhunts.backend.repository.SellerRepository;
@@ -13,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -27,6 +31,9 @@ public class AdminService {
 
     @Autowired
     private PaymentRepository paymentRepository;
+
+    @Autowired
+    private DeliveredRepository deliveredRepository;
 
     public AdminDashboardStats getDashboardStats() {
         // Total vendors (approved sellers)
@@ -48,7 +55,11 @@ public class AdminService {
         // Pending verifications (sellers with approved = false)
         Long pendingVerifications = (long) sellerRepository.findByApprovedFalse().size();
 
-        return new AdminDashboardStats(totalVendors, activeProducts, gmv30d, pendingVerifications);
+        // Super admin commission: 20% of subtotal from all delivered orders (paid only when delivered)
+        Double totalCommission = deliveredRepository.getTotalAdminCommission();
+        if (totalCommission == null) totalCommission = 0.0;
+
+        return new AdminDashboardStats(totalVendors, activeProducts, gmv30d, pendingVerifications, totalCommission);
     }
 
     public List<TopVendorResponse> getTopVendors() {
@@ -161,5 +172,33 @@ public class AdminService {
             case "Documents Pending": return 1;
             default: return 0;
         }
+    }
+
+    /**
+     * Get detailed profit/commission breakdown for super admin.
+     * Lists every delivered order with product income and 20% admin commission.
+     */
+    public List<AdminProfitDetailResponse> getAdminProfitDetails() {
+        List<Delivered> delivered = deliveredRepository.findAll();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+        return delivered.stream()
+            .filter(d -> d.getProduct() != null) // Exclude orders with deleted products
+            .map(d -> {
+                AdminProfitDetailResponse r = new AdminProfitDetailResponse();
+                r.setOrderId(d.getId());
+                r.setProductName(d.getProduct().getName());
+                r.setVendorName(d.getProduct().getSeller() != null ? d.getProduct().getSeller().getBusinessName() : "—");
+                r.setQuantity(d.getQuantity());
+                r.setUnitPrice(d.getUnitPrice());
+                r.setSubtotal(d.getSubtotal());
+                r.setAdminCommission(d.getSubtotal() * 0.2); // 20% commission
+                r.setDeliveredAt(d.getDeliveredAt() != null ? d.getDeliveredAt().format(formatter) : "—");
+                r.setCustomerName(d.getUser() != null ? d.getUser().getFullName() : "—");
+                String pm = d.getPaymentMethod();
+                r.setPaymentMethod(pm != null && !pm.isBlank() && pm.toLowerCase().replace("-", "").contains("esewa") ? "esewa" : "cod");
+                return r;
+            })
+            .sorted((a, b) -> Long.compare(b.getOrderId(), a.getOrderId())) // Newest first (higher ID = more recent)
+            .collect(Collectors.toList());
     }
 }

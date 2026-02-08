@@ -17,6 +17,7 @@ interface DashboardStats {
   activeProducts: number
   gmv30d: number
   pendingVerifications: number
+  totalCommission: number
 }
 
 interface TopVendor {
@@ -241,7 +242,7 @@ const AdminDashboard = () => {
   const statCards = stats ? [
     { label: 'Total Vendors', value: stats.totalVendors.toString(), icon: FaStore, color: 'bg-red-500' },
     { label: 'Active Products', value: stats.activeProducts.toString(), icon: FaCube, color: 'bg-blue-500' },
-    { label: 'GMV (30d)', value: `NRP ${stats.gmv30d.toFixed(2)}`, icon: FaDollarSign, color: 'bg-green-500' },
+    { label: 'Admin Commission (20%)', value: `NRP ${(stats.totalCommission ?? 0).toFixed(2)}`, icon: FaDollarSign, color: 'bg-emerald-600' },
     { label: 'Pending Verifications', value: stats.pendingVerifications.toString(), icon: FaShieldAlt, color: 'bg-amber-500' },
   ] : []
 

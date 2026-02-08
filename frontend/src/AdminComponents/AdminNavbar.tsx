@@ -2,6 +2,7 @@ import {
   FaHome,
   FaStore,
   FaCube,
+  FaChartLine,
   FaShieldAlt,
   FaSignOutAlt,
   FaUsers,
@@ -21,9 +22,9 @@ const navLinks = [
   { label: 'Vendors', icon: FaStore, to: '/adminvendors' },
   { label: 'Approve Vendors', icon: FaShieldAlt, to: '/adminvendorsapprove' },
   { label: 'Products', icon: FaCube, to: '/adminproducts' },
+  { label: 'Profit', icon: FaChartLine, to: '/adminprofit' },
   { label: 'Reviews', icon: FaStar, to: '/adminreviews' },
   { label: 'Settings', icon: FaShieldAlt, to: '/adminsettings' },
- 
 ]
 
 

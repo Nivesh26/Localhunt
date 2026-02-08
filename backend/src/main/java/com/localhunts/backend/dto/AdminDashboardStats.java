@@ -5,15 +5,18 @@ public class AdminDashboardStats {
     private Long activeProducts;
     private Double gmv30d;
     private Long pendingVerifications;
+    /** Total commission earned (20% of delivered order subtotals). Paid only when order is delivered. */
+    private Double totalCommission;
 
     public AdminDashboardStats() {
     }
 
-    public AdminDashboardStats(Long totalVendors, Long activeProducts, Double gmv30d, Long pendingVerifications) {
+    public AdminDashboardStats(Long totalVendors, Long activeProducts, Double gmv30d, Long pendingVerifications, Double totalCommission) {
         this.totalVendors = totalVendors;
         this.activeProducts = activeProducts;
         this.gmv30d = gmv30d;
         this.pendingVerifications = pendingVerifications;
+        this.totalCommission = totalCommission != null ? totalCommission : 0.0;
     }
 
     // Getters and Setters
@@ -47,5 +50,13 @@ public class AdminDashboardStats {
 
     public void setPendingVerifications(Long pendingVerifications) {
         this.pendingVerifications = pendingVerifications;
+    }
+
+    public Double getTotalCommission() {
+        return totalCommission;
+    }
+
+    public void setTotalCommission(Double totalCommission) {
+        this.totalCommission = totalCommission != null ? totalCommission : 0.0;
     }
 }

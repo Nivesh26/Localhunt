@@ -36,6 +36,7 @@ import AdminVender from '../AdminPages/AdminVendor';
 import VendorApprove from '../AdminPages/VendorApprove';
 import VendorDetail from '../AdminPages/VendorDetail';
 import AdminProduct from '../AdminPages/AdminProduct';
+import AdminProfit from '../AdminPages/AdminProfit';
 import AdminReviews from '../AdminPages/AdminReviews';
 import AdminSetting from '../AdminPages/AdminSetting';
 import AdminChangePassword from '../AdminPages/AdminChangePassword';
@@ -303,6 +304,13 @@ const AnimatedRoutes = () => {
           <ProtectedRoute allowedRoles={['SUPERADMIN']}>
             <PageTransition>
               <AdminProduct />
+            </PageTransition>
+          </ProtectedRoute>
+        } />
+        <Route path="/adminprofit" element={
+          <ProtectedRoute allowedRoles={['SUPERADMIN']}>
+            <PageTransition>
+              <AdminProfit />
             </PageTransition>
           </ProtectedRoute>
         } />

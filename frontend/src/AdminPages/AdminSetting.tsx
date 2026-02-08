@@ -77,10 +77,10 @@ const AdminSetting = () => {
     } catch (error) {
       console.error('Error fetching profile:', error)
       toast.error('An error occurred while fetching your profile')
-    } finally {
-      setLoading(false)
+} finally {
+        setLoading(false)
+      }
     }
-  }
 
   const handleCancel = () => {
     setProfile(originalProfile)
@@ -306,37 +306,6 @@ const AdminSetting = () => {
               </div>
             </div>
 
-            <aside className="space-y-6">
-              <div className="rounded-2xl bg-white p-6 shadow-sm sm:p-8">
-                <h2 className="text-lg font-semibold text-gray-900">Access and roles</h2>
-                <p className="mt-2 text-sm text-gray-500">
-                  Invite additional admins and manage specific permissions for finance, operations and support.
-                </p>
-                <div className="mt-6 space-y-4">
-                  <div className="flex items-center justify-between rounded-xl border border-gray-200 px-4 py-3">
-                    <div>
-                      <p className="text-sm font-semibold text-gray-900">Finance manager</p>
-                      <p className="text-xs text-gray-500">Can process payouts and download invoices.</p>
-                    </div>
-                    <button className="rounded-full border border-gray-200 px-3 py-1 text-xs font-medium text-gray-700 transition hover:bg-gray-100">
-                      View access
-                    </button>
-                  </div>
-                  <div className="flex items-center justify-between rounded-xl border border-gray-200 px-4 py-3">
-                    <div>
-                      <p className="text-sm font-semibold text-gray-900">Support lead</p>
-                      <p className="text-xs text-gray-500">Handles escalations and manages dispute templates.</p>
-                    </div>
-                    <button className="rounded-full border border-gray-200 px-3 py-1 text-xs font-medium text-gray-700 transition hover:bg-gray-100">
-                      Manage
-                    </button>
-                  </div>
-                </div>
-                <button className="mt-6 w-full rounded-xl border border-dashed border-gray-300 px-4 py-3 text-sm font-semibold text-gray-600 transition hover:border-red-300 hover:text-red-600">
-                  Invite new admin
-                </button>
-              </div>
-            </aside>
           </section>
         </main>
       </div>

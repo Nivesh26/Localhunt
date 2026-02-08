@@ -1,6 +1,7 @@
 package com.localhunts.backend.controller;
 
 import com.localhunts.backend.dto.AdminDashboardStats;
+import com.localhunts.backend.dto.AdminProfitDetailResponse;
 import com.localhunts.backend.dto.OnboardingRequestResponse;
 import com.localhunts.backend.dto.TopVendorResponse;
 import com.localhunts.backend.dto.UserListResponse;
@@ -133,6 +134,19 @@ public class AdminController {
         try {
             List<OnboardingRequestResponse> requests = adminService.getOnboardingRequests();
             return ResponseEntity.ok(requests);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
+     * Super admin: Detailed profit breakdown - every delivered product's income and 20% commission.
+     */
+    @GetMapping("/profit-details")
+    public ResponseEntity<List<AdminProfitDetailResponse>> getProfitDetails() {
+        try {
+            List<AdminProfitDetailResponse> details = adminService.getAdminProfitDetails();
+            return ResponseEntity.ok(details);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }

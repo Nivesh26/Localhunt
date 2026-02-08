@@ -19,4 +19,11 @@ public interface DeliveredRepository extends JpaRepository<Delivered, Long> {
     @Query("SELECT d FROM Delivered d WHERE d.product.seller = :seller")
     List<Delivered> findBySeller(@Param("seller") Seller seller);
     List<Delivered> findByProduct(Product product);
+
+    /**
+     * Total super admin commission (20% of subtotal) from all delivered orders.
+     * Commission is earned only when order is delivered.
+     */
+    @Query("SELECT COALESCE(SUM(d.subtotal * 0.2), 0) FROM Delivered d")
+    Double getTotalAdminCommission();
 }
