@@ -275,6 +275,18 @@ public class UserService {
         User user = userRepository.findById(userId)
             .orElseThrow(() -> new RuntimeException("User not found"));
 
+        // Check if address actually changed (compare before updating)
+        String currRegion = user.getRegion() != null ? user.getRegion().trim() : "";
+        String currCity = user.getCity() != null ? user.getCity().trim() : "";
+        String currArea = user.getArea() != null ? user.getArea().trim() : "";
+        String currAddress = user.getAddress() != null ? user.getAddress().trim() : "";
+        String newRegion = request.getRegion() != null ? request.getRegion().trim() : "";
+        String newCity = request.getCity() != null ? request.getCity().trim() : "";
+        String newArea = request.getArea() != null ? request.getArea().trim() : "";
+        String newAddress = request.getAddress() != null ? request.getAddress().trim() : "";
+        boolean addressChanged = !currRegion.equals(newRegion) || !currCity.equals(newCity)
+            || !currArea.equals(newArea) || !currAddress.equals(newAddress);
+
         user.setRegion(request.getRegion());
         user.setCity(request.getCity());
         user.setArea(request.getArea());
@@ -294,17 +306,20 @@ public class UserService {
         response.setAddress(updatedUser.getAddress());
         response.setProfilePicture(updatedUser.getProfilePicture());
 
-        try {
-            emailService.sendDeliveryAddressUpdatedEmail(
-                updatedUser.getEmail(),
-                updatedUser.getFullName(),
-                updatedUser.getAddress(),
-                updatedUser.getArea(),
-                updatedUser.getCity(),
-                updatedUser.getRegion()
-            );
-        } catch (Exception e) {
-            System.err.println("Failed to send delivery address updated email: " + e.getMessage());
+        // Only send "delivery address updated" email when address actually changed
+        if (addressChanged) {
+            try {
+                emailService.sendDeliveryAddressUpdatedEmail(
+                    updatedUser.getEmail(),
+                    updatedUser.getFullName(),
+                    updatedUser.getAddress(),
+                    updatedUser.getArea(),
+                    updatedUser.getCity(),
+                    updatedUser.getRegion()
+                );
+            } catch (Exception e) {
+                System.err.println("Failed to send delivery address updated email: " + e.getMessage());
+            }
         }
         return response;
     }

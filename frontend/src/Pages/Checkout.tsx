@@ -30,7 +30,6 @@ const Checkout = () => {
   const location = useLocation()
   const [selectedItems, setSelectedItems] = useState<CartItem[]>([])
   const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
   const [locationData, setLocationData] = useState<LocationData>({
     region: '',
     city: '',
@@ -182,56 +181,30 @@ const Checkout = () => {
     }
   }
 
-  const handleProceedToPay = async () => {
+  const handleProceedToPay = () => {
     if (!validateForm()) {
       toast.error('Please fill in all required address fields')
       return
     }
 
-    // Save address first
-    setSaving(true)
-    try {
-      const user = sessionUtils.getUser()
-      if (!user) {
-        toast.error('Please login to proceed')
-        navigate('/login')
-        return
-      }
-
-      const userId = user.userId
-
-      const response = await fetch(`http://localhost:8080/api/auth/location/${userId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(locationData),
-      })
-
-      if (response.ok) {
-        // Address saved, proceed to payment (no toast - user is going to payment page)
-        navigate('/payment', {
-          state: {
-            selectedItems: selectedItems,
-            locationData: locationData,
-            subtotal: getSubtotal(),
-            tax: getTax(),
-            total: getTotal()
-          }
-        })
-      } else if (response.status === 404) {
-        sessionUtils.clearSession()
-        toast.error('Your account has been deleted. Please contact support.')
-        navigate('/login')
-      } else {
-        toast.error('Failed to save address')
-      }
-    } catch (error) {
-      console.error('Error proceeding to payment:', error)
-      toast.error('An error occurred while processing your order')
-    } finally {
-      setSaving(false)
+    const user = sessionUtils.getUser()
+    if (!user) {
+      toast.error('Please login to proceed')
+      navigate('/login')
+      return
     }
+
+    // Navigate to payment with form data. Do NOT save address here -
+    // that triggers "delivery location changed" email. User must click "Save Address" to save.
+    navigate('/payment', {
+      state: {
+        selectedItems: selectedItems,
+        locationData: locationData,
+        subtotal: getSubtotal(),
+        tax: getTax(),
+        total: getTotal()
+      }
+    })
   }
 
   const getSubtotal = () => {
@@ -455,14 +428,9 @@ const Checkout = () => {
 
                 <button
                   onClick={handleProceedToPay}
-                  disabled={saving}
-                  className={`w-full py-4 rounded-lg font-semibold text-lg transition-colors mb-4 ${
-                    saving
-                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                      : 'bg-red-400 text-white hover:bg-red-500'
-                  }`}
+                  className="w-full py-4 rounded-lg font-semibold text-lg transition-colors mb-4 bg-red-400 text-white hover:bg-red-500"
                 >
-                  {saving ? 'Processing...' : 'Proceed to Pay'}
+                  Proceed to Pay
                 </button>
 
                 <button
