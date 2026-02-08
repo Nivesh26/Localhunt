@@ -123,6 +123,10 @@ public class ProductService {
         if ("Unlisted".equals(product.getStatus())) {
             throw new RuntimeException("Product not found");
         }
+        // Store closed: vendor or admin closed the store
+        if (product.getSeller() != null && Boolean.FALSE.equals(product.getSeller().getStoreStatus())) {
+            throw new RuntimeException("STORE_CLOSED");
+        }
         return convertToResponse(product);
     }
 
@@ -245,6 +249,7 @@ public class ProductService {
         response.setSizeClothing(product.getSizeClothing());
         response.setSellerId(product.getSeller().getId());
         response.setSellerName(product.getSeller().getBusinessName());
+        response.setSellerStoreClosed(Boolean.FALSE.equals(product.getSeller().getStoreStatus()));
         
         if (product.getCreatedAt() != null) {
             response.setCreatedAt(product.getCreatedAt().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));

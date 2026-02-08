@@ -21,6 +21,7 @@ interface Product {
   sizeClothing?: string
   sellerName?: string
   sellerId?: number
+  sellerStoreClosed?: boolean
 }
 
 interface RelatedProduct {
@@ -80,13 +81,44 @@ const Productdetail = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id])
 
+  // Poll to detect if admin/vendor closes store while user is viewing
+  useEffect(() => {
+    if (!id || !product?.sellerId) return
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch(`http://localhost:8080/api/products/${id}`)
+        const data = await res.json().catch(() => ({}))
+        if (res.status === 403 && data.storeClosed) {
+          toast.error('Something went wrong. This store is currently closed.', { toastId: 'store-closed' })
+          navigate('/shop')
+        } else if (res.ok && data.sellerStoreClosed) {
+          toast.error('Something went wrong. This store is currently closed.', { toastId: 'store-closed' })
+          navigate('/shop')
+        }
+      } catch {
+        // Ignore network errors during poll
+      }
+    }, 10000) // Check every 10 seconds
+    return () => clearInterval(interval)
+  }, [id, product?.sellerId, navigate])
+
   const fetchProduct = async () => {
     if (!id) return
     setLoading(true)
     try {
       const response = await fetch(`http://localhost:8080/api/products/${id}`)
+      const data = await response.json().catch(() => ({}))
+      if (response.status === 403 && data.storeClosed) {
+        toast.error('Something went wrong. This store is currently closed.', { toastId: 'store-closed' })
+        navigate('/shop')
+        return
+      }
       if (response.ok) {
-        const data = await response.json()
+        if (data.sellerStoreClosed) {
+          toast.error('Something went wrong. This store is currently closed.', { toastId: 'store-closed' })
+          navigate('/shop')
+          return
+        }
         // Convert comma-separated imageUrl paths to full URLs
         let imageUrl = data.imageUrl || ''
         if (imageUrl) {
@@ -345,6 +377,11 @@ const Productdetail = () => {
 
   const handleAddToCart = async () => {
     if (!product) return
+    if (product.sellerStoreClosed) {
+      toast.error('Something went wrong. This store is currently closed.', { toastId: 'store-closed' })
+      navigate('/shop')
+      return
+    }
 
     try {
       const user = sessionUtils.getUser()
@@ -384,6 +421,11 @@ const Productdetail = () => {
 
   const handleBuyNow = () => {
     if (!product) return
+    if (product.sellerStoreClosed) {
+      toast.error('Something went wrong. This store is currently closed.', { toastId: 'store-closed' })
+      navigate('/shop')
+      return
+    }
 
     const user = sessionUtils.getUser()
     if (!user) {
@@ -659,14 +701,14 @@ const Productdetail = () => {
               <button 
                 onClick={handleAddToCart}
                 className="flex-1 bg-red-400 text-white py-4 rounded-lg font-semibold hover:bg-red-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                disabled={product.stock === 0}
+                disabled={product.stock === 0 || product.sellerStoreClosed}
               >
-                {product.stock === 0 ? 'OUT OF STOCK' : 'ADD TO CART'}
+                {product.sellerStoreClosed ? 'STORE CLOSED' : product.stock === 0 ? 'OUT OF STOCK' : 'ADD TO CART'}
               </button>
               <button 
                 onClick={handleBuyNow}
                 className="flex-1 bg-green-600 text-white py-4 rounded-lg font-semibold hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                disabled={product.stock === 0}
+                disabled={product.stock === 0 || product.sellerStoreClosed}
               >
                 BUY NOW
               </button>

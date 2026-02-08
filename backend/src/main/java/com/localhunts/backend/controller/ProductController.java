@@ -92,11 +92,17 @@ public class ProductController {
     }
 
     @GetMapping("/{productId}")
-    public ResponseEntity<ProductResponse> getProductById(@PathVariable Long productId) {
+    public ResponseEntity<?> getProductById(@PathVariable Long productId) {
         try {
             ProductResponse product = productService.getProductById(productId);
             return ResponseEntity.ok(product);
         } catch (RuntimeException e) {
+            if ("STORE_CLOSED".equals(e.getMessage())) {
+                Map<String, Object> body = new HashMap<>();
+                body.put("storeClosed", true);
+                body.put("message", "This store is currently closed");
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(body);
+            }
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
     }

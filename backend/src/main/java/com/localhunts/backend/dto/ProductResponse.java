@@ -15,6 +15,7 @@ public class ProductResponse {
     private String sizeClothing;
     private Long sellerId;
     private String sellerName;
+    private Boolean sellerStoreClosed; // true when vendor/admin closed the store
     private String createdAt;
     private String updatedAt;
 
@@ -132,6 +133,14 @@ public class ProductResponse {
 
     public void setSellerName(String sellerName) {
         this.sellerName = sellerName;
+    }
+
+    public Boolean getSellerStoreClosed() {
+        return sellerStoreClosed;
+    }
+
+    public void setSellerStoreClosed(Boolean sellerStoreClosed) {
+        this.sellerStoreClosed = sellerStoreClosed;
     }
 
     public String getCreatedAt() {
