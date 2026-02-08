@@ -688,6 +688,34 @@ public class EmailService {
     }
 
     /**
+     * Send email when super admin closes vendor's store. Vendor cannot reopen until admin does.
+     */
+    public void sendVendorClosedByAdminEmail(String to, String vendorName, String businessName) {
+        String subject = "Store Closed by Local Hunt - Please Contact Us";
+        String htmlContent = String.format(
+            "<!DOCTYPE html>" +
+            "<html><head><meta charset='UTF-8'><meta name='viewport' content='width=device-width, initial-scale=1.0'>" +
+            "<style>body{margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f5f5f5}" +
+            ".container{max-width:600px;margin:0 auto;background:#fff}.header{background:linear-gradient(135deg,#d32f2f 0%%,#f44336 100%%);padding:40px 20px;text-align:center}" +
+            ".header h1{color:#fff;margin:0;font-size:28px}.content{padding:40px 30px}" +
+            ".notice{background:#ffebee;border-left:4px solid #d32f2f;padding:20px;margin:20px 0;border-radius:8px}" +
+            ".notice p{margin:0;color:#b71c1c;font-weight:600;font-size:16px}" +
+            "p{font-size:15px;color:#555;line-height:1.7}" +
+            ".footer{background:#f9f9f9;padding:25px;text-align:center;color:#666;font-size:12px}</style></head><body>" +
+            "<div class='container'><div class='header'><h1>Store Closed</h1></div><div class='content'>" +
+            "<p>Hello <strong>%s</strong>,</p>" +
+            "<div class='notice'><p>Your store <strong>%s</strong> has been closed by Local Hunt.</p></div>" +
+            "<p>Please contact us for more details. You will not be able to reopen your store until Local Hunt admin does so.</p>" +
+            "<p>We're here to help — reach out to us with any questions.</p>" +
+            "<p>Best regards,<br><strong>The Local Hunt Team</strong></p>" +
+            "</div><div class='footer'><p><strong>Local Hunt</strong></p><p>Your trusted marketplace for authentic Nepali products</p></div></div></body></html>",
+            vendorName != null ? vendorName : "Vendor",
+            businessName != null ? businessName : "Your Store"
+        );
+        sendHtmlEmail(to, subject, htmlContent);
+    }
+
+    /**
      * Send store resumed notification email to vendor
      */
     public void sendStoreResumedEmail(String to, String vendorName, String businessName) {

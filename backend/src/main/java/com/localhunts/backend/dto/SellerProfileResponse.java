@@ -14,6 +14,7 @@ public class SellerProfileResponse {
     private String businessLocation;
     private String storeDescription;
     private Boolean storeStatus;
+    private Boolean closedByAdmin;
     private Role role;
     private String profilePicture;
 
@@ -123,6 +124,14 @@ public class SellerProfileResponse {
 
     public void setStoreStatus(Boolean storeStatus) {
         this.storeStatus = storeStatus;
+    }
+
+    public Boolean getClosedByAdmin() {
+        return closedByAdmin;
+    }
+
+    public void setClosedByAdmin(Boolean closedByAdmin) {
+        this.closedByAdmin = closedByAdmin;
     }
 
     public Role getRole() {

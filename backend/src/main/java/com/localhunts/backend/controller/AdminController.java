@@ -4,6 +4,7 @@ import com.localhunts.backend.dto.AdminDashboardStats;
 import com.localhunts.backend.dto.AdminProfitDetailResponse;
 import com.localhunts.backend.dto.OnboardingRequestResponse;
 import com.localhunts.backend.dto.TopVendorResponse;
+import com.localhunts.backend.dto.SellerProfileResponse;
 import com.localhunts.backend.dto.UserListResponse;
 import com.localhunts.backend.service.AdminService;
 import com.localhunts.backend.service.ProductService;
@@ -136,6 +137,46 @@ public class AdminController {
             return ResponseEntity.ok(requests);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
+     * Super admin: Close vendor's store. Vendor cannot reopen until admin does. Sends email to vendor.
+     */
+    @PutMapping("/vendors/{sellerId}/close")
+    public ResponseEntity<Map<String, Object>> closeVendor(@PathVariable Long sellerId) {
+        try {
+            SellerProfileResponse profile = sellerService.closeVendorByAdmin(sellerId);
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "Vendor store closed successfully");
+            response.put("vendor", profile);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("message", e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
+    }
+
+    /**
+     * Super admin: Reopen vendor's store (reverses admin-close).
+     */
+    @PutMapping("/vendors/{sellerId}/reopen")
+    public ResponseEntity<Map<String, Object>> reopenVendor(@PathVariable Long sellerId) {
+        try {
+            SellerProfileResponse profile = sellerService.reopenVendorByAdmin(sellerId);
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "Vendor store reopened successfully");
+            response.put("vendor", profile);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("message", e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
     }
 

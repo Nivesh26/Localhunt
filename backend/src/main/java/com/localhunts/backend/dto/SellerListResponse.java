@@ -14,6 +14,7 @@ public class SellerListResponse {
     private String businessLocation;
     private Boolean approved;
     private Boolean storeStatus;
+    private Boolean closedByAdmin; // true when super admin closed the vendor
     private Role role;
     private String createdAt;
     private String businessRegistrationCertificate;
@@ -109,6 +110,14 @@ public class SellerListResponse {
 
     public void setStoreStatus(Boolean storeStatus) {
         this.storeStatus = storeStatus;
+    }
+
+    public Boolean getClosedByAdmin() {
+        return closedByAdmin;
+    }
+
+    public void setClosedByAdmin(Boolean closedByAdmin) {
+        this.closedByAdmin = closedByAdmin;
     }
 
     public Role getRole() {

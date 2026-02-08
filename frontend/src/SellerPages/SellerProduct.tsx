@@ -47,6 +47,7 @@ const categories = [
 const SellerProduct = () => {
   const navigate = useNavigate()
   const [products, setProducts] = useState<Product[]>([])
+  const [storeClosed, setStoreClosed] = useState(false)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [editingProductId, setEditingProductId] = useState<number | null>(null)
@@ -76,10 +77,12 @@ const SellerProduct = () => {
 
   useEffect(() => {
     fetchProducts()
+    fetchStoreStatus()
   }, [])
 
   const fetchProducts = async () => {
     setLoading(true)
+    fetchStoreStatus()
     try {
       const user = sessionUtils.getUser()
       if (!user) {
@@ -138,6 +141,20 @@ const SellerProduct = () => {
       toast.error('An error occurred while fetching products')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const fetchStoreStatus = async () => {
+    try {
+      const user = sessionUtils.getUser()
+      if (!user) return
+      const response = await fetch(`http://localhost:8080/api/seller/profile/${user.userId}`)
+      if (response.ok) {
+        const data = await response.json()
+        setStoreClosed(data.storeStatus === false)
+      }
+    } catch {
+      // Ignore - store status is optional for display
     }
   }
 
@@ -850,14 +867,16 @@ const SellerProduct = () => {
                       <td className="px-4 py-3">
                         <span
                           className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
-                            product.status === 'Live'
-                              ? 'bg-emerald-50 text-emerald-700'
-                              : product.status === 'Out of stock'
-                                ? 'bg-amber-50 text-amber-700'
-                                : 'bg-gray-100 text-gray-600'
+                            storeClosed
+                              ? 'bg-red-50 text-red-700'
+                              : product.status === 'Live'
+                                ? 'bg-emerald-50 text-emerald-700'
+                                : product.status === 'Out of stock'
+                                  ? 'bg-amber-50 text-amber-700'
+                                  : 'bg-gray-100 text-gray-600'
                           }`}
                         >
-                          {product.status}
+                          {storeClosed ? 'Closed' : product.status}
                         </span>
                       </td>
                       <td className="px-4 py-3 text-xs text-gray-500">

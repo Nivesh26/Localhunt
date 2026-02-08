@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import AdminNavbar from '../AdminComponents/AdminNavbar'
-import { FaArrowLeft, FaStore, FaUser, FaEnvelope, FaPhone, FaMapMarkerAlt, FaFileAlt, FaAlignLeft } from 'react-icons/fa'
+import { FaArrowLeft, FaStore, FaUser, FaEnvelope, FaPhone, FaMapMarkerAlt, FaFileAlt, FaAlignLeft, FaPowerOff, FaPlay } from 'react-icons/fa'
 import { toast } from 'react-toastify'
 
 interface VendorDetail {
@@ -17,6 +17,7 @@ interface VendorDetail {
   createdAt: string
   approved: boolean
   storeStatus: boolean
+  closedByAdmin?: boolean
   storeDescription?: string
   businessRegistrationCertificate?: string
   panVatCertificate?: string
@@ -49,10 +50,11 @@ const VendorDetail = () => {
         
         const vendorData = listData.find((v: VendorDetail) => v.id === Number(id))
         if (vendorData) {
-          // Merge profile data (storeDescription) with list data
+          // Merge profile data (storeDescription, closedByAdmin) with list data
           setVendor({
             ...vendorData,
-            storeDescription: profileData.storeDescription || ''
+            storeDescription: profileData.storeDescription || '',
+            closedByAdmin: profileData.closedByAdmin ?? vendorData.closedByAdmin
           })
         } else {
           toast.error('Vendor not found')
@@ -197,16 +199,53 @@ const VendorDetail = () => {
                   <div className="mt-1 h-5 w-5"></div>
                   <div>
                     <p className="text-sm text-gray-500">Store Status</p>
-                    <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ${
-                      vendor.storeStatus 
-                        ? 'bg-emerald-100 text-emerald-700' 
-                        : 'bg-red-100 text-red-700'
-                    }`}>
-                      <div className={`h-1.5 w-1.5 rounded-full ${
-                        vendor.storeStatus ? 'bg-emerald-500' : 'bg-red-500'
-                      }`}></div>
-                      {vendor.storeStatus ? 'Open' : 'Closed'}
-                    </span>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ${
+                        vendor.storeStatus 
+                          ? 'bg-emerald-100 text-emerald-700' 
+                          : vendor.closedByAdmin ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'
+                      }`}>
+                        <div className={`h-1.5 w-1.5 rounded-full ${
+                          vendor.storeStatus ? 'bg-emerald-500' : vendor.closedByAdmin ? 'bg-amber-500' : 'bg-red-500'
+                        }`}></div>
+                        {vendor.storeStatus ? 'Open' : vendor.closedByAdmin ? 'Closed by Admin' : 'Closed'}
+                      </span>
+                      {vendor.closedByAdmin ? (
+                        <button
+                          onClick={async () => {
+                            if (!window.confirm('Reopen this vendor\'s store?')) return
+                            try {
+                              const res = await fetch(`http://localhost:8080/api/admin/vendors/${vendor.id}/reopen`, { method: 'PUT' })
+                              const data = await res.json()
+                              if (res.ok && data.success) {
+                                setVendor(prev => prev ? { ...prev, storeStatus: true, closedByAdmin: false } : null)
+                                toast.success('Vendor store reopened.')
+                              } else toast.error(data.message || 'Failed to reopen')
+                            } catch { toast.error('Failed to reopen') }
+                          }}
+                          className="inline-flex items-center gap-2 rounded-lg border border-emerald-200 px-3 py-1.5 text-xs font-semibold text-emerald-600 hover:bg-emerald-50"
+                        >
+                          <FaPlay className="h-3.5 w-3.5" /> Reopen
+                        </button>
+                      ) : (
+                        <button
+                          onClick={async () => {
+                            if (!window.confirm('Close this vendor\'s store? Vendor will receive an email and cannot reopen until you do.')) return
+                            try {
+                              const res = await fetch(`http://localhost:8080/api/admin/vendors/${vendor.id}/close`, { method: 'PUT' })
+                              const data = await res.json()
+                              if (res.ok && data.success) {
+                                setVendor(prev => prev ? { ...prev, storeStatus: false, closedByAdmin: true } : null)
+                                toast.success('Vendor store closed. Email sent to vendor.')
+                              } else toast.error(data.message || 'Failed to close')
+                            } catch { toast.error('Failed to close') }
+                          }}
+                          className="inline-flex items-center gap-2 rounded-lg border border-amber-200 px-3 py-1.5 text-xs font-semibold text-amber-600 hover:bg-amber-50"
+                        >
+                          <FaPowerOff className="h-3.5 w-3.5" /> Close Store
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
 

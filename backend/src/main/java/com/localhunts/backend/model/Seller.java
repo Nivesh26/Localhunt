@@ -78,6 +78,10 @@ public class Seller {
     @Column(nullable = false)
     private Boolean storeStatus = true; // true = ACTIVE, false = PAUSED
 
+    /** When true, vendor was closed by super admin. Vendor cannot turn store back on until admin reopens. */
+    @Column(nullable = false, name = "closed_by_admin", columnDefinition = "boolean default false")
+    private Boolean closedByAdmin = false;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Role role = Role.VENDOR;
@@ -221,6 +225,14 @@ public class Seller {
 
     public void setStoreStatus(Boolean storeStatus) {
         this.storeStatus = storeStatus;
+    }
+
+    public Boolean getClosedByAdmin() {
+        return closedByAdmin;
+    }
+
+    public void setClosedByAdmin(Boolean closedByAdmin) {
+        this.closedByAdmin = closedByAdmin != null ? closedByAdmin : false;
     }
 
     public Role getRole() {

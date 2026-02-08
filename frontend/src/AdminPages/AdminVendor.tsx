@@ -21,6 +21,7 @@ interface Vendor {
   createdAt: string
   approved: boolean
   storeStatus: boolean
+  closedByAdmin?: boolean
   businessRegistrationCertificate?: string
   panVatCertificate?: string
 }
@@ -158,12 +159,12 @@ const AdminVender = () => {
                           <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ${
                             vendor.storeStatus 
                               ? 'bg-emerald-100 text-emerald-700' 
-                              : 'bg-red-100 text-red-700'
+                              : vendor.closedByAdmin ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'
                           }`}>
                             <div className={`h-1.5 w-1.5 rounded-full ${
-                              vendor.storeStatus ? 'bg-emerald-500' : 'bg-red-500'
+                              vendor.storeStatus ? 'bg-emerald-500' : vendor.closedByAdmin ? 'bg-amber-500' : 'bg-red-500'
                             }`}></div>
-                            {vendor.storeStatus ? 'Open' : 'Closed'}
+                            {vendor.storeStatus ? 'Open' : vendor.closedByAdmin ? 'Closed by Admin' : 'Closed'}
                           </span>
                         </td>
                         <td className="py-3 pr-6 text-right">

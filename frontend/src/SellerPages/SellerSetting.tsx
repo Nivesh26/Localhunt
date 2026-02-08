@@ -27,6 +27,7 @@ const SellerSetting = () => {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [storeStatus, setStoreStatus] = useState<boolean>(true)
+  const [closedByAdmin, setClosedByAdmin] = useState(false)
   const [togglingStatus, setTogglingStatus] = useState(false)
   const [notifications, setNotifications] = useState<Record<string, boolean>>({
     newOrders: true,
@@ -90,6 +91,7 @@ const SellerSetting = () => {
           returnPolicy: 'We accept returns within 7 days of delivery. Items must be unused and in original packaging.'
         })
         setStoreStatus(data.storeStatus !== false) // Default to true if null/undefined
+        setClosedByAdmin(data.closedByAdmin === true)
       } else if (response.status === 404) {
         // Seller was deleted from database
         sessionUtils.clearSession()
@@ -143,7 +145,8 @@ const SellerSetting = () => {
         toast.error('Your account has been deleted. Please contact support.')
         navigate('/sellerlogin')
       } else {
-        toast.error('Failed to toggle store status')
+        const errData = await response.json().catch(() => ({}))
+        toast.error(errData.message || 'Failed to toggle store status')
       }
     } catch (error) {
       console.error('Error toggling store status:', error)
@@ -590,39 +593,49 @@ const SellerSetting = () => {
               <div className="rounded-2xl bg-white p-6 shadow-sm sm:p-8">
                 <h2 className="text-lg font-semibold text-gray-900">Store status</h2>
                 <p className="mt-2 text-sm text-gray-500">
-                  {storeStatus 
-                    ? 'Your store is currently active and visible to customers.'
-                    : 'Your store is currently paused. Products will not be visible to customers.'}
+                  {closedByAdmin
+                    ? 'Your store has been closed by Local Hunt. Please contact us for more details. You cannot reopen it yourself.'
+                    : storeStatus 
+                      ? 'Your store is currently active and visible to customers.'
+                      : 'Your store is currently paused. Products will not be visible to customers.'}
                 </p>
                 <div className={`mt-6 flex items-center gap-3 rounded-xl border px-4 py-3 ${
-                  storeStatus 
-                    ? 'border-emerald-200 bg-emerald-50' 
-                    : 'border-red-200 bg-red-50'
+                  closedByAdmin
+                    ? 'border-amber-200 bg-amber-50'
+                    : storeStatus 
+                      ? 'border-emerald-200 bg-emerald-50' 
+                      : 'border-red-200 bg-red-50'
                 }`}>
                   <div className={`h-2 w-2 rounded-full ${
-                    storeStatus ? 'bg-emerald-500' : 'bg-red-500'
+                    closedByAdmin ? 'bg-amber-500' : storeStatus ? 'bg-emerald-500' : 'bg-red-500'
                   }`}></div>
                   <span className={`text-sm font-semibold ${
-                    storeStatus ? 'text-emerald-700' : 'text-red-700'
+                    closedByAdmin ? 'text-amber-700' : storeStatus ? 'text-emerald-700' : 'text-red-700'
                   }`}>
-                    {storeStatus ? 'Store is live' : 'Store is off'}
+                    {closedByAdmin ? 'Closed by Local Hunt' : storeStatus ? 'Store is live' : 'Store is off'}
                   </span>
                 </div>
-                <button 
-                  onClick={handleToggleStoreStatus}
-                  disabled={togglingStatus}
-                  className={`mt-4 w-full rounded-xl border px-4 py-2 text-sm font-semibold transition ${
-                    storeStatus
-                      ? 'border-gray-200 text-gray-700 hover:bg-gray-50'
-                      : 'border-red-200 text-red-700 hover:bg-red-50'
-                  } disabled:opacity-50 disabled:cursor-not-allowed`}
-                >
-                  {togglingStatus 
-                    ? 'Processing...' 
-                    : storeStatus 
-                      ? 'Temporarily pause store' 
-                      : 'Resume store'}
-                </button>
+                {closedByAdmin ? (
+                  <p className="mt-4 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
+                    Your store has been closed by Local Hunt. Please contact us for more details. You cannot reopen it until an admin does so.
+                  </p>
+                ) : (
+                  <button 
+                    onClick={handleToggleStoreStatus}
+                    disabled={togglingStatus}
+                    className={`mt-4 w-full rounded-xl border px-4 py-2 text-sm font-semibold transition ${
+                      storeStatus
+                        ? 'border-gray-200 text-gray-700 hover:bg-gray-50'
+                        : 'border-red-200 text-red-700 hover:bg-red-50'
+                    } disabled:opacity-50 disabled:cursor-not-allowed`}
+                  >
+                    {togglingStatus 
+                      ? 'Processing...' 
+                      : storeStatus 
+                        ? 'Temporarily pause store' 
+                        : 'Resume store'}
+                  </button>
+                )}
               </div>
             </aside>
           </section>

@@ -311,6 +311,7 @@ public class SellerService {
             seller.getRole()
         );
         response.setStoreStatus(seller.getStoreStatus());
+        response.setClosedByAdmin(Boolean.TRUE.equals(seller.getClosedByAdmin()));
         response.setProfilePicture(seller.getProfilePicture());
         return response;
     }
@@ -352,6 +353,7 @@ public class SellerService {
             updatedSeller.getRole()
         );
         response.setStoreStatus(updatedSeller.getStoreStatus());
+        response.setClosedByAdmin(Boolean.TRUE.equals(updatedSeller.getClosedByAdmin()));
 
         try {
             emailService.sendVendorProfileUpdateEmail(
@@ -369,6 +371,11 @@ public class SellerService {
     public SellerProfileResponse toggleStoreStatus(Long sellerId) {
         Seller seller = sellerRepository.findById(sellerId)
             .orElseThrow(() -> new RuntimeException("Seller not found"));
+        
+        // Vendor cannot turn store back on if admin closed it
+        if (Boolean.TRUE.equals(seller.getClosedByAdmin())) {
+            throw new RuntimeException("Your store has been closed by Local Hunt. Please contact us for more details. You cannot reopen it yourself.");
+        }
         
         // Toggle store status
         seller.setStoreStatus(!seller.getStoreStatus());
@@ -415,6 +422,7 @@ public class SellerService {
             updatedSeller.getRole()
         );
         response.setStoreStatus(updatedSeller.getStoreStatus());
+        response.setClosedByAdmin(Boolean.TRUE.equals(updatedSeller.getClosedByAdmin()));
         return response;
     }
 
@@ -623,6 +631,7 @@ public class SellerService {
         response.setBusinessLocation(seller.getBusinessLocation());
         response.setApproved(seller.getApproved());
         response.setStoreStatus(seller.getStoreStatus());
+        response.setClosedByAdmin(Boolean.TRUE.equals(seller.getClosedByAdmin()));
         response.setRole(seller.getRole());
         response.setBusinessRegistrationCertificate(seller.getBusinessRegistrationCertificate());
         response.setPanVatCertificate(seller.getPanVatCertificate());
@@ -663,6 +672,7 @@ public class SellerService {
             updatedSeller.getRole()
         );
         response.setStoreStatus(updatedSeller.getStoreStatus());
+        response.setClosedByAdmin(Boolean.TRUE.equals(updatedSeller.getClosedByAdmin()));
         response.setProfilePicture(updatedSeller.getProfilePicture());
 
         try {
@@ -674,6 +684,62 @@ public class SellerService {
         } catch (Exception e) {
             System.err.println("Failed to send vendor profile update email: " + e.getMessage());
         }
+        return response;
+    }
+
+    /**
+     * Super admin: Close vendor's store. Sets storeStatus=false and closedByAdmin=true.
+     * Vendor cannot turn it back on until admin reopens. Sends email to vendor.
+     */
+    @Transactional
+    public SellerProfileResponse closeVendorByAdmin(Long sellerId) {
+        Seller seller = sellerRepository.findById(sellerId)
+            .orElseThrow(() -> new RuntimeException("Seller not found"));
+        seller.setClosedByAdmin(true);
+        seller.setStoreStatus(false);
+        Seller updatedSeller = sellerRepository.save(seller);
+        try {
+            emailService.sendVendorClosedByAdminEmail(
+                updatedSeller.getContactEmail(),
+                updatedSeller.getUserName(),
+                updatedSeller.getBusinessName()
+            );
+        } catch (Exception e) {
+            System.err.println("Failed to send vendor closed by admin email: " + e.getMessage());
+        }
+        return buildProfileResponse(updatedSeller);
+    }
+
+    /**
+     * Super admin: Reopen vendor's store. Clears closedByAdmin and sets storeStatus=true.
+     */
+    @Transactional
+    public SellerProfileResponse reopenVendorByAdmin(Long sellerId) {
+        Seller seller = sellerRepository.findById(sellerId)
+            .orElseThrow(() -> new RuntimeException("Seller not found"));
+        seller.setClosedByAdmin(false);
+        seller.setStoreStatus(true);
+        Seller updatedSeller = sellerRepository.save(seller);
+        return buildProfileResponse(updatedSeller);
+    }
+
+    private SellerProfileResponse buildProfileResponse(Seller seller) {
+        SellerProfileResponse response = new SellerProfileResponse(
+            seller.getId(),
+            seller.getUserName(),
+            seller.getPhoneNumber(),
+            seller.getContactEmail(),
+            seller.getLocation(),
+            seller.getBusinessName(),
+            seller.getBusinessCategory(),
+            seller.getBusinessPanVat(),
+            seller.getBusinessLocation(),
+            seller.getStoreDescription() != null ? seller.getStoreDescription() : "",
+            seller.getRole()
+        );
+        response.setStoreStatus(seller.getStoreStatus());
+        response.setClosedByAdmin(Boolean.TRUE.equals(seller.getClosedByAdmin()));
+        response.setProfilePicture(seller.getProfilePicture());
         return response;
     }
 }
