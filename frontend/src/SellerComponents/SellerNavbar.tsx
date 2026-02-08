@@ -12,7 +12,7 @@ import {
   FaBars,
   FaTimes,
 } from 'react-icons/fa'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { useState, useEffect } from 'react'
 import logo from '../assets/Local Hunt Logo NoBG.png'
@@ -31,6 +31,7 @@ const navLinks = [
 
 const SellerNavbar = () => {
   const navigate = useNavigate()
+  const location = useLocation()
   const [sellerName, setSellerName] = useState('Store owner')
   const [profilePicture, setProfilePicture] = useState<string | null>(null)
   const [uploadingPicture, setUploadingPicture] = useState(false)
@@ -282,13 +283,19 @@ const SellerNavbar = () => {
         <nav className="rounded-2xl bg-white p-6 shadow-sm">
           <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-500">Store navigation</h3>
           <ul className="mt-4 space-y-2">
-            {navLinks.map(link => (
+            {navLinks.map(link => {
+                const isActive = location.pathname === link.to
+                return (
               <li key={link.label} className="w-full">
                 {link.to ? (
                   <Link
                     to={link.to}
                     onClick={() => setMobileMenuOpen(false)}
-                    className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-red-50 hover:text-red-600 whitespace-nowrap relative"
+                    className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition whitespace-nowrap relative ${
+                      isActive
+                        ? 'bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700'
+                        : 'text-gray-700 hover:bg-red-50 hover:text-red-600'
+                    }`}
                   >
                     <link.icon className="h-5 w-5 shrink-0" />
                     <span className="whitespace-nowrap flex-1">{link.label}</span>
@@ -310,7 +317,7 @@ const SellerNavbar = () => {
                   </button>
                 )}
               </li>
-            ))}
+            )})}
           </ul>
         </nav>
     </div>
