@@ -711,7 +711,7 @@ public class SellerService {
     }
 
     /**
-     * Super admin: Reopen vendor's store. Clears closedByAdmin and sets storeStatus=true.
+     * Super admin: Reopen vendor's store. Clears closedByAdmin and sets storeStatus=true. Sends email to vendor.
      */
     @Transactional
     public SellerProfileResponse reopenVendorByAdmin(Long sellerId) {
@@ -720,6 +720,15 @@ public class SellerService {
         seller.setClosedByAdmin(false);
         seller.setStoreStatus(true);
         Seller updatedSeller = sellerRepository.save(seller);
+        try {
+            emailService.sendVendorReopenedByAdminEmail(
+                updatedSeller.getContactEmail(),
+                updatedSeller.getUserName(),
+                updatedSeller.getBusinessName()
+            );
+        } catch (Exception e) {
+            System.err.println("Failed to send vendor reopened by admin email: " + e.getMessage());
+        }
         return buildProfileResponse(updatedSeller);
     }
 

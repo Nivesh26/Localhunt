@@ -716,6 +716,33 @@ public class EmailService {
     }
 
     /**
+     * Send email when super admin reopens vendor's store.
+     */
+    public void sendVendorReopenedByAdminEmail(String to, String vendorName, String businessName) {
+        String subject = "Store Reopened by Local Hunt";
+        String htmlContent = String.format(
+            "<!DOCTYPE html>" +
+            "<html><head><meta charset='UTF-8'><meta name='viewport' content='width=device-width, initial-scale=1.0'>" +
+            "<style>body{margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f5f5f5}" +
+            ".container{max-width:600px;margin:0 auto;background:#fff}.header{background:linear-gradient(135deg,#4caf50 0%%,#66bb6a 100%%);padding:40px 20px;text-align:center}" +
+            ".header h1{color:#fff;margin:0;font-size:28px}.content{padding:40px 30px}" +
+            ".notice{background:#e8f5e9;border-left:4px solid #4caf50;padding:20px;margin:20px 0;border-radius:8px}" +
+            ".notice p{margin:0;color:#2e7d32;font-weight:600;font-size:16px}" +
+            "p{font-size:15px;color:#555;line-height:1.7}" +
+            ".footer{background:#f9f9f9;padding:25px;text-align:center;color:#666;font-size:12px}</style></head><body>" +
+            "<div class='container'><div class='header'><h1>Store Reopened</h1></div><div class='content'>" +
+            "<p>Hello <strong>%s</strong>,</p>" +
+            "<div class='notice'><p>Your store <strong>%s</strong> has been reopened by Local Hunt.</p></div>" +
+            "<p>You can now operate your store again. Your products will be visible to customers.</p>" +
+            "<p>Best regards,<br><strong>The Local Hunt Team</strong></p>" +
+            "</div><div class='footer'><p><strong>Local Hunt</strong></p><p>Your trusted marketplace for authentic Nepali products</p></div></div></body></html>",
+            vendorName != null ? vendorName : "Vendor",
+            businessName != null ? businessName : "Your Store"
+        );
+        sendHtmlEmail(to, subject, htmlContent);
+    }
+
+    /**
      * Send store resumed notification email to vendor
      */
     public void sendStoreResumedEmail(String to, String vendorName, String businessName) {
