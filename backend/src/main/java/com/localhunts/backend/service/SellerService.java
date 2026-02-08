@@ -36,6 +36,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 public class SellerService {
@@ -698,15 +699,16 @@ public class SellerService {
         seller.setClosedByAdmin(true);
         seller.setStoreStatus(false);
         Seller updatedSeller = sellerRepository.save(seller);
-        try {
-            emailService.sendVendorClosedByAdminEmail(
-                updatedSeller.getContactEmail(),
-                updatedSeller.getUserName(),
-                updatedSeller.getBusinessName()
-            );
-        } catch (Exception e) {
-            System.err.println("Failed to send vendor closed by admin email: " + e.getMessage());
-        }
+        String email = updatedSeller.getContactEmail();
+        String name = updatedSeller.getUserName();
+        String business = updatedSeller.getBusinessName();
+        CompletableFuture.runAsync(() -> {
+            try {
+                emailService.sendVendorClosedByAdminEmail(email, name, business);
+            } catch (Exception e) {
+                System.err.println("Failed to send vendor closed by admin email: " + e.getMessage());
+            }
+        });
         return buildProfileResponse(updatedSeller);
     }
 
@@ -720,15 +722,16 @@ public class SellerService {
         seller.setClosedByAdmin(false);
         seller.setStoreStatus(true);
         Seller updatedSeller = sellerRepository.save(seller);
-        try {
-            emailService.sendVendorReopenedByAdminEmail(
-                updatedSeller.getContactEmail(),
-                updatedSeller.getUserName(),
-                updatedSeller.getBusinessName()
-            );
-        } catch (Exception e) {
-            System.err.println("Failed to send vendor reopened by admin email: " + e.getMessage());
-        }
+        String email = updatedSeller.getContactEmail();
+        String name = updatedSeller.getUserName();
+        String business = updatedSeller.getBusinessName();
+        CompletableFuture.runAsync(() -> {
+            try {
+                emailService.sendVendorReopenedByAdminEmail(email, name, business);
+            } catch (Exception e) {
+                System.err.println("Failed to send vendor reopened by admin email: " + e.getMessage());
+            }
+        });
         return buildProfileResponse(updatedSeller);
     }
 

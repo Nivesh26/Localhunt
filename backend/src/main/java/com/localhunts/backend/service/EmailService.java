@@ -689,7 +689,9 @@ public class EmailService {
 
     /**
      * Send email when super admin closes vendor's store. Vendor cannot reopen until admin does.
+     * Runs asynchronously so close API returns quickly.
      */
+    @Async
     public void sendVendorClosedByAdminEmail(String to, String vendorName, String businessName) {
         String subject = "Store Closed by Local Hunt - Please Contact Us";
         String htmlContent = String.format(
@@ -717,7 +719,9 @@ public class EmailService {
 
     /**
      * Send email when super admin reopens vendor's store.
+     * Runs asynchronously so reopen API returns quickly.
      */
+    @Async
     public void sendVendorReopenedByAdminEmail(String to, String vendorName, String businessName) {
         String subject = "Store Reopened by Local Hunt";
         String htmlContent = String.format(

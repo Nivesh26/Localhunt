@@ -214,14 +214,20 @@ const VendorDetail = () => {
                         <button
                           onClick={async () => {
                             if (!window.confirm('Reopen this vendor\'s store?')) return
+                            const prev = vendor
+                            setVendor(v => v ? { ...v, storeStatus: true, closedByAdmin: false } : null)
+                            toast.success('Vendor store reopened.')
                             try {
                               const res = await fetch(`http://localhost:8080/api/admin/vendors/${vendor.id}/reopen`, { method: 'PUT' })
                               const data = await res.json()
-                              if (res.ok && data.success) {
-                                setVendor(prev => prev ? { ...prev, storeStatus: true, closedByAdmin: false } : null)
-                                toast.success('Vendor store reopened.')
-                              } else toast.error(data.message || 'Failed to reopen')
-                            } catch { toast.error('Failed to reopen') }
+                              if (!res.ok || !data.success) {
+                                setVendor(prev)
+                                toast.error(data.message || 'Failed to reopen')
+                              }
+                            } catch {
+                              setVendor(prev)
+                              toast.error('Failed to reopen')
+                            }
                           }}
                           className="inline-flex items-center gap-2 rounded-lg border border-emerald-200 px-3 py-1.5 text-xs font-semibold text-emerald-600 hover:bg-emerald-50"
                         >
@@ -231,14 +237,20 @@ const VendorDetail = () => {
                         <button
                           onClick={async () => {
                             if (!window.confirm('Close this vendor\'s store? Vendor will receive an email and cannot reopen until you do.')) return
+                            const prev = vendor
+                            setVendor(v => v ? { ...v, storeStatus: false, closedByAdmin: true } : null)
+                            toast.success('Vendor store closed.')
                             try {
                               const res = await fetch(`http://localhost:8080/api/admin/vendors/${vendor.id}/close`, { method: 'PUT' })
                               const data = await res.json()
-                              if (res.ok && data.success) {
-                                setVendor(prev => prev ? { ...prev, storeStatus: false, closedByAdmin: true } : null)
-                                toast.success('Vendor store closed. Email sent to vendor.')
-                              } else toast.error(data.message || 'Failed to close')
-                            } catch { toast.error('Failed to close') }
+                              if (!res.ok || !data.success) {
+                                setVendor(prev)
+                                toast.error(data.message || 'Failed to close')
+                              }
+                            } catch {
+                              setVendor(prev)
+                              toast.error('Failed to close')
+                            }
                           }}
                           className="inline-flex items-center gap-2 rounded-lg border border-amber-200 px-3 py-1.5 text-xs font-semibold text-amber-600 hover:bg-amber-50"
                         >
