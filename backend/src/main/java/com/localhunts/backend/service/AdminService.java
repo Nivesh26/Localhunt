@@ -187,7 +187,12 @@ public class AdminService {
                 AdminProfitDetailResponse r = new AdminProfitDetailResponse();
                 r.setOrderId(d.getId());
                 r.setProductName(d.getProduct().getName());
-                r.setVendorName(d.getProduct().getSeller() != null ? d.getProduct().getSeller().getBusinessName() : "—");
+                if (d.getProduct().getSeller() != null) {
+                    r.setVendorId(d.getProduct().getSeller().getId());
+                    r.setVendorName(d.getProduct().getSeller().getBusinessName());
+                } else {
+                    r.setVendorName("—");
+                }
                 r.setQuantity(d.getQuantity());
                 r.setUnitPrice(d.getUnitPrice());
                 r.setSubtotal(d.getSubtotal());

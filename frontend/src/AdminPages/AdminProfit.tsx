@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { FaChartLine, FaDollarSign } from 'react-icons/fa'
 import AdminNavbar from '../AdminComponents/AdminNavbar'
 
 interface ProfitDetail {
   orderId: number
   productName: string
+  vendorId?: number
   vendorName: string
   quantity: number
   unitPrice: number
@@ -16,6 +18,7 @@ interface ProfitDetail {
 }
 
 const AdminProfit = () => {
+  const navigate = useNavigate()
   const [totalCommission, setTotalCommission] = useState<number | null>(null)
   const [profitDetails, setProfitDetails] = useState<ProfitDetail[]>([])
   const [loading, setLoading] = useState(true)
@@ -116,7 +119,19 @@ const AdminProfit = () => {
                             {profitDetails.map((row) => (
                               <tr key={row.orderId} className="hover:bg-gray-50">
                                 <td className="px-4 py-3 text-sm font-medium text-gray-900">{row.productName}</td>
-                                <td className="px-4 py-3 text-sm text-gray-600">{row.vendorName}</td>
+                                <td className="px-4 py-3 text-sm text-gray-600">
+                                  {row.vendorId ? (
+                                    <button
+                                      type="button"
+                                      onClick={() => navigate(`/adminvendordetail/${row.vendorId}`)}
+                                      className="hover:underline cursor-pointer text-left"
+                                    >
+                                      {row.vendorName}
+                                    </button>
+                                  ) : (
+                                    row.vendorName
+                                  )}
+                                </td>
                                 <td className="px-4 py-3 text-sm text-gray-600">{row.customerName}</td>
                                 <td className="px-4 py-3 text-sm text-right text-gray-600">{row.quantity}</td>
                                 <td className="px-4 py-3 text-sm text-right text-gray-600">NRP {row.unitPrice.toFixed(2)}</td>

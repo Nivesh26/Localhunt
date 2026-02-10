@@ -7,6 +7,7 @@ package com.localhunts.backend.dto;
 public class AdminProfitDetailResponse {
     private Long orderId;
     private String productName;
+    private Long vendorId;
     private String vendorName;
     private Integer quantity;
     private Double unitPrice;
@@ -33,6 +34,14 @@ public class AdminProfitDetailResponse {
 
     public void setProductName(String productName) {
         this.productName = productName;
+    }
+
+    public Long getVendorId() {
+        return vendorId;
+    }
+
+    public void setVendorId(Long vendorId) {
+        this.vendorId = vendorId;
     }
 
     public String getVendorName() {
