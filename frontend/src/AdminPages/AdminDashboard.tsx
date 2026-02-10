@@ -1,6 +1,6 @@
 import {
   FaCube,
-  FaDollarSign,
+  FaRupeeSign,
   FaShieldAlt,
   FaStore,
   FaBell,
@@ -242,7 +242,7 @@ const AdminDashboard = () => {
   const statCards = stats ? [
     { label: 'Total Vendors', value: stats.totalVendors.toString(), icon: FaStore, color: 'bg-red-500' },
     { label: 'Active Products', value: stats.activeProducts.toString(), icon: FaCube, color: 'bg-blue-500' },
-    { label: 'Admin Commission (20%)', value: `NRP ${(stats.totalCommission ?? 0).toFixed(2)}`, icon: FaDollarSign, color: 'bg-emerald-600' },
+    { label: 'Admin Commission (20%)', value: `NRP ${(stats.totalCommission ?? 0).toFixed(2)}`, icon: FaRupeeSign, color: 'bg-emerald-600' },
     { label: 'Pending Verifications', value: stats.pendingVerifications.toString(), icon: FaShieldAlt, color: 'bg-amber-500' },
   ] : []
 

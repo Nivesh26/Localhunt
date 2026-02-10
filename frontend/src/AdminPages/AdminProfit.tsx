@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { FaChartLine, FaDollarSign } from 'react-icons/fa'
+import { FaChartLine, FaRupeeSign } from 'react-icons/fa'
 import AdminNavbar from '../AdminComponents/AdminNavbar'
 
 interface ProfitDetail {
@@ -76,7 +76,7 @@ const AdminProfit = () => {
               <section className="rounded-2xl bg-white p-6 shadow-sm">
                 <div className="flex items-center gap-3">
                   <div className="rounded-xl bg-emerald-50 p-3">
-                    <FaDollarSign className="h-6 w-6 text-emerald-600" />
+                    <FaRupeeSign className="h-6 w-6 text-emerald-600" />
                   </div>
                   <div>
                     <h2 className="text-lg font-semibold text-gray-900">Total Commission</h2>
