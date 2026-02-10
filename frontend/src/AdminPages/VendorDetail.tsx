@@ -21,6 +21,7 @@ interface VendorDetail {
   storeDescription?: string
   businessRegistrationCertificate?: string
   panVatCertificate?: string
+  profilePicture?: string
 }
 
 const VendorDetail = () => {
@@ -54,7 +55,8 @@ const VendorDetail = () => {
           setVendor({
             ...vendorData,
             storeDescription: profileData.storeDescription || '',
-            closedByAdmin: profileData.closedByAdmin ?? vendorData.closedByAdmin
+            closedByAdmin: profileData.closedByAdmin ?? vendorData.closedByAdmin,
+            profilePicture: profileData.profilePicture
           })
         } else {
           toast.error('Vendor not found')
@@ -120,9 +122,27 @@ const VendorDetail = () => {
               <FaArrowLeft className="h-4 w-4" />
               Back to Vendors
             </button>
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">{vendor.businessName}</h1>
-              <p className="text-sm text-gray-500">Vendor Details and Certificates</p>
+            <div className="flex items-center gap-4">
+              <div className="h-16 w-16 sm:h-20 sm:w-20 rounded-full overflow-hidden bg-gray-200 shrink-0">
+                {vendor.profilePicture ? (
+                  <img
+                    src={vendor.profilePicture.startsWith('http') ? vendor.profilePicture : `http://localhost:8080${vendor.profilePicture}`}
+                    alt={vendor.userName}
+                    className="h-full w-full object-cover"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none'
+                      e.currentTarget.nextElementSibling?.classList.remove('hidden')
+                    }}
+                  />
+                ) : null}
+                <div className={`h-full w-full flex items-center justify-center text-2xl font-semibold text-gray-500 ${vendor.profilePicture ? 'hidden' : ''}`}>
+                  {vendor.userName?.charAt(0).toUpperCase() || 'V'}
+                </div>
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900">{vendor.businessName}</h1>
+                <p className="text-sm text-gray-500">Vendor Details and Certificates</p>
+              </div>
             </div>
           </header>
 
